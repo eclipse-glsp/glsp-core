@@ -33,8 +33,7 @@
   "files": [
     "lib",
     "src",
-    "!**/*.spec.ts",
-    "!**/*.spec.tsx",
+    "!**/*.spec.*",
     "!**/test/**"
   ],
   "scripts": {

@@ -6,7 +6,6 @@
     "reactNamespace": "JSX",
     "composite": true
   },
-  "exclude": ["**/*.spec.ts"],
   "include": ["src"],
   "references": [
     {

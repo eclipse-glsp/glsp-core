@@ -1,0 +1,45 @@
+{
+  "name": "parent",
+  "version": "2.8.0-next",
+  "private": true,
+  "scripts": {
+    "build": "pnpm compile && pnpm bundle",
+    "bundle": "pnpm -r run bundle",
+    "bundle:browser": "pnpm standalone bundle:browser",
+    "check:all": "pnpm build && pnpm lint && pnpm format:check && pnpm headers:check && pnpm test",
+    "clean": "pnpm -r run clean && rimraf coverage *.tsbuildinfo",
+    "cli": "pnpm -C dev-packages/cli",
+    "compile": "tsc -b",
+    "dev": "pnpm standalone dev",
+    "dev:browser": "pnpm standalone dev:browser",
+    "dev:server:socket": "pnpm server dev:socket",
+    "fix:all": "pnpm lint:fix && pnpm format && pnpm headers:fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "generate:index": "pnpm -r generate:index && pnpm lint:fix",
+    "headers:check": "glsp checkHeaders .",
+    "headers:fix": "glsp checkHeaders . --autoFix",
+    "lint": "pnpm compile && eslint .",
+    "lint:ci": "pnpm lint --output-file eslint_report.json --format json",
+    "lint:fix": "pnpm lint --fix",
+    "publish:latest": "glsp releng publish latest",
+    "publish:next": "glsp releng publish next",
+    "server": "pnpm -C examples/workflow-server",
+    "standalone": "pnpm -C examples/workflow-standalone",
+    "test": "pnpm compile && vitest run",
+    "test:coverage": "pnpm compile && vitest run --coverage",
+    "upgrade:next": "glsp updateNext"
+  },
+  "devDependencies": {
+    "@eclipse-glsp/dev": "workspace:*",
+    "@types/node": "22.x",
+    "concurrently": "^9.2.1",
+    "reflect-metadata": "^0.2.2",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22.18",
+    "pnpm": ">=11"
+  }
+}

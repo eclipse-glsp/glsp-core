@@ -192,7 +192,9 @@ describe('link-action', () => {
         it('should return undefined when the dependency is not resolvable from any dir', () => {
             createRepoDirs('glsp-client');
             fs.writeFileSync(path.join(tempDir, 'glsp-client', 'package.json'), JSON.stringify({ name: 'glsp-client' }));
-            expect(resolveSingletonDir([path.join(tempDir, 'glsp-client')], 'sprotty')).toBeUndefined();
+            // Use a name that is installed nowhere: the real singletons (sprotty, inversify, ...) are
+            // now actual workspace dependencies of glsp-core and would resolve from the test process.
+            expect(resolveSingletonDir([path.join(tempDir, 'glsp-client')], '@glsp-test/unresolvable')).toBeUndefined();
         });
     });
 
@@ -204,8 +206,9 @@ describe('link-action', () => {
             const links = collectSingletonLinks(clientDir);
             expect(links.sprotty).toBe(fs.realpathSync(path.join(clientDir, 'node_modules', 'sprotty')));
             expect(links.inversify).toBe(fs.realpathSync(path.join(clientDir, 'node_modules', 'inversify')));
-            // unresolvable singletons (sprotty-protocol, etc.) are simply skipped
-            expect(links['sprotty-protocol']).toBeUndefined();
+            // a singleton that is installed nowhere is simply skipped (real singletons such as
+            // sprotty-protocol now resolve as actual glsp-core workspace deps, so they can't stand in here)
+            expect(links['@glsp-test/unresolvable']).toBeUndefined();
         });
     });
 

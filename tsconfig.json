@@ -1,0 +1,43 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "include": [],
+  "compilerOptions": {
+    "composite": true,
+    "resolveJsonModule": true
+  },
+  "references": [
+    {
+      "path": "./dev-packages/cli"
+    },
+    {
+      "path": "./packages/client/protocol"
+    },
+    {
+      "path": "./packages/client/glsp-sprotty"
+    },
+    {
+      "path": "./packages/client/client"
+    },
+    {
+      "path": "./packages/server/graph"
+    },
+    {
+      "path": "./packages/server/server"
+    },
+    {
+      "path": "./packages/server/layout-elk"
+    },
+    {
+      "path": "./packages/server/server-mcp"
+    },
+    {
+      "path": "./examples/workflow-glsp"
+    },
+    {
+      "path": "./examples/workflow-standalone"
+    },
+    {
+      "path": "./examples/workflow-server"
+    }
+  ]
+}

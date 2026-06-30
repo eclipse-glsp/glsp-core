@@ -5,7 +5,6 @@
     "outDir": "lib",
     "composite": true
   },
-  "exclude": ["**/*.spec.ts", "src/common/test/mock-util.ts"],
   "include": ["src"],
   "references": [
     {

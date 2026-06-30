@@ -34,8 +34,7 @@
     "lib",
     "src",
     "css",
-    "!**/*.spec.ts",
-    "!**/*.spec.tsx",
+    "!**/*.spec.*",
     "!**/test/**"
   ],
   "scripts": {

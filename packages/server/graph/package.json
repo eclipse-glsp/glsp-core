@@ -37,8 +37,8 @@
   "files": [
     "lib",
     "src",
-    "!**/*.spec.ts",
-    "!**/*.spec.tsx"
+    "!**/*.spec.*",
+    "!**/test/**"
   ],
   "scripts": {
     "build": "tsc -b",
@@ -48,7 +48,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@eclipse-glsp/protocol": "next"
+    "@eclipse-glsp/protocol": "workspace:*"
   },
   "publishConfig": {
     "access": "public"

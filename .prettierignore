@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+lib/
+dist/
+coverage/
+.nyc_output/
+
+# Generated files
+*.min.js
+*.min.css
+examples/*/wf-glsp-server-webworker.js
+examples/*/wf-glsp-server-webworker.js.map
+examples/*/index.bundle.js
+examples/*/index.bundle.js.map
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+
+# Logs
+*.log
+
+# Claude Code
+.claude/
+.reviews/
+.worktrees/

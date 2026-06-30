@@ -43,8 +43,7 @@
     "browser.d.ts",
     "common.js",
     "common.d.ts",
-    "!**/*.spec.ts",
-    "!**/*.spec.tsx",
+    "!**/*.spec.*",
     "!**/test/**"
   ],
   "scripts": {

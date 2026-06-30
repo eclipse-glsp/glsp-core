@@ -7,6 +7,5 @@
     "reactNamespace": "JSX",
     "types": ["node"]
   },
-  "exclude": ["**/*.spec.ts"],
   "include": ["src"]
 }

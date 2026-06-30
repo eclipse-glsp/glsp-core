@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { describe, expect, it } from 'vitest';
-import { Direction } from '../lib';
+import { Direction } from './utils/geometry-util';
 import { Point } from './sprotty-geometry-point';
 
 describe('Point', () => {
