@@ -1,0 +1,173 @@
+/********************************************************************************
+ * Copyright (c) 2019-2025 EclipseSource and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+import {
+    Bounds,
+    Dimension,
+    GChildElement,
+    GModelElement,
+    GNode,
+    GParentElement,
+    isBoundsAware,
+    isMoveable,
+    Point,
+    toTypeGuard
+} from '@eclipse-glsp/sprotty';
+import { injectable } from 'inversify';
+import { CSS_GHOST_ELEMENT, ModifyCSSFeedbackAction } from '../../base/feedback/css-feedback';
+import { BoundsAwareModelElement, getChildren, getParents } from '../../utils/gmodel-util';
+import { toAbsoluteBounds } from '../../utils/viewpoint-util';
+import { ContainerElement, isContainable } from '../hints/model';
+import { GResizeHandle } from './model';
+
+/**
+ * A `MovementRestrictor` is an optional service that can be used by tools to validate
+ * whether a certain move operation (e.g. `ChangeBoundsOperation`) in the diagram is valid.
+ */
+export interface IMovementRestrictor {
+    /**
+     * Validate whether moving the given element to a new given location is allowed.
+     * @param element The element that should be moved.
+     * @param newLocation The new location of the element.
+     * @returns `true` if the the element is movable and moving to the given location is allowed, `false` otherwise.
+     *          Should also return `false` if the newLocation is `undefined`:
+     */
+    validate(element: GModelElement, newLocation?: Point): boolean;
+    /**
+     * Feedback css-classes. Can be applied to elements that did fail the validation.
+     */
+    cssClasses?: string[];
+}
+
+export interface MoveElementContext {
+    element: GModelElement;
+    elementAtNewLocation: BoundsAwareModelElement;
+    parentContainers: ContainerElement[];
+    childNodes: GNode[];
+}
+
+/**
+ *  A `IMovementRestrictor` that checks for overlapping elements. Move operations
+ *  are only valid if the element does not collide with another element/node after moving.
+ */
+@injectable()
+export class NoOverlapMovementRestrictor implements IMovementRestrictor {
+    cssClasses = ['movement-not-allowed'];
+
+    validate(element: GModelElement, newLocation?: Point): boolean {
+        if (!(element instanceof GChildElement) || !isMoveable(element) || !newLocation) {
+            return false;
+        }
+
+        const moveContext = this.createMoveElementContext(element, newLocation);
+        const elementsToValidate = Array.from(element.root.index.all()).filter(e =>
+            this.isBoundsRelevant(e, moveContext)
+        ) as BoundsAwareModelElement[];
+
+        const valid = !elementsToValidate.some(e => this.areOverlapping(e, moveContext.elementAtNewLocation));
+        return valid;
+    }
+
+    protected createMoveElementContext(element: GModelElement, newLocation: Point): MoveElementContext {
+        const parentContainers = getParents(element, isContainable);
+        const childNodes = getChildren(element, toTypeGuard(GNode));
+        // Create a mock element at the newLocation for overlap checking
+        const dimensions: Dimension = isBoundsAware(element) ? element.bounds : { width: 1, height: 1 };
+        const elementAtNewLocation = Object.create(element) as BoundsAwareModelElement as BoundsAwareModelElement;
+        elementAtNewLocation.bounds = { ...dimensions, ...newLocation };
+
+        return {
+            element,
+            elementAtNewLocation,
+            parentContainers,
+            childNodes
+        };
+    }
+
+    protected isBoundsRelevant(element: GModelElement, moveContext: MoveElementContext): element is BoundsAwareModelElement {
+        // Only consider GNodes that are not the element being moved (or one of its children)
+        if (
+            !(element instanceof GNode) ||
+            element.id === moveContext.element.id ||
+            moveContext.childNodes.some(child => child.id === element.id)
+        ) {
+            return false;
+        }
+
+        // Do not consider parent containers of the element being moved
+        if (moveContext.parentContainers.length > 0 && moveContext.parentContainers.some(container => container.id === element.id)) {
+            return false;
+        }
+
+        // If the element is a ghost element (node creation), don't consider overlap checks for potential parent containers
+        if (
+            moveContext.element.cssClasses?.includes(CSS_GHOST_ELEMENT) &&
+            isContainable(element) &&
+            element.isContainableElement(moveContext.element.type)
+        ) {
+            return false;
+        }
+        return true;
+    }
+
+    protected areOverlapping(element1: BoundsAwareModelElement, element2: BoundsAwareModelElement): boolean {
+        return Bounds.overlap(toAbsoluteBounds(element1), toAbsoluteBounds(element2));
+    }
+}
+
+/**
+ * Utility function to create an action that applies the given {@link IMovementRestrictor.cssClasses} to the given element.
+ * @param element The element on which the css classes should be applied.
+ * @param movementRestrictor The movement restrictor whose cssClasses should be applied.
+ * @returns The corresponding {@link ModifyCSSFeedbackAction}
+ */
+export function createMovementRestrictionFeedback(
+    element: GModelElement,
+    movementRestrictor: IMovementRestrictor
+): ModifyCSSFeedbackAction {
+    const elements: GModelElement[] = [element];
+    if (element instanceof GParentElement) {
+        element.children.filter(child => child instanceof GResizeHandle).forEach(e => elements.push(e));
+    }
+    return ModifyCSSFeedbackAction.create({ elements, add: movementRestrictor.cssClasses });
+}
+
+/**
+ * Utility function to create an action that removes the given {@link IMovementRestrictor.cssClasses} from the given element.
+ * @param element The element from which the css classes should be removed.
+ * @param movementRestrictor The movement restrictor whose cssClasses should be removed.
+ * @returns The corresponding {@link ModifyCSSFeedbackAction}
+ */
+export function removeMovementRestrictionFeedback(
+    element: GModelElement,
+    movementRestrictor: IMovementRestrictor
+): ModifyCSSFeedbackAction {
+    const elements: GModelElement[] = [element];
+    if (element instanceof GParentElement) {
+        element.children.filter(child => child instanceof GResizeHandle).forEach(e => elements.push(e));
+    }
+
+    return ModifyCSSFeedbackAction.create({ elements, remove: movementRestrictor.cssClasses });
+}
+
+export function movementRestrictionFeedback(
+    element: GModelElement,
+    movementRestrictor: IMovementRestrictor,
+    valid: boolean
+): ModifyCSSFeedbackAction {
+    return valid
+        ? removeMovementRestrictionFeedback(element, movementRestrictor)
+        : createMovementRestrictionFeedback(element, movementRestrictor);
+}

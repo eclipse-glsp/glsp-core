@@ -1,0 +1,55 @@
+{
+  "name": "workflow-standalone",
+  "version": "2.8.0-next",
+  "private": true,
+  "description": "Standalone browser-app for the Workflow example",
+  "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-client.git"
+  },
+  "author": {
+    "name": "Eclipse GLSP"
+  },
+  "contributors": [
+    {
+      "name": "Eclipse GLSP Project",
+      "email": "glsp-dev@eclipse.org",
+      "url": "https://projects.eclipse.org/projects/ecd.glsp"
+    }
+  ],
+  "main": "lib/node/app",
+  "browser": "lib/browser/app",
+  "scripts": {
+    "build": "pnpm compile && pnpm bundle",
+    "build:browser": "pnpm compile && pnpm bundle:browser",
+    "bundle": "node ./esbuild.js",
+    "bundle:browser": "node ./scripts/download-server.mts --browser && node ./esbuild.js --browser",
+    "clean": "rimraf lib *.tsbuildinfo app/bundle.js app/bundle.js.map app/bundle.css app/bundle.css.map app/wf-glsp-server-webworker.js app/wf-glsp-server-webworker.js.map app/*.ttf",
+    "compile": "tsc -b",
+    "dev": "node ./scripts/start.mts --dev",
+    "dev:browser": "node ./scripts/start.mts --dev --browser",
+    "dev:mcp": "node ./scripts/start.mts --dev --mcp",
+    "lint": "eslint ./src",
+    "start": "node ./scripts/start.mts",
+    "start:browser": "node ./scripts/start.mts --browser",
+    "start:mcp": "node ./scripts/start.mts --mcp",
+    "start:server": "node ./scripts/start-node-server.mts"
+  },
+  "dependencies": {
+    "@eclipse-glsp-examples/workflow-glsp": "workspace:*",
+    "@eclipse-glsp/client": "workspace:*",
+    "reflect-metadata": "^0.2.2",
+    "vscode-jsonrpc": "8.2.0"
+  },
+  "devDependencies": {
+    "@types/tar": "6.1.5",
+    "esbuild": "^0.28.1",
+    "inversify": "^6.1.3",
+    "tar": "7.5.16"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
