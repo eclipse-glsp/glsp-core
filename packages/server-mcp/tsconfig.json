@@ -1,0 +1,15 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "composite": true
+  },
+  "exclude": ["**/*.spec.ts", "**/test/**"],
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../server"
+    }
+  ]
+}

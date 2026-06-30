@@ -1,0 +1,120 @@
+/********************************************************************************
+ * Copyright (c) 2026 EclipseSource and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+
+import {
+    Action,
+    ActionDispatcher,
+    ClientId,
+    GModelElement,
+    Logger,
+    ModelState,
+    NullLogger,
+    SelectAction,
+    SelectAllAction
+} from '@eclipse-glsp/server';
+import { describe, expect, it } from 'vitest';
+import { Container, ContainerModule } from 'inversify';
+import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
+import { McpIdAliasService } from '../../server/mcp-id-alias-service';
+import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
+import { SetSelectionInput, SetSelectionMcpToolHandler } from './set-selection-mcp-tool-handler';
+
+function makeElement(id: string, type: string): GModelElement {
+    return { id, type, children: [] } as unknown as GModelElement;
+}
+
+function makeModelState(elements: GModelElement[]): ModelState {
+    const byId = new Map(elements.map(el => [el.id, el]));
+    return {
+        index: {
+            allIds: () => [...byId.keys()],
+            get: (id: string) => byId.get(id),
+            find: (id: string) => byId.get(id)
+        }
+    } as unknown as ModelState;
+}
+
+function makeRecordingDispatcher(): { dispatcher: ActionDispatcher; dispatched: Action[] } {
+    const dispatched: Action[] = [];
+    const dispatcher = {
+        dispatch: async (action: Action) => {
+            dispatched.push(action);
+        }
+    } as unknown as ActionDispatcher;
+    return { dispatcher, dispatched };
+}
+
+function buildHandler(elements: GModelElement[], dispatcher: ActionDispatcher): SetSelectionMcpToolHandler {
+    const container = new Container();
+    container.load(
+        new ContainerModule(bind => {
+            bind(Logger).toConstantValue(new NullLogger());
+            bind(ClientId).toConstantValue('test-session');
+            bind(ModelState).toConstantValue(makeModelState(elements));
+            bind(McpIdAliasService).toConstantValue({
+                lookup: (id: string) => id,
+                alias: (id: string) => id
+            } as McpIdAliasService);
+            bind(ActionDispatcher).toConstantValue(dispatcher);
+            bind(McpLabelProvider).to(DefaultMcpLabelProvider);
+            bind(SetSelectionMcpToolHandler).toSelf();
+        })
+    );
+    return container.get(SetSelectionMcpToolHandler);
+}
+
+function callCreateResult(handler: SetSelectionMcpToolHandler, params: SetSelectionInput): Promise<McpToolResult> {
+    return (handler as unknown as { createResult: (p: SetSelectionInput) => Promise<McpToolResult> }).createResult(params);
+}
+
+describe('SetSelectionMcpToolHandler', () => {
+    it('dispatches SelectAllAction(false) before SelectAction when `clear: true`', async () => {
+        const { dispatcher, dispatched } = makeRecordingDispatcher();
+        const handler = buildHandler([makeElement('n1', 'task'), makeElement('n2', 'task')], dispatcher);
+
+        await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['n1'], clear: true });
+
+        expect(dispatched).toHaveLength(2);
+        expect(SelectAllAction.is(dispatched[0])).toBe(true);
+        expect((dispatched[0] as SelectAllAction).select).toBe(false);
+        expect(SelectAction.is(dispatched[1])).toBe(true);
+    });
+
+    it('dispatches SelectAction with resolved selected and deselected ids', async () => {
+        const { dispatcher, dispatched } = makeRecordingDispatcher();
+        const handler = buildHandler([makeElement('a', 'task'), makeElement('b', 'task'), makeElement('c', 'task')], dispatcher);
+
+        await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['a', 'b'], deselectedElementIds: ['c'] });
+
+        expect(dispatched).toHaveLength(1);
+        const action = dispatched[0] as SelectAction;
+        expect(action.selectedElementsIDs).toEqual(['a', 'b']);
+        expect(action.deselectedElementsIDs).toEqual(['c']);
+    });
+
+    it('throws McpElementsNotFoundError when an id is missing from the model', async () => {
+        const { dispatcher } = makeRecordingDispatcher();
+        const handler = buildHandler([makeElement('n1', 'task')], dispatcher);
+
+        let error: unknown;
+        try {
+            await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['n1', 'ghost'] });
+        } catch (err: unknown) {
+            error = err;
+        }
+        expect(error).toBeInstanceOf(McpElementsNotFoundError);
+    });
+});
