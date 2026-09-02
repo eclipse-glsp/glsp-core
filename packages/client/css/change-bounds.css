@@ -1,0 +1,40 @@
+.sprotty-resize-handle[data-kind='top-left'] {
+    cursor: nw-resize;
+}
+
+.sprotty-resize-handle[data-kind='top'] {
+    cursor: n-resize;
+}
+
+.sprotty-resize-handle[data-kind='top-right'] {
+    cursor: ne-resize;
+}
+
+.sprotty-resize-handle[data-kind='right'] {
+    cursor: e-resize;
+}
+
+.sprotty-resize-handle[data-kind='bottom-right'] {
+    cursor: se-resize;
+}
+
+.sprotty-resize-handle[data-kind='bottom'] {
+    cursor: s-resize;
+}
+
+.sprotty-resize-handle[data-kind='bottom-left'] {
+    cursor: sw-resize;
+}
+
+.sprotty-resize-handle[data-kind='left'] {
+    cursor: w-resize;
+}
+
+.sprotty-resize-handle.resize-not-allowed {
+    fill: var(--glsp-error-foreground);
+}
+
+.sprotty g .resize-not-allowed > .sprotty-node {
+    stroke: var(--glsp-error-foreground);
+    stroke-width: 1.5px;
+}

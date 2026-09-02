@@ -1,0 +1,38 @@
+/********************************************************************************
+ * Copyright (c) 2023-2025 Business Informatics Group (TU Wien) and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+
+:root {
+    --glsp-search-highlight: #130bf7;
+}
+
+.search-hidden {
+    opacity: 0.4;
+}
+
+.search-highlighted .sprotty-node {
+    stroke-width: 1.5px;
+    stroke-width: 2px;
+    stroke-dashoffset: 5;
+    stroke-dasharray: 5, 5;
+    stroke-linecap: round;
+    stroke: var(--glsp-search-highlight);
+}
+
+.sprotty-edge.search-highlighted,
+.sprotty-edge.search-highlighted .sprotty-edge.arrow {
+    fill: var(--glsp-search-highlight);
+    stroke: var(--glsp-search-highlight);
+}
