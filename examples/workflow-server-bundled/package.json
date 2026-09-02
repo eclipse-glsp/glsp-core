@@ -1,0 +1,52 @@
+{
+  "name": "@eclipse-glsp-examples/workflow-server-bundled",
+  "version": "2.9.0-next",
+  "description": "GLSP node server for the workflow example (bundled)",
+  "keywords": [
+    "eclipse",
+    "graphics",
+    "diagram",
+    "modeling",
+    "visualization",
+    "glsp",
+    "diagram editor"
+  ],
+  "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
+  },
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
+  "contributors": [
+    {
+      "name": "STMicroelectronics",
+      "url": "https://www.st.com/"
+    },
+    {
+      "name": "Eclipse GLSP Project",
+      "email": "glsp-dev@eclipse.org",
+      "url": "https://projects.eclipse.org/projects/ecd.glsp"
+    }
+  ],
+  "main": "./wf-glsp-server-node.js",
+  "browser": {
+    "./lib/node/index.js": "./lib/browser/index.js"
+  },
+  "files": [
+    "wf-glsp-server-node.js",
+    "wf-glsp-server-node.js.map"
+  ],
+  "scripts": {
+    "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map",
+    "prepublishOnly": "pnpm -C ../workflow-server build",
+    "start": "node --enable-source-maps ./wf-glsp-server-node.js --port 5007",
+    "start:websocket": "node --enable-source-maps ./wf-glsp-server-node.js -w --port 8081"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

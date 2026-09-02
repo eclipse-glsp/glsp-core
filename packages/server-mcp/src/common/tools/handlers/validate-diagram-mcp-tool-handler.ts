@@ -1,0 +1,104 @@
+/********************************************************************************
+ * Copyright (c) 2026 EclipseSource and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+
+import { MarkersReason, ModelValidator } from '@eclipse-glsp/server';
+import { inject, injectable, optional } from 'inversify';
+import * as z from 'zod/v4';
+import { McpToolError, McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema, elementIds } from '../../server/mcp-input-schemas';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
+import { objectArrayToMarkdownTable } from '../../util/markdown-util';
+
+export const ValidateDiagramInputSchema = McpDiagramScopedInputSchema.extend({
+    elementIds: elementIds.optional().describe('Element IDs to validate. Omit to validate the entire model.'),
+    reason: z
+        .enum([MarkersReason.BATCH, MarkersReason.LIVE])
+        .optional()
+        .describe(
+            'Optional escape hatch — restrict the call to a single GLSP `MarkersReason` ' +
+                "(`'batch'` or `'live'`). Rarely needed: by default the handler runs both passes " +
+                'and merges the markers, so callers see every finding regardless of which suite ' +
+                'an adopter wired it into.'
+        )
+});
+export type ValidateDiagramInput = z.infer<typeof ValidateDiagramInputSchema>;
+
+export const ValidateDiagramOutputSchema = z.object({
+    markers: z.array(
+        z.object({
+            kind: z.string().describe('"info" | "warning" | "error" — or an adopter-defined custom kind.'),
+            label: z.string(),
+            description: z.string(),
+            elementId: z.string()
+        })
+    )
+});
+export type ValidateDiagramOutput = z.infer<typeof ValidateDiagramOutputSchema>;
+
+@injectable()
+export class ValidateDiagramMcpToolHandler extends AbstractMcpDiagramToolHandler<ValidateDiagramInput, ValidateDiagramOutput> {
+    static readonly NAME = 'validate-diagram';
+    readonly name = ValidateDiagramMcpToolHandler.NAME;
+    override readonly title = 'Validate Diagram';
+    readonly description =
+        'Validate the diagram and return all markers (errors, warnings, info) the configured validator produces. ' +
+        'Pass `elementIds` to scope validation to specific elements; omit to validate the entire model. ' +
+        'By default both validation suites (live + batch) are run and the results merged + deduped — ' +
+        'this matches the markers a user sees in the IDE Problems view. ' +
+        'Use the `reason` field only to deliberately restrict to one suite. ' +
+        'Throws when no `ModelValidator` is bound for the diagram type — that is an adopter setup issue, not an LLM-fixable error.';
+    readonly inputSchema = ValidateDiagramInputSchema;
+    override readonly outputSchema = ValidateDiagramOutputSchema;
+
+    @inject(ModelValidator) @optional() protected validator?: ModelValidator;
+
+    protected async createResult({ elementIds, reason }: ValidateDiagramInput): Promise<McpToolResult> {
+        if (!this.validator) {
+            throw new McpToolError('No validator configured for this diagram type');
+        }
+
+        // Validate every element in the model when no scope is given — adopter validators are usually
+        // per-element predicates rather than tree walkers, so passing only the root would silently
+        // skip structural rules on descendants. (`elementIds` itself is `.min(1)` per the schema, so
+        // `length > 0` is implied when the field is present.)
+        const idsToValidate = elementIds ? this.resolveExistingIds(elementIds) : this.modelState.index.allIds();
+        const elements = this.modelState.index.getAll(idsToValidate);
+
+        // LIVE-only and BATCH-only suites tend to overlap but not identically — adopters bind some
+        // rules to one and some to both. Running both and merging matches the IDE Problems view.
+        const reasonsToRun = reason ? [reason] : [MarkersReason.LIVE, MarkersReason.BATCH];
+        const allMarkers = (await Promise.all(reasonsToRun.map(reasonToRun => this.validator!.validate(elements, reasonToRun)))).flat();
+        const aliased = allMarkers.map(marker => ({ ...marker, elementId: this.aliasService.alias(marker.elementId) }));
+        // Adopter validators may surface the same marker via multiple rule paths (e.g. structural
+        // rules + edge-endpoint walks), and merging the two suites adds another duplicate dimension;
+        // dedupe so the LLM sees one finding per issue.
+        const markers = this.deduplicateMarkers(aliased);
+
+        return this.success(objectArrayToMarkdownTable(markers), { markers });
+    }
+
+    protected deduplicateMarkers<M extends { kind: string; label: string; description: string; elementId: string }>(markers: M[]): M[] {
+        const seen = new Set<string>();
+        const result: M[] = [];
+        for (const marker of markers) {
+            const key = `${marker.kind}\u001f${marker.label}\u001f${marker.description}\u001f${marker.elementId}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            result.push(marker);
+        }
+        return result;
+    }
+}
