@@ -16,6 +16,8 @@
 
 import { execSync } from 'child_process';
 import * as fs from 'fs';
+import * as path from 'path';
+import * as YAML from 'yaml';
 
 export function git(args: string, cwd: string): string {
     return execSync(`git ${args}`, { cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
@@ -41,6 +43,57 @@ export function isMavenAvailable(): boolean {
     } catch {
         return false;
     }
+}
+
+/**
+ * Reads the workspace package globs of a repo. pnpm repos declare them in `pnpm-workspace.yaml`;
+ * legacy repos use the `workspaces` field in the root `package.json`.
+ */
+export function readWorkspaceGlobs(repoDir: string): string[] {
+    const pnpmWorkspace = path.join(repoDir, 'pnpm-workspace.yaml');
+    if (fs.existsSync(pnpmWorkspace)) {
+        const parsed = YAML.parse(fs.readFileSync(pnpmWorkspace, 'utf8')) as { packages?: string[] };
+        return parsed?.packages ?? [];
+    }
+    const rootPkg = readJson(path.join(repoDir, 'package.json'));
+    return Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : ((rootPkg.workspaces as { packages?: string[] })?.packages ?? []);
+}
+
+/** Expands the `*` segments of a workspace glob into the matching directories. */
+function expandGlobDirs(baseDir: string, segments: string[]): string[] {
+    if (segments.length === 0) {
+        return fs.existsSync(baseDir) ? [baseDir] : [];
+    }
+    const [segment, ...rest] = segments;
+    if (segment !== '*') {
+        return expandGlobDirs(path.join(baseDir, segment), rest);
+    }
+    if (!fs.existsSync(baseDir)) {
+        return [];
+    }
+    return fs
+        .readdirSync(baseDir, { withFileTypes: true })
+        .filter(entry => entry.isDirectory())
+        .flatMap(entry => expandGlobDirs(path.join(baseDir, entry.name), rest));
+}
+
+/**
+ * Finds the workspace package.json files (not the root) of a repo by resolving its workspace globs.
+ * Nested globs are supported, so grouped layouts like glsp-core's `packages/<group>/<package>` are
+ * resolved as well.
+ */
+export function findWorkspacePackageJsons(repoDir: string): string[] {
+    const results: string[] = [];
+    for (const pattern of readWorkspaceGlobs(repoDir)) {
+        const segments = pattern.replace(/^\.\//, '').split('/').filter(Boolean);
+        for (const dir of expandGlobDirs(repoDir, segments)) {
+            const pkgPath = path.join(dir, 'package.json');
+            if (fs.existsSync(pkgPath)) {
+                results.push(pkgPath);
+            }
+        }
+    }
+    return results;
 }
 
 export function isSshAvailable(): boolean {

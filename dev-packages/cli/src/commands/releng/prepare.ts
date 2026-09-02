@@ -28,6 +28,7 @@ import {
     execAsync,
     getDefaultBranch,
     getWorkspacePackages,
+    readFile,
     replaceInFile,
     validateGitDirectory,
     writeFile
@@ -202,14 +203,21 @@ function updateChangelog(options: PrepareReleaseOptions): void {
         const linkUrl = `https://github.com/eclipse-glsp/${options.repo}/releases/tag/v${options.version}`;
         replaceInFile('CHANGELOG.md', `## v${options.version} - active`, `## [v${options.version} - ${date}](${linkUrl})`);
     } else {
-        LOGGER.debug("Add a new 'next' version after the header");
-        const nextSection = `
-## v${options.version.replace('-next', '')} - active
-
-### Changes
-
-### Potentially Breaking Changes`;
-        replaceInFile('CHANGELOG.md', /^# .+$/m, `$&\n${nextSection}`);
+        LOGGER.debug("Add a new 'next' version section");
+        const changelog = readFile('CHANGELOG.md');
+        // The consolidated glsp-core changelog groups each release by component; the other repos use a flat layout.
+        const skeleton = changelog.includes('### Client')
+            ? ['Protocol', 'Client', 'Server', 'Dev Packages']
+                  .map(component => `### ${component}\n\n#### Changes\n\n#### Potentially Breaking Changes`)
+                  .join('\n\n')
+            : '### Changes\n\n### Potentially Breaking Changes';
+        const nextSection = `## v${options.version.replace('-next', '')} - active\n\n${skeleton}\n`;
+        // Insert above the first release section, so that any intro text below the main header stays in place.
+        if (/^## /m.test(changelog)) {
+            replaceInFile('CHANGELOG.md', /^## /m, `${nextSection}\n## `);
+        } else {
+            replaceInFile('CHANGELOG.md', /^# .+$/m, `$&\n\n${nextSection}`);
+        }
     }
     LOGGER.debug('Changelog updated');
 }

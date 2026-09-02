@@ -18,9 +18,9 @@ import { describe, it, beforeAll, beforeEach, afterAll, expect } from 'vitest';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as YAML from 'yaml';
 import { runCli } from '../../helpers/cli-helper';
 import { replaceOriginWithBare, shallowClone } from '../../helpers/clone-helper';
+import { findWorkspacePackageJsons } from '../../helpers/repo-helper';
 import { cleanupTempDir } from '../../helpers/test-helper';
 
 function git(args: string, cwd: string): string {
@@ -74,66 +74,37 @@ function isMavenAvailable(): boolean {
 
 /**
  * Injects a `## v99.0.0 - active` section into the CHANGELOG.md of the given repo
- * and commits the change so the working tree is clean.
+ * and commits the change so the working tree is clean. Uses the consolidated
+ * component-grouped layout of the glsp-core changelog and, like the CLI, inserts
+ * above the first release section so that any intro text stays in place.
  */
 function injectChangelogSection(repoDir: string): void {
     const changelogPath = path.join(repoDir, 'CHANGELOG.md');
     const changelog = fs.readFileSync(changelogPath, 'utf8');
-    const newSection = '\n## v99.0.0 - active\n\n### Changes\n\n- Test release\n';
-    const updatedChangelog = changelog.replace(/^(# .+)$/m, `$1\n${newSection}`);
+    const newSection = '## v99.0.0 - active\n\n### Client\n\n#### Changes\n\n- Test release\n\n#### Potentially Breaking Changes\n';
+    const updatedChangelog = /^## /m.test(changelog)
+        ? changelog.replace(/^## /m, `${newSection}\n## `)
+        : changelog.replace(/^(# .+)$/m, `$1\n\n${newSection}`);
     fs.writeFileSync(changelogPath, updatedChangelog);
     git('add .', repoDir);
     git('commit -m "add changelog section"', repoDir);
     git('push origin HEAD', repoDir);
 }
 
-/**
- * Reads the workspace package globs of a repo. pnpm repos declare them in `pnpm-workspace.yaml`;
- * legacy repos use the `workspaces` field in the root `package.json`.
- */
-function readWorkspaceGlobs(repoDir: string): string[] {
-    const pnpmWorkspace = path.join(repoDir, 'pnpm-workspace.yaml');
-    if (fs.existsSync(pnpmWorkspace)) {
-        const parsed = YAML.parse(fs.readFileSync(pnpmWorkspace, 'utf8')) as { packages?: string[] };
-        return parsed?.packages ?? [];
-    }
-    const rootPkg = readJson(path.join(repoDir, 'package.json'));
-    return Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : ((rootPkg.workspaces as { packages?: string[] })?.packages ?? []);
-}
+// ── glsp-core (self-contained, no external @eclipse-glsp deps) ─────────────
+//
+// glsp-core provides every @eclipse-glsp package itself, so all GLSP dependencies are
+// `workspace:` ranges. An arbitrary custom version can therefore be prepared without
+// requiring matching versions on npm.
 
-/**
- * Finds workspace package.json files (not the root) by resolving the workspace globs.
- */
-function findWorkspacePackageJsons(repoDir: string): string[] {
-    const results: string[] = [];
-    for (const pattern of readWorkspaceGlobs(repoDir)) {
-        const base = pattern.replace(/\/?\*.*$/, '');
-        const fullBase = path.join(repoDir, base);
-        if (!fs.existsSync(fullBase)) {
-            continue;
-        }
-        const entries = fs.readdirSync(fullBase, { withFileTypes: true });
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                const pkgPath = path.join(fullBase, entry.name, 'package.json');
-                if (fs.existsSync(pkgPath)) {
-                    results.push(pkgPath);
-                }
-            }
-        }
-    }
-    return results;
-}
-
-// ── glsp (self-contained, no external @eclipse-glsp deps) ─────────────────
-
-describe('releng prepare — glsp', function () {
+describe('releng prepare — glsp-core', function () {
     let repoDir: string;
+    let bareDir: string;
     let bareParentDir: string;
 
     beforeAll(function () {
-        repoDir = shallowClone('glsp');
-        ({ parentDir: bareParentDir } = replaceOriginWithBare(repoDir));
+        repoDir = shallowClone('glsp-core');
+        ({ bareDir, parentDir: bareParentDir } = replaceOriginWithBare(repoDir));
     });
 
     beforeEach(function () {
@@ -165,11 +136,12 @@ describe('releng prepare — glsp', function () {
         const rootPkg = readJson(path.join(repoDir, 'package.json'));
         expect(rootPkg.version).toBe('99.0.0');
 
-        // At least one workspace package.json updated
+        // All workspace package.jsons updated
         const workspacePkgs = findWorkspacePackageJsons(repoDir);
         expect(workspacePkgs.length).toBeGreaterThan(0);
-        const firstPkg = readJson(workspacePkgs[0]);
-        expect(firstPkg.version).toBe('99.0.0');
+        for (const pkgPath of workspacePkgs) {
+            expect(readJson(pkgPath).version, pkgPath).toBe('99.0.0');
+        }
 
         // CHANGELOG.md updated
         const changelog = readText(path.join(repoDir, 'CHANGELOG.md'));
@@ -180,6 +152,64 @@ describe('releng prepare — glsp', function () {
         const logMsg = git('log -1 --pretty=%s', repoDir);
         expect(logMsg).toBe('v99.0.0');
     });
+
+    it('should prepare next version with --no-push --no-check', function () {
+        const result = runCli(['releng', 'prepare', 'next', '--no-push', '--no-check', '-r', repoDir], {
+            timeout: 0
+        });
+        expect(result.exitCode, `stdout: ${result.stdout}\nstderr: ${result.stderr}`).toBe(0);
+
+        // Nightly branch created (nightly-X.Y.0-next)
+        const branches = git('branch', repoDir);
+        expect(branches).toMatch(/nightly-\d+\.\d+\.0-next/);
+
+        // Version bumped with -next suffix
+        const rootPkg = readJson(path.join(repoDir, 'package.json'));
+        expect(rootPkg.version as string).toMatch(/-next$/);
+
+        // Workspace package.jsons updated
+        const workspacePkgs = findWorkspacePackageJsons(repoDir);
+        expect(workspacePkgs.length).toBeGreaterThan(0);
+        for (const pkgPath of workspacePkgs) {
+            expect(readJson(pkgPath).version as string, pkgPath).toMatch(/-next$/);
+        }
+
+        // CHANGELOG.md should have a new active section in the consolidated component-grouped layout
+        const changelog = readText(path.join(repoDir, 'CHANGELOG.md'));
+        expect(changelog).toMatch(
+            /## v\d+\.\d+\.0 - active\n\n### Protocol\n\n#### Changes\n\n#### Potentially Breaking Changes\n\n### Client\n/
+        );
+
+        // Git commit message
+        const logMsg = git('log -1 --pretty=%s', repoDir);
+        expect(logMsg).toMatch(/^Switch to nightly \d+\.\d+\.0-next versions$/);
+    });
+
+    it('should accept --verbose flag', function () {
+        const result = runCli(['releng', 'prepare', 'next', '--no-push', '--no-check', '--verbose', '-r', repoDir], {
+            timeout: 0
+        });
+        expect(result.exitCode, `stdout: ${result.stdout}\nstderr: ${result.stderr}`).toBe(0);
+
+        // Verbose mode produces debug output
+        const combined = result.stdout + result.stderr;
+        expect(combined).toContain('Bump version');
+    });
+
+    it('should push --draft release to local bare remote', function () {
+        // With push enabled (no --no-push), the branch should be pushed to the bare remote.
+        // gh pr create will fail (bare repo is not GitHub), but the push should succeed.
+        const result = runCli(['releng', 'prepare', 'next', '--no-check', '--draft', '-r', repoDir], {
+            timeout: 0
+        });
+
+        // gh pr create will fail, so exit code is non-zero. But verify push happened.
+        const remoteBranches = git('branch', bareDir);
+        expect(remoteBranches).toMatch(/nightly-\d+\.\d+\.0-next/);
+
+        // Regardless of exit code, the test exercises the push + draft path
+        expect(result).not.toBe(undefined);
+    });
 });
 
 // ── NPM repos with external @eclipse-glsp deps (use 'next' version type) ──
@@ -189,7 +219,7 @@ describe('releng prepare — glsp', function () {
 // Using `next` version type avoids this issue because external deps are set to
 // the `next` npm tag which resolves to a real published version.
 
-const NPM_REPOS_WITH_EXTERNAL_DEPS = ['glsp-client', 'glsp-server-node', 'glsp-vscode-integration'] as const;
+const NPM_REPOS_WITH_EXTERNAL_DEPS = ['glsp-vscode-integration'] as const;
 
 for (const repo of NPM_REPOS_WITH_EXTERNAL_DEPS) {
     describe(`releng prepare — ${repo}`, function () {
@@ -290,58 +320,6 @@ describe('releng prepare — glsp-playwright', function () {
         // Git commit message
         const logMsg = git('log -1 --pretty=%s', repoDir);
         expect(logMsg).toMatch(/^Switch to nightly \d+\.\d+\.0-next versions$/);
-    });
-});
-
-// ── glsp-client extended tests ──────────────────────────────────────────────
-
-describe('releng prepare — glsp-client (extended)', function () {
-    let repoDir: string;
-    let bareDir: string;
-    let bareParentDir: string;
-
-    beforeAll(function () {
-        repoDir = shallowClone('glsp-client');
-        ({ bareDir, parentDir: bareParentDir } = replaceOriginWithBare(repoDir));
-    });
-
-    beforeEach(function () {
-        resetRepo(repoDir);
-    });
-
-    afterAll(function () {
-        if (repoDir) {
-            cleanupTempDir(path.dirname(repoDir));
-        }
-        if (bareParentDir) {
-            cleanupTempDir(bareParentDir);
-        }
-    });
-
-    it('should accept --verbose flag', function () {
-        const result = runCli(['releng', 'prepare', 'next', '--no-push', '--no-check', '--verbose', '-r', repoDir], {
-            timeout: 0
-        });
-        expect(result.exitCode, `stdout: ${result.stdout}\nstderr: ${result.stderr}`).toBe(0);
-
-        // Verbose mode produces debug output
-        const combined = result.stdout + result.stderr;
-        expect(combined).toContain('Bump version');
-    });
-
-    it('should push --draft release to local bare remote', function () {
-        // With push enabled (no --no-push), the branch should be pushed to the bare remote.
-        // gh pr create will fail (bare repo is not GitHub), but the push should succeed.
-        const result = runCli(['releng', 'prepare', 'next', '--no-check', '--draft', '-r', repoDir], {
-            timeout: 0
-        });
-
-        // gh pr create will fail, so exit code is non-zero. But verify push happened.
-        const remoteBranches = git('branch', bareDir);
-        expect(remoteBranches).toMatch(/nightly-\d+\.\d+\.0-next/);
-
-        // Regardless of exit code, the test exercises the push + draft path
-        expect(result).not.toBe(undefined);
     });
 });
 

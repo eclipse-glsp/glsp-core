@@ -1,0 +1,121 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "[Core] Build all",
+      "detail": "Compile and bundle all packages, dev-packages & examples",
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "command": "pnpm build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "[Core] Compile",
+      "detail": "Run the TypeScript project build (tsc -b) without bundling",
+      "type": "shell",
+      "group": "build",
+      "command": "pnpm compile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "[Core] Run all tests",
+      "detail": "Run the vitest suites of all packages",
+      "type": "shell",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "command": "pnpm test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Core] Lint",
+      "detail": "Compile and run ESLint across the repository",
+      "type": "shell",
+      "group": "test",
+      "command": "pnpm lint",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": ["$eslint-stylish"]
+    },
+    {
+      "label": "[Core] Check all",
+      "detail": "Build, lint, format check, header check & test (as run by CI)",
+      "type": "shell",
+      "group": "test",
+      "command": "pnpm check:all",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": ["$tsc", "$eslint-stylish"]
+    },
+    {
+      "label": "[Examples] Start Workflow Standalone (dev)",
+      "detail": "Watch sources and serve the standalone example against the Node server (WebSocket)",
+      "type": "shell",
+      "group": "none",
+      "command": "pnpm dev",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Examples] Start Workflow Standalone in browser mode (dev)",
+      "detail": "Watch sources and serve the standalone example with the server running as a web worker",
+      "type": "shell",
+      "group": "none",
+      "command": "pnpm dev:browser",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Examples] Start Workflow Standalone (external server)",
+      "detail": "Serve the built standalone example only; connect to a separately started server, e.g. the 'Debug Workflow Example Server (WebSocket)' launch config",
+      "type": "shell",
+      "group": "none",
+      "command": "pnpm standalone start --external-server",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "[Examples] Start Workflow example server (socket, dev)",
+      "detail": "Watch and run the Workflow example server on the default socket port (5007)",
+      "type": "shell",
+      "group": "none",
+      "command": "pnpm dev:server:socket",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -10,7 +10,7 @@
   "include": ["src", "lib", "css", "app"],
   "references": [
     {
-      "path": "../../packages/client"
+      "path": "../../packages/client/client"
     },
     {
       "path": "../workflow-glsp"

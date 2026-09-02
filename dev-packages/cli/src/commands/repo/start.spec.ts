@@ -18,15 +18,7 @@ import { describe, it, beforeEach, afterEach, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { cleanupTempDir, createTempDir } from '../../../tests/helpers/test-helper';
-import {
-    JAR_TARGET_DIR,
-    ClientStartCommand,
-    ServerNodeStartCommand,
-    ServerStartCommand,
-    TheiaStartCommand,
-    discoverJar,
-    resolveCommand
-} from './start';
+import { JAR_TARGET_DIR, ServerStartCommand, TheiaStartCommand, collectPassthroughArgs, discoverJar, resolveCommand } from './start';
 
 describe('start-action', () => {
     let tempDir: string;
@@ -104,12 +96,20 @@ describe('start-action', () => {
         });
     });
 
+    describe('collectPassthroughArgs', () => {
+        it('should return an empty string when there are no leftover args', () => {
+            expect(collectPassthroughArgs({ args: [] } as any)).toBe('');
+        });
+
+        it('should join leftover args with a leading space', () => {
+            expect(collectPassthroughArgs({ args: ['--external-server', '--no-open'] } as any)).toBe(' --external-server --no-open');
+        });
+    });
+
     describe('start commands allow passthrough args', () => {
         const commands = [
-            { name: 'ClientStartCommand', cmd: ClientStartCommand },
             { name: 'TheiaStartCommand', cmd: TheiaStartCommand },
-            { name: 'ServerStartCommand', cmd: ServerStartCommand },
-            { name: 'ServerNodeStartCommand', cmd: ServerNodeStartCommand }
+            { name: 'ServerStartCommand', cmd: ServerStartCommand }
         ];
 
         for (const { name, cmd } of commands) {

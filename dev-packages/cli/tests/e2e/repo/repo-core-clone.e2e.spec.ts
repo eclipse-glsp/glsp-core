@@ -22,7 +22,7 @@ import { currentBranch, git, isSshAvailable, resetRepo } from '../../helpers/rep
 import { cleanupTempDir, createTempDir } from '../../helpers/test-helper';
 
 describe('repo commands — core (clone)', function () {
-    const CORE_REPOS = ['glsp-client', 'glsp-server-node'] as const;
+    const CORE_REPOS = ['glsp-core'] as const;
     let workDir: string;
 
     beforeAll(function () {
@@ -50,9 +50,9 @@ describe('repo commands — core (clone)', function () {
         it('should clone a single repo via scoped command', function () {
             const singleDir = createTempDir();
             try {
-                const result = runCli(['repo', 'glsp-client', 'clone', '-d', singleDir]);
+                const result = runCli(['repo', 'glsp-core', 'clone', '-d', singleDir]);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
-                expect(fs.existsSync(path.join(singleDir, 'glsp-client', 'package.json'))).toBe(true);
+                expect(fs.existsSync(path.join(singleDir, 'glsp-core', 'package.json'))).toBe(true);
             } finally {
                 cleanupTempDir(singleDir);
             }
@@ -61,10 +61,10 @@ describe('repo commands — core (clone)', function () {
         it.skipIf(!isSshAvailable())('should clone with --protocol ssh via scoped command', function () {
             const singleDir = createTempDir();
             try {
-                const result = runCli(['repo', 'glsp-client', 'clone', '-d', singleDir, '-p', 'ssh']);
+                const result = runCli(['repo', 'glsp-core', 'clone', '-d', singleDir, '-p', 'ssh']);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
 
-                const repoDir = path.join(singleDir, 'glsp-client');
+                const repoDir = path.join(singleDir, 'glsp-core');
                 expect(fs.existsSync(repoDir)).toBe(true);
                 const remoteUrl = git('remote get-url origin', repoDir);
                 expect(remoteUrl).toContain('git@github.com:');
@@ -76,11 +76,11 @@ describe('repo commands — core (clone)', function () {
         it('should clone with --branch via scoped command', function () {
             const singleDir = createTempDir();
             try {
-                const result = runCli(['repo', 'glsp-client', 'clone', '-d', singleDir, '-b', 'master']);
+                const result = runCli(['repo', 'glsp-core', 'clone', '-d', singleDir, '-b', 'main']);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
 
-                const repoDir = path.join(singleDir, 'glsp-client');
-                expect(currentBranch(repoDir)).toBe('master');
+                const repoDir = path.join(singleDir, 'glsp-core');
+                expect(currentBranch(repoDir)).toBe('main');
             } finally {
                 cleanupTempDir(singleDir);
             }
@@ -89,11 +89,11 @@ describe('repo commands — core (clone)', function () {
         it('should clone with positional repo filter', function () {
             const filterDir = createTempDir();
             try {
-                const result = runCli(['repo', 'clone', 'glsp-client', '-d', filterDir]);
+                const result = runCli(['repo', 'clone', 'glsp-core', '-d', filterDir]);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
 
-                expect(fs.existsSync(path.join(filterDir, 'glsp-client'))).toBe(true);
-                expect(fs.existsSync(path.join(filterDir, 'glsp-server-node'))).toBe(false);
+                expect(fs.existsSync(path.join(filterDir, 'glsp-core'))).toBe(true);
+                expect(fs.existsSync(path.join(filterDir, 'glsp-theia-integration'))).toBe(false);
             } finally {
                 cleanupTempDir(filterDir);
             }
@@ -102,17 +102,17 @@ describe('repo commands — core (clone)', function () {
         it('should handle --override rename', function () {
             const overrideDir = createTempDir();
             try {
-                runCli(['repo', 'glsp-client', 'clone', '-d', overrideDir]);
-                const marker = path.join(overrideDir, 'glsp-client', 'test-marker.txt');
+                runCli(['repo', 'glsp-core', 'clone', '-d', overrideDir]);
+                const marker = path.join(overrideDir, 'glsp-core', 'test-marker.txt');
                 fs.writeFileSync(marker, 'original');
 
-                const result = runCli(['repo', 'glsp-client', 'clone', '-d', overrideDir, '--override', 'rename']);
+                const result = runCli(['repo', 'glsp-core', 'clone', '-d', overrideDir, '--override', 'rename']);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
 
-                const entries = fs.readdirSync(overrideDir).filter(e => e.startsWith('glsp-client_'));
+                const entries = fs.readdirSync(overrideDir).filter(e => e.startsWith('glsp-core_'));
                 expect(entries).toHaveLength(1);
                 expect(fs.readFileSync(path.join(overrideDir, entries[0], 'test-marker.txt'), 'utf-8')).toBe('original');
-                expect(fs.existsSync(path.join(overrideDir, 'glsp-client', 'package.json'))).toBe(true);
+                expect(fs.existsSync(path.join(overrideDir, 'glsp-core', 'package.json'))).toBe(true);
             } finally {
                 cleanupTempDir(overrideDir);
             }
@@ -121,15 +121,15 @@ describe('repo commands — core (clone)', function () {
         it('should handle --override remove', function () {
             const overrideDir = createTempDir();
             try {
-                runCli(['repo', 'glsp-client', 'clone', '-d', overrideDir]);
-                const marker = path.join(overrideDir, 'glsp-client', 'test-marker.txt');
+                runCli(['repo', 'glsp-core', 'clone', '-d', overrideDir]);
+                const marker = path.join(overrideDir, 'glsp-core', 'test-marker.txt');
                 fs.writeFileSync(marker, 'original');
 
-                const result = runCli(['repo', 'glsp-client', 'clone', '-d', overrideDir, '--override', 'remove']);
+                const result = runCli(['repo', 'glsp-core', 'clone', '-d', overrideDir, '--override', 'remove']);
                 expect(result.exitCode, cliDiag(result)).toBe(0);
 
-                expect(fs.existsSync(path.join(overrideDir, 'glsp-client', 'test-marker.txt'))).toBe(false);
-                expect(fs.existsSync(path.join(overrideDir, 'glsp-client', 'package.json'))).toBe(true);
+                expect(fs.existsSync(path.join(overrideDir, 'glsp-core', 'test-marker.txt'))).toBe(false);
+                expect(fs.existsSync(path.join(overrideDir, 'glsp-core', 'package.json'))).toBe(true);
             } finally {
                 cleanupTempDir(overrideDir);
             }
@@ -143,21 +143,21 @@ describe('repo commands — core (clone)', function () {
             for (const repo of CORE_REPOS) {
                 resetRepo(path.join(workDir, repo));
                 try {
-                    git('checkout master', path.join(workDir, repo));
+                    git('checkout main', path.join(workDir, repo));
                 } catch {
-                    // repo may already be on master
+                    // repo may already be on main
                 }
             }
         });
 
         it('should switch branch via scoped command', function () {
-            const repoDir = path.join(workDir, 'glsp-client');
+            const repoDir = path.join(workDir, 'glsp-core');
             const origBranch = currentBranch(repoDir);
 
             git('checkout -b test-switch-branch', repoDir);
             git('checkout ' + origBranch, repoDir);
 
-            const result = runCli(['repo', 'glsp-client', 'switch', '-b', 'test-switch-branch', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'switch', '-b', 'test-switch-branch', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
             expect(currentBranch(repoDir)).toBe('test-switch-branch');
 
@@ -166,7 +166,7 @@ describe('repo commands — core (clone)', function () {
         });
 
         it('should warn when branch does not exist', function () {
-            const result = runCli(['repo', 'glsp-client', 'switch', '-b', 'nonexistent-branch-12345', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'switch', '-b', 'nonexistent-branch-12345', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
 
             const combined = result.stdout + result.stderr;
@@ -174,25 +174,25 @@ describe('repo commands — core (clone)', function () {
         });
 
         it('should fail without --force when repo has changes', function () {
-            const repoDir = path.join(workDir, 'glsp-client');
+            const repoDir = path.join(workDir, 'glsp-core');
             fs.writeFileSync(path.join(repoDir, 'dirty-marker.txt'), 'dirty');
             git('add dirty-marker.txt', repoDir);
 
-            const result = runCli(['repo', 'glsp-client', 'switch', '-b', 'master', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'switch', '-b', 'main', '-d', workDir]);
             expect(result.exitCode).not.toBe(0);
 
             resetRepo(repoDir);
         });
 
         it('should switch with --force despite dirty state', function () {
-            const repoDir = path.join(workDir, 'glsp-client');
+            const repoDir = path.join(workDir, 'glsp-core');
             const origBranch = currentBranch(repoDir);
             git('checkout -b test-force-branch', repoDir);
             git('checkout ' + origBranch, repoDir);
             fs.writeFileSync(path.join(repoDir, 'dirty-marker.txt'), 'dirty');
             git('add dirty-marker.txt', repoDir);
 
-            const result = runCli(['repo', 'glsp-client', 'switch', '-b', 'test-force-branch', '--force', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'switch', '-b', 'test-force-branch', '--force', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
             expect(currentBranch(repoDir)).toBe('test-force-branch');
 
@@ -216,16 +216,16 @@ describe('repo commands — core (clone)', function () {
             const result = runCli(['repo', 'pwd', '-d', workDir, '--raw']);
             expect(result.exitCode, cliDiag(result)).toBe(0);
             const lines = result.stdout.trim().split('\n');
-            expect(lines).toHaveLength(2);
+            expect(lines).toHaveLength(CORE_REPOS.length);
             for (const line of lines) {
                 expect(line).toMatch(/^glsp-\S+\t\//);
             }
         });
 
         it('should print path for a single repo via scoped command', function () {
-            const result = runCli(['repo', 'glsp-client', 'pwd', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'pwd', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
-            expect(result.stdout.trim()).toBe(path.resolve(workDir, 'glsp-client'));
+            expect(result.stdout.trim()).toBe(path.resolve(workDir, 'glsp-core'));
         });
     });
 
@@ -240,7 +240,7 @@ describe('repo commands — core (clone)', function () {
         });
 
         it('should print the last commit for a single repo via scoped command', function () {
-            const result = runCli(['repo', 'glsp-client', 'log', '-d', workDir]);
+            const result = runCli(['repo', 'glsp-core', 'log', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
             expect(result.stdout).toContain('commit');
         });

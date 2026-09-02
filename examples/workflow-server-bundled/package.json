@@ -15,7 +15,7 @@
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
   },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
@@ -42,9 +42,7 @@
   ],
   "scripts": {
     "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map",
-    "prepublishOnly": "pnpm -C ../workflow-server build",
-    "start": "node --enable-source-maps ./wf-glsp-server-node.js --port 5007",
-    "start:websocket": "node --enable-source-maps ./wf-glsp-server-node.js -w --port 8081"
+    "prepublishOnly": "pnpm -C ../workflow-server build"
   },
   "publishConfig": {
     "access": "public"

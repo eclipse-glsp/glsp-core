@@ -52,7 +52,7 @@ describe('releng version', () => {
         return {
             verbose: false,
             repoDir: tempDir,
-            repo: 'glsp-client',
+            repo: 'glsp-core',
             version,
             versionType: (version.endsWith('-next') ? 'next' : 'custom') as VersionType,
             workspacePackages

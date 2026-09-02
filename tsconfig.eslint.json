@@ -1,0 +1,14 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "packages/*/*/src",
+    "examples/*/src",
+    "dev-packages/*/src",
+    "dev-packages/*/tests",
+    "dev-packages/*/vite.config*.ts",
+    "vite.config.ts"
+  ]
+}

@@ -21,10 +21,11 @@ import { getRemoteUrl } from './git-util';
 
 export type GLSPRepo = (typeof GLSPRepo.choices)[number];
 export namespace GLSPRepo {
+    // `glsp-core` consolidates the former `glsp` (dev-packages), `glsp-client` and `glsp-server-node`
+    // repositories into a single pnpm workspace; it provides all @eclipse-glsp packages the
+    // integration repositories build against.
     export const choices = [
-        'glsp',
-        'glsp-server-node',
-        'glsp-client',
+        'glsp-core',
         'glsp-theia-integration',
         'glsp-vscode-integration',
         'glsp-eclipse-integration',
@@ -101,11 +102,11 @@ export function getGLSPDependencies(pkg: PackageHelper): string[] {
 // ── Repo presets & filtering ────────────────────────────────────────────────
 
 export const PRESETS: Record<string, GLSPRepo[]> = {
-    core: ['glsp-client', 'glsp-server-node'],
-    theia: ['glsp-client', 'glsp-server-node', 'glsp-theia-integration'],
-    vscode: ['glsp-client', 'glsp-server-node', 'glsp-vscode-integration'],
-    eclipse: ['glsp-client', 'glsp-server-node', 'glsp-server', 'glsp-eclipse-integration'],
-    playwright: ['glsp-client', 'glsp-server-node', 'glsp-theia-integration', 'glsp-vscode-integration', 'glsp-playwright'],
+    core: ['glsp-core'],
+    theia: ['glsp-core', 'glsp-theia-integration'],
+    vscode: ['glsp-core', 'glsp-vscode-integration'],
+    eclipse: ['glsp-core', 'glsp-server', 'glsp-eclipse-integration'],
+    playwright: ['glsp-core', 'glsp-theia-integration', 'glsp-vscode-integration', 'glsp-playwright'],
     all: [...GLSPRepo.choices]
 };
 

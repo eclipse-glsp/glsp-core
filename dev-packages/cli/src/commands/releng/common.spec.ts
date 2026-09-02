@@ -43,15 +43,15 @@ describe('common', () => {
 
     describe('GLSPRepo.deriveFromDirectory', () => {
         it('should derive repo name from HTTPS remote URL', () => {
-            vi.spyOn(gitUtil, 'getRemoteUrl').mockReturnValue('https://github.com/eclipse-glsp/glsp-client.git');
+            vi.spyOn(gitUtil, 'getRemoteUrl').mockReturnValue('https://github.com/eclipse-glsp/glsp-core.git');
             const result = GLSPRepo.deriveFromDirectory('/some/path');
-            expect(result).toBe('glsp-client');
+            expect(result).toBe('glsp-core');
         });
 
         it('should derive repo name from SSH remote URL', () => {
-            vi.spyOn(gitUtil, 'getRemoteUrl').mockReturnValue('git@github.com:eclipse-glsp/glsp-server-node.git');
+            vi.spyOn(gitUtil, 'getRemoteUrl').mockReturnValue('git@github.com:eclipse-glsp/glsp-theia-integration.git');
             const result = GLSPRepo.deriveFromDirectory('/some/path');
-            expect(result).toBe('glsp-server-node');
+            expect(result).toBe('glsp-theia-integration');
         });
 
         it('should return undefined for a non-GLSP repository', () => {
@@ -168,13 +168,13 @@ describe('common', () => {
 
     describe('VersionType.deriveVersion', () => {
         it('should return the custom version for npm repos', () => {
-            const options = { versionType: 'custom' as VersionType, repoDir: '/repo', repo: 'glsp-client' as const, verbose: false };
+            const options = { versionType: 'custom' as VersionType, repoDir: '/repo', repo: 'glsp-core' as const, verbose: false };
             const result = VersionType.deriveVersion(options, '99.0.0');
             expect(result).toBe('99.0.0');
         });
 
         it('should throw for invalid custom version on npm repos', () => {
-            const options = { versionType: 'custom' as VersionType, repoDir: '/repo', repo: 'glsp-client' as const, verbose: false };
+            const options = { versionType: 'custom' as VersionType, repoDir: '/repo', repo: 'glsp-core' as const, verbose: false };
             expect(() => VersionType.deriveVersion(options, 'not-semver')).toThrow(/Not a valid custom version/);
         });
 
@@ -186,14 +186,14 @@ describe('common', () => {
 
         it('should derive minor version from local package', () => {
             vi.spyOn(packageUtil, 'readPackage').mockReturnValue({ content: { version: '1.2.0' } } as unknown as PackageHelper);
-            const options = { versionType: 'minor' as VersionType, repoDir: '/repo', repo: 'glsp-client' as const, verbose: false };
+            const options = { versionType: 'minor' as VersionType, repoDir: '/repo', repo: 'glsp-core' as const, verbose: false };
             const result = VersionType.deriveVersion(options);
             expect(result).toBe('1.3.0');
         });
 
         it('should derive next version with -next suffix', () => {
             vi.spyOn(packageUtil, 'readPackage').mockReturnValue({ content: { version: '1.2.0' } } as unknown as PackageHelper);
-            const options = { versionType: 'next' as VersionType, repoDir: '/repo', repo: 'glsp-client' as const, verbose: false };
+            const options = { versionType: 'next' as VersionType, repoDir: '/repo', repo: 'glsp-core' as const, verbose: false };
             const result = VersionType.deriveVersion(options);
             expect(result).toBe('1.3.0-next');
         });
@@ -213,7 +213,7 @@ describe('common', () => {
 
         it('should read from package.json for npm repos', () => {
             vi.spyOn(packageUtil, 'readPackage').mockReturnValue({ content: { version: '1.5.0' } } as unknown as PackageHelper);
-            expect(getLocalVersion('/repo', 'glsp-client')).toBe('1.5.0');
+            expect(getLocalVersion('/repo', 'glsp-core')).toBe('1.5.0');
         });
     });
 
@@ -288,7 +288,7 @@ describe('common', () => {
         it('should extract the changelog section for the given version', () => {
             vi.spyOn(fileUtil, 'readFile').mockReturnValue(changelogContent);
             vi.spyOn(processUtil, 'exec').mockReturnValue('v1.0.0');
-            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-client' });
+            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' });
             expect(result).toContain('Added feature A');
             expect(result).toContain('Added feature B');
             expect(result).not.toContain('Initial release');
@@ -297,7 +297,7 @@ describe('common', () => {
         it('should append a full changelog link when a previous tag exists', () => {
             vi.spyOn(fileUtil, 'readFile').mockReturnValue(changelogContent);
             vi.spyOn(processUtil, 'exec').mockReturnValue('v1.0.0');
-            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-client' });
+            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' });
             expect(result).toContain('Full Changelog');
             expect(result).toContain('v1.0.0...v2.0.0');
         });
@@ -305,7 +305,7 @@ describe('common', () => {
         it('should throw when no section matches the version', () => {
             vi.spyOn(fileUtil, 'readFile').mockReturnValue(changelogContent);
             vi.spyOn(processUtil, 'exec').mockReturnValue('');
-            expect(() => getChangeLogChanges({ repoDir: '/repo', version: '9.9.9', repo: 'glsp-client' })).toThrow(
+            expect(() => getChangeLogChanges({ repoDir: '/repo', version: '9.9.9', repo: 'glsp-core' })).toThrow(
                 /No changelog section found/
             );
         });
@@ -313,7 +313,7 @@ describe('common', () => {
         it('should demote headings by one level', () => {
             vi.spyOn(fileUtil, 'readFile').mockReturnValue(changelogContent);
             vi.spyOn(processUtil, 'exec').mockReturnValue('');
-            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-client' });
+            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' });
             expect(result).toContain('## Features');
             expect(result).not.toContain('### Features');
         });
