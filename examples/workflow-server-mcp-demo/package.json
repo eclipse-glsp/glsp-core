@@ -7,16 +7,16 @@
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
   },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
   },
   "scripts": {
-    "build": "node esbuild.js",
+    "build": "node ./scripts/prepare-dist.mjs && node esbuild.js",
     "clean": "rimraf dist",
-    "prestart": "node ./scripts/prepare-dist.mjs && pnpm build",
+    "prestart": "pnpm build",
     "start": "npx -y serve -l 8000 ./dist"
   },
   "dependencies": {

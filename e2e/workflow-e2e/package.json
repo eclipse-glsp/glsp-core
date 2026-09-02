@@ -2,6 +2,14 @@
   "name": "@eclipse-glsp-examples/workflow-e2e",
   "version": "2.9.0-next",
   "description": "Shared page objects and integration-agnostic tests for the GLSP workflow example",
+  "keywords": [
+    "glsp",
+    "workflow",
+    "diagram",
+    "example",
+    "playwright",
+    "e2e"
+  ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
@@ -54,12 +62,12 @@
   },
   "dependencies": {
     "@eclipse-glsp/playwright": "workspace:*",
+    "dotenv": "^16.0.3",
     "ts-dedent": "^2.2.0"
   },
   "devDependencies": {
     "@estruyf/github-actions-reporter": "^1.7.0",
-    "@playwright/test": "^1.59.1",
-    "dotenv": "^16.0.3"
+    "@playwright/test": "^1.59.1"
   },
   "peerDependencies": {
     "@playwright/test": "^1.47.0"

@@ -1,0 +1,3 @@
+# Test resources must not be exported from the public barrel — they would pull the test
+# frameworks into consumers. Import them through their full path instead.
+test

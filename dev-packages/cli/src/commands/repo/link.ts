@@ -35,7 +35,7 @@ import { configureRepoEnv, formatError, getBuildOrder, isLeafRepo, resolveTarget
 
 // ── Action ──────────────────────────────────────────────────────────────────
 
-// Peer deps shared from glsp-client via pnpm `overrides` so they resolve to a single instance across linked
+// Peer deps shared from glsp-core via pnpm `overrides` so they resolve to a single instance across linked
 // repos (DI container/`TYPES`/`instanceof`). reflect-metadata is intentionally excluded: it dedupes via a
 // global registry, and overriding it breaks `types: ['reflect-metadata']` resolution in linked builds.
 export const SINGLETON_DEPS = ['sprotty', 'sprotty-protocol', 'vscode-jsonrpc', 'inversify'] as const;
@@ -47,14 +47,10 @@ const PNPM_INSTALL = 'pnpm install --no-frozen-lockfile';
 
 const WORKSPACE_YAML = 'pnpm-workspace.yaml';
 
-const LINKABLE_REPOS: readonly GLSPRepo[] = [
-    'glsp',
-    'glsp-client',
-    'glsp-server-node',
-    'glsp-theia-integration',
-    'glsp-vscode-integration',
-    'glsp-eclipse-integration'
-];
+const LINKABLE_REPOS: readonly GLSPRepo[] = ['glsp-core', 'glsp-theia-integration', 'glsp-vscode-integration', 'glsp-eclipse-integration'];
+
+/** The repository that provides the @eclipse-glsp packages and the shared singleton peer deps. */
+const PROVIDER_REPO: GLSPRepo = 'glsp-core';
 
 // Repos whose linkable pnpm workspace is not the repo root: glsp-eclipse-integration links its client/
 // tree (the server/ is Maven, not linked).
@@ -128,7 +124,7 @@ function packageRootOf(entryPath: string, name: string): string | undefined {
     return fallback;
 }
 
-/** Resolves `dep`'s package dir as seen from one of `fromDirs` (the copy glsp-client uses), or undefined. */
+/** Resolves `dep`'s package dir as seen from one of `fromDirs` (the copy glsp-core uses), or undefined. */
 export function resolveSingletonDir(fromDirs: string[], dep: string): string | undefined {
     for (const from of fromDirs) {
         try {
@@ -144,17 +140,17 @@ export function resolveSingletonDir(fromDirs: string[], dep: string): string | u
     return undefined;
 }
 
-// Collects the singletons as resolved within glsp-client. They are peers of the GLSP packages, so resolve
+// Collects the singletons as resolved within glsp-core. They are peers of the GLSP packages, so resolve
 // from those package dirs (which provide them), not the repo root.
-export function collectSingletonLinks(clientDir: string): Record<string, string> {
-    const fromDirs = [...getGLSPWorkspacePackages(clientDir).map(pkg => pkg.location), clientDir];
+export function collectSingletonLinks(providerDir: string): Record<string, string> {
+    const fromDirs = [...getGLSPWorkspacePackages(providerDir).map(pkg => pkg.location), providerDir];
     const links: Record<string, string> = {};
     for (const dep of SINGLETON_DEPS) {
         const dir = resolveSingletonDir(fromDirs, dep);
         if (dir) {
             links[dep] = dir;
         } else {
-            LOGGER.debug(`Singleton ${dep} not found in ${path.basename(clientDir)}, skipping`);
+            LOGGER.debug(`Singleton ${dep} not found in ${path.basename(providerDir)}, skipping`);
         }
     }
     return links;
@@ -227,8 +223,8 @@ export async function runLink(repos: GLSPRepo[], options: LinkActionOptions): Pr
         LOGGER.warn('No linkable repositories found.');
         return;
     }
-    if (!linkable.includes('glsp-client')) {
-        LOGGER.warn('glsp-client is not in the configured repos. Linking without glsp-client may not produce useful results.');
+    if (!linkable.includes(PROVIDER_REPO)) {
+        LOGGER.warn(`${PROVIDER_REPO} is not in the configured repos. Linking without ${PROVIDER_REPO} may not produce useful results.`);
     }
 
     validateReposExist(linkable, options.dir);
@@ -251,7 +247,7 @@ export async function runLink(repos: GLSPRepo[], options: LinkActionOptions): Pr
 
             // Consume the packages registered by repos earlier in the build order (plus the shared singletons).
             const links: Record<string, string> = { ...providedPackages };
-            if (repo !== 'glsp-client' && linkable.includes('glsp-client')) {
+            if (repo !== PROVIDER_REPO && linkable.includes(PROVIDER_REPO)) {
                 Object.assign(links, singletonLinks);
             }
             applyLinkOverrides(workspaceDir, links);
@@ -275,7 +271,7 @@ export async function runLink(repos: GLSPRepo[], options: LinkActionOptions): Pr
             if (!isLeafRepo(repo)) {
                 Object.assign(providedPackages, collectProvidedPackages(workspaceDir));
             }
-            if (repo === 'glsp-client') {
+            if (repo === PROVIDER_REPO) {
                 singletonLinks = collectSingletonLinks(workspaceDir);
             }
 

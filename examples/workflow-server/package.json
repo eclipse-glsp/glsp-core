@@ -15,7 +15,7 @@
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
   },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
@@ -49,10 +49,12 @@
     "build": "tsc -b && pnpm bundle",
     "bundle": "node esbuild.js",
     "clean": "rimraf lib *.tsbuildinfo",
-    "dev": "node esbuild.js --watch --run-node -- --port 5007",
-    "dev:ws": "node esbuild.js --watch --run-node -- -w --port 8081",
+    "dev": "node esbuild.js --watch --run-node -- -w --port 8081",
+    "dev:socket": "node esbuild.js --watch --run-node -- --port 5007",
     "generate:index": "glsp generateIndex src/browser src/common src/node -s -f",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "start": "node --enable-source-maps ../workflow-server-bundled/wf-glsp-server-node.js -w --port 8081",
+    "start:socket": "node --enable-source-maps ../workflow-server-bundled/wf-glsp-server-node.js --port 5007"
   },
   "dependencies": {
     "@eclipse-glsp/layout-elk": "workspace:*",

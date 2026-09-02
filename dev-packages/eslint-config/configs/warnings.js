@@ -77,10 +77,10 @@ module.exports = [
             '@typescript-eslint/no-shadow': 'warn',
 
             // eslint-plugin-import-x (renamed from import/)
-            'import-x/no-deprecated': 'warn',
-
-            // Replaces deprecation/deprecation
-            '@typescript-eslint/no-deprecated': 'warn'
+            // Reports cross-module use of `@deprecated` exports. Preferred over
+            // `@typescript-eslint/no-deprecated`, which also flags internal/local use of members that
+            // are intentionally kept for backwards compatibility — and is noticeably slower to run.
+            'import-x/no-deprecated': 'warn'
         }
     }
 ];

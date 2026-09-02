@@ -15,17 +15,14 @@
  ********************************************************************************/
 import type { GLSPPlaywrightOptions } from '@eclipse-glsp/playwright';
 import { type PlaywrightTestConfig, type ReporterDescription } from '@playwright/test';
-import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { baseConfig } from './configs/base.config';
-import { applyEnvDefaults } from './configs/env';
+import { applyEnvDefaults, loadEnv } from './configs/env';
 import { buildProjects, getActiveProjects } from './configs/project.config';
 import { buildWebServers } from './configs/webserver.config';
 
-// Anchored on this file's directory rather than the working directory: `dotenv.config()` without a
-// path reads `<cwd>/.env`, and the working directory differs depending on whether the tests are
-// started from the repository root, from this package, or from an IDE.
-dotenv.config({ path: path.resolve(__dirname, '..', '.env'), quiet: true });
+// The `.env` is shared by every e2e package in this workspace, so it lives one level up.
+loadEnv(path.resolve(__dirname, '..'));
 applyEnvDefaults();
 
 const activeProjects = getActiveProjects();

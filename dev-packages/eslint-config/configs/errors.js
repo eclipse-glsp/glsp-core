@@ -73,6 +73,9 @@ module.exports = [
             ],
             // eslint-plugin-import-x (renamed from import/)
             'import-x/export': 'off', // we have multiple exports due to namespaces, enums and classes that share the same name
+            // Redundant with the TypeScript compiler's own module/namespace resolution and a major
+            // lint-time cost (full type-graph walk); rely on tsc for this instead.
+            'import-x/namespace': 'off',
             // eslint-plugin-no-null
             'no-null/no-null': 'error',
             'no-unused-expressions': [

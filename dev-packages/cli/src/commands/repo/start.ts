@@ -31,7 +31,11 @@ export function discoverJar(repoDir: string): string {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function collectPassthroughArgs(cmd: Command): string {
+/**
+ * Collects the arguments commander did not consume (unknown options and excess operands) so they can be
+ * forwarded verbatim to the underlying package script, e.g. `--external-server` or `--no-open`.
+ */
+export function collectPassthroughArgs(cmd: Command): string {
     const raw = cmd.args;
     return raw.length > 0 ? ` ${raw.join(' ')}` : '';
 }
@@ -80,35 +84,13 @@ export const TheiaStartCommand = baseCommand()
         }
     });
 
-interface ClientStartCliOptions {
+interface ServerStartCliOptions {
     dir?: string;
-    browser: boolean;
+    port?: number;
+    socket: boolean;
     dryRun: boolean;
     verbose: boolean;
 }
-
-export const ClientStartCommand = baseCommand()
-    .name('start')
-    .allowUnknownOption(true)
-    .allowExcessArguments(true)
-    .description('Start the standalone example for glsp-client')
-    .option('-d, --dir <path>', 'Target directory where repos are cloned')
-    .option('--browser', 'Run in browser-only mode with WebWorker server', false)
-    .option('--dry-run', 'Print the resolved command instead of executing it', false)
-    .option('-v, --verbose', 'Verbose output', false)
-    .action(async (_cmdOptions: ClientStartCliOptions, thisCmd: Command) => {
-        const cli = thisCmd.opts<ClientStartCliOptions>();
-        configureRepoEnv(cli);
-
-        const dir = resolveWorkspaceDir(cli.dir);
-        const repoDir = path.resolve(dir, 'glsp-client');
-        const script = cli.browser ? 'start:browser' : 'start';
-        const passthrough = collectPassthroughArgs(thisCmd);
-        const resolved = resolveCommand(`${script}${passthrough}`, repoDir, cli.dryRun);
-        if (resolved) {
-            await execForeground(resolved, { verbose: cli.verbose });
-        }
-    });
 
 export const ServerStartCommand = baseCommand()
     .name('start')
@@ -120,8 +102,8 @@ export const ServerStartCommand = baseCommand()
     .option('--socket', 'Use socket connection instead of websocket', false)
     .option('--dry-run', 'Print the resolved command instead of executing it', false)
     .option('-v, --verbose', 'Verbose output', false)
-    .action(async (_cmdOptions: ServerNodeStartCliOptions, thisCmd: Command) => {
-        const cli = thisCmd.opts<ServerNodeStartCliOptions>();
+    .action(async (_cmdOptions: ServerStartCliOptions, thisCmd: Command) => {
+        const cli = thisCmd.opts<ServerStartCliOptions>();
         configureRepoEnv(cli);
 
         const dir = resolveWorkspaceDir(cli.dir);
@@ -139,38 +121,5 @@ export const ServerStartCommand = baseCommand()
             process.stdout.write(`${javaCmd}${passthrough}\n`);
         } else {
             await execForeground(`${javaCmd}${passthrough}`, { cwd: repoDir, verbose: cli.verbose });
-        }
-    });
-
-interface ServerNodeStartCliOptions {
-    dir?: string;
-    port?: number;
-    socket: boolean;
-    dryRun: boolean;
-    verbose: boolean;
-}
-
-export const ServerNodeStartCommand = baseCommand()
-    .name('start')
-    .allowUnknownOption(true)
-    .allowExcessArguments(true)
-    .description('Start the glsp-server-node GLSP server')
-    .option('-d, --dir <path>', 'Target directory where repos are cloned')
-    .option('-p, --port <port>', 'Port to start the server on')
-    .option('--socket', 'Use socket connection instead of websocket', false)
-    .option('--dry-run', 'Print the resolved command instead of executing it', false)
-    .option('-v, --verbose', 'Verbose output', false)
-    .action(async (_cmdOptions: ServerNodeStartCliOptions, thisCmd: Command) => {
-        const cli = thisCmd.opts<ServerNodeStartCliOptions>();
-        configureRepoEnv(cli);
-
-        const dir = resolveWorkspaceDir(cli.dir);
-        const repoDir = path.resolve(dir, 'glsp-server-node');
-        const script = cli.socket ? 'start' : 'start:websocket';
-        const portArg = cli.port ? ` --port ${cli.port}` : '';
-        const passthrough = collectPassthroughArgs(thisCmd);
-        const resolved = resolveCommand(`${script}${portArg}${passthrough}`, repoDir, cli.dryRun);
-        if (resolved) {
-            await execForeground(resolved, { verbose: cli.verbose });
         }
     });

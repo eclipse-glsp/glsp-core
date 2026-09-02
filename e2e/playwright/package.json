@@ -2,6 +2,18 @@
   "name": "@eclipse-glsp/playwright",
   "version": "2.9.0-next",
   "description": "Playwright-based testing framework for GLSP",
+  "keywords": [
+    "eclipse",
+    "graphics",
+    "diagram",
+    "modeling",
+    "visualization",
+    "glsp",
+    "diagram editor",
+    "playwright",
+    "testing",
+    "e2e"
+  ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {

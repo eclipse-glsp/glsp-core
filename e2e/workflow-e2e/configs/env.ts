@@ -13,8 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 import { GLSP_SERVER_TYPE_NODE } from '../src/server/server';
 
+/**
+ * Ports of the applications shipped by this workspace. Integration packages in other repositories
+ * host their own applications, so they pass their default to {@link getPort} instead of registering
+ * it here.
+ */
 const DEFAULT_PORTS: Record<string, number> = {
     GLSP_SERVER_PORT: 8081,
     STANDALONE_PORT: 8082,
@@ -26,8 +33,8 @@ const DEFAULT_PORTS: Record<string, number> = {
  * `process.env`. Call this from the `playwright.config.ts` before anything else reads them.
  *
  * Playwright re-evaluates the configuration in every worker, so this runs more than once per test
- * run and must be idempotent. Loading a `.env` file is deliberately left to the caller: where that
- * file lives is a property of the consuming repository, not of the shared suites.
+ * run and must be idempotent. Which `.env` file to read is deliberately left to the caller — where
+ * that file lives is a property of the consuming repository — see {@link loadEnv}.
  */
 export function applyEnvDefaults(): void {
     // `@eclipse-glsp/playwright` resolves the server type from `process.env` so that page objects
@@ -36,20 +43,41 @@ export function applyEnvDefaults(): void {
     process.env.GLSP_SERVER_TYPE ??= GLSP_SERVER_TYPE_NODE;
 }
 
-export function getPort(envVar: string): number {
+/**
+ * Loads a `.env` file into `process.env`.
+ *
+ * Anchored on an explicit directory rather than the working directory: `dotenv.config()` without a
+ * path reads `<cwd>/.env`, and the working directory differs depending on whether tests are started
+ * from the repository root, from the package, or from an IDE. Playwright also re-reads the
+ * configuration in every worker, so this runs more than once per test run and must be deterministic.
+ *
+ * @param envDir Directory holding the `.env` file
+ */
+export function loadEnv(envDir: string): void {
+    dotenv.config({ path: path.resolve(envDir, '.env'), quiet: true });
+}
+
+/**
+ * Resolves a port from `process.env`.
+ *
+ * @param envVar Name of the environment variable holding the port
+ * @param defaultPort Fallback for ports this workspace does not know about, i.e. applications hosted
+ * by an integration package in another repository
+ */
+export function getPort(envVar: string, defaultPort?: number): number {
     const val = process.env[envVar];
     if (val) {
         return parseInt(val, 10);
     }
-    const defaultPort = DEFAULT_PORTS[envVar];
-    if (defaultPort !== undefined) {
-        return defaultPort;
+    const fallback = defaultPort ?? DEFAULT_PORTS[envVar];
+    if (fallback !== undefined) {
+        return fallback;
     }
     throw new Error(`No default port for ${envVar}`);
 }
 
-export function getUrl(portEnvVar: string, urlPath: string = ''): string {
-    return `http://localhost:${getPort(portEnvVar)}${urlPath}`;
+export function getUrl(portEnvVar: string, urlPath: string = '', defaultPort?: number): string {
+    return `http://localhost:${getPort(portEnvVar, defaultPort)}${urlPath}`;
 }
 
 export function getEnv(parameter: string, log: boolean = true): string | undefined {
