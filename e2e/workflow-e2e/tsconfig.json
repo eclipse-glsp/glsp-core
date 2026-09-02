@@ -1,0 +1,14 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    // `rootDir: "."` keeps the src/tests split in the output, i.e. `src/**` -> `lib/src/**` and
+    // `tests/**` -> `lib/tests/**`. The Playwright projects point at `lib/tests`, and the relative
+    // imports inside those specs resolve into `lib/src`.
+    "composite": true,
+    "rootDir": ".",
+    "outDir": "lib",
+    "declarationMap": true
+  },
+  "include": ["src", "tests", "playwright.config.ts", "./configs/*.ts"],
+  "references": [{ "path": "../playwright" }]
+}

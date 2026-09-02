@@ -1,0 +1,11 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "lib",
+    // This package uses reflect-metadata (DI decorators); declared as a dependency.
+    "types": ["node", "reflect-metadata"]
+  },
+  "include": ["src"]
+}
