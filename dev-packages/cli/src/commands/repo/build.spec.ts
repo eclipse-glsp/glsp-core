@@ -53,8 +53,8 @@ describe('build-action', () => {
 
     describe('buildSingleRepo', () => {
         it('should run pnpm install and explicit build for standard repos', async () => {
-            createRepoDirs('glsp-client');
-            await buildSingleRepo('glsp-client', makeOptions());
+            createRepoDirs('glsp-core');
+            await buildSingleRepo('glsp-core', makeOptions());
             expect(execAsyncStub).toHaveBeenCalledTimes(2);
             expect(execAsyncStub.mock.calls[0][0]).toBe('pnpm install');
             expect(execAsyncStub.mock.calls[1][0]).toBe('pnpm run --if-present build');
@@ -98,35 +98,41 @@ describe('build-action', () => {
 
     describe('runBuildOrdered', () => {
         it('should build repos sequentially in dependency order', async () => {
-            createRepoDirs('glsp', 'glsp-client', 'glsp-server-node');
-            const failures = await runBuildOrdered(['glsp', 'glsp-client', 'glsp-server-node'], makeOptions());
+            createRepoDirs('glsp-core', 'glsp-vscode-integration', 'glsp-playwright');
+            const failures = await runBuildOrdered(['glsp-core', 'glsp-vscode-integration', 'glsp-playwright'], makeOptions());
             expect(failures).toBe(0);
             // pnpm install + build per repo
             expect(execAsyncStub).toHaveBeenCalledTimes(6);
         });
 
         it('should error if a repo directory is missing', async () => {
-            createRepoDirs('glsp');
+            createRepoDirs('glsp-core');
             try {
-                await runBuildOrdered(['glsp', 'glsp-client'], makeOptions());
+                await runBuildOrdered(['glsp-core', 'glsp-theia-integration'], makeOptions());
                 expect.fail('should have thrown');
             } catch (error) {
-                expect((error as Error).message).toContain('glsp-client');
+                expect((error as Error).message).toContain('glsp-theia-integration');
             }
         });
 
         it('should stop on first failure when failFast is true', async () => {
-            createRepoDirs('glsp', 'glsp-client', 'glsp-server-node');
+            createRepoDirs('glsp-core', 'glsp-vscode-integration', 'glsp-playwright');
             execAsyncStub.mockRejectedValueOnce(new Error('build failed'));
-            const failures = await runBuildOrdered(['glsp', 'glsp-client', 'glsp-server-node'], makeOptions({ failFast: true }));
+            const failures = await runBuildOrdered(
+                ['glsp-core', 'glsp-vscode-integration', 'glsp-playwright'],
+                makeOptions({ failFast: true })
+            );
             expect(failures).toBe(1);
             expect(execAsyncStub).toHaveBeenCalledTimes(1);
         });
 
         it('should continue on failure when failFast is false', async () => {
-            createRepoDirs('glsp', 'glsp-client', 'glsp-server-node');
+            createRepoDirs('glsp-core', 'glsp-vscode-integration', 'glsp-playwright');
             execAsyncStub.mockRejectedValueOnce(new Error('build failed'));
-            const failures = await runBuildOrdered(['glsp', 'glsp-client', 'glsp-server-node'], makeOptions({ failFast: false }));
+            const failures = await runBuildOrdered(
+                ['glsp-core', 'glsp-vscode-integration', 'glsp-playwright'],
+                makeOptions({ failFast: false })
+            );
             expect(failures).toBe(1);
             // first repo fails on install (1 call); the other two each run install + build (2+2)
             expect(execAsyncStub).toHaveBeenCalledTimes(5);

@@ -16,11 +16,12 @@
 // @ts-check
 const { spawn } = require('child_process');
 const esbuild = require('esbuild');
-const fs = require('fs');
 const path = require('path');
 
 const appRoot = path.resolve(__dirname, 'app');
-const serverDir = path.resolve(__dirname, 'server');
+// The web-worker GLSP server is built straight from the workflow-server sources (no registry
+// download, no copy step): esbuild compiles `src/browser/app.ts` into the app alongside the client.
+const workerEntry = path.resolve(__dirname, '..', 'workflow-server', 'src', 'browser', 'app.ts');
 
 const args = process.argv.slice(2);
 const isBrowser = args.includes('--browser');
@@ -31,8 +32,10 @@ const noOpen = args.includes('--no-open');
 
 // full-page live reload: subscribe to esbuild's change stream (served on the dev port). Over file://
 // there is no EventSource endpoint, so the guard turns this into a harmless no-op for production builds.
+// The same banner is prepended to the web-worker bundle; gate on `window` (absent in a Worker) so the
+// worker no-ops instead of calling the non-existent `WorkerLocation.reload`.
 const liveReloadBanner = {
-    js: ";(() => { if (typeof EventSource !== 'undefined') { new EventSource('/esbuild').addEventListener('change', () => location.reload()); } })();"
+    js: ";(() => { if (typeof window !== 'undefined' && typeof EventSource !== 'undefined') { new EventSource('/esbuild').addEventListener('change', () => location.reload()); } })();"
 };
 
 /**
@@ -58,16 +61,6 @@ const esbuildProblemMatcherPlugin = {
     }
 };
 
-// replaces CopyWebpackPlugin: the browser entry loads the worker via the stable 'wf-glsp-server-webworker.js' name
-function copyWebWorker() {
-    const source = path.resolve(serverDir, 'wf-glsp-server-web.js');
-    const target = path.resolve(appRoot, 'wf-glsp-server-webworker.js');
-    fs.copyFileSync(source, target);
-    if (fs.existsSync(source + '.map')) {
-        fs.copyFileSync(source + '.map', target + '.map');
-    }
-}
-
 // mirror webpack's DefinePlugin; only injected for the node/websocket entry
 const nodeDefine = {
     GLSP_SERVER_HOST: JSON.stringify(process.env.GLSP_SERVER_HOST || 'localhost'),
@@ -78,9 +71,17 @@ const nodeDefine = {
 
 /** @type {import('esbuild').BuildOptions} */
 const buildOptions = {
-    entryPoints: [path.resolve(__dirname, 'src', isBrowser ? 'browser/app.ts' : 'node/app.ts')],
+    // Browser mode bundles two outputs in one build: the client (`bundle.js`) and the GLSP server
+    // compiled from workflow-server's sources into the worker (`wf-glsp-server-webworker.js`). A single
+    // build context means a change to either side triggers one rebuild + one live-reload in dev.
+    entryPoints: isBrowser
+        ? [
+              { in: path.resolve(__dirname, 'src/browser/app.ts'), out: 'bundle' },
+              { in: workerEntry, out: 'wf-glsp-server-webworker' }
+          ]
+        : [path.resolve(__dirname, 'src/node/app.ts')],
     outdir: appRoot,
-    entryNames: 'bundle', // -> app/bundle.js + app/bundle.css
+    entryNames: isBrowser ? '[name]' : 'bundle', // -> app/bundle.js (+ app/bundle.css), app/wf-glsp-server-webworker.js
     assetNames: '[name]-[hash]', // -> app/codicon-<hash>.ttf, referenced relatively from bundle.css
     bundle: true,
     sourcemap: true,
@@ -101,26 +102,39 @@ function openBrowser(url) {
 }
 
 async function build() {
-    if (isBrowser) {
-        copyWebWorker();
-    }
     await esbuild.build(buildOptions);
 }
 
 // serve the app on the dev port; with `watch` it also rebuilds on change and injects the live-reload banner
 async function serve({ watch }) {
-    if (isBrowser) {
-        copyWebWorker();
-    }
-    const ctx = await esbuild.context(watch ? { ...buildOptions, banner: liveReloadBanner } : buildOptions);
+    // `ctx.watch()` starts its initial build asynchronously and resolves before that build finishes,
+    // so `ctx.rebuild()` does NOT guarantee no build is in flight. If we serve + open the browser
+    // right away, a warm (already-open) browser connects mid-build and esbuild fires a live-reload the
+    // instant the build finishes - the startup flicker. Gate the dev port on a *settled* build: expose
+    // it only once builds have been quiet briefly, so the browser always connects to a finished build.
+    let markSettled = () => {};
+    const settled = new Promise(resolve => (markSettled = resolve));
+    let settleTimer;
+    const buildSettleGate = {
+        name: 'build-settle-gate',
+        setup(build) {
+            build.onEnd(() => {
+                clearTimeout(settleTimer);
+                settleTimer = setTimeout(markSettled, 150);
+            });
+        }
+    };
+    const ctx = await esbuild.context(
+        watch ? { ...buildOptions, banner: liveReloadBanner, plugins: [...buildOptions.plugins, buildSettleGate] } : buildOptions
+    );
     if (watch) {
         await ctx.watch();
+        await settled; // wait for the initial build (and any immediate follow-ups) to fully finish
+    } else {
+        await ctx.rebuild();
     }
-    // finish a complete build before opening the dev port - otherwise the auto-opened browser can
-    // connect mid-build and the build's completion fires a live-reload `change` (a spurious blink).
-    await ctx.rebuild();
     const port = parseInt(process.env.CLIENT_PORT || (isBrowser ? '8083' : '8082'), 10);
-    // servedir === outdir: freshly built output is overlaid on the static files in app/ (diagram.html, example1.wf, worker)
+    // servedir === outdir: freshly built output is overlaid on the static files in app/ (diagram.html, example1.wf)
     const { port: servePort } = await ctx.serve({ servedir: appRoot, port });
     const url = `http://localhost:${servePort}/diagram.html${isMcp ? '?mcp' : ''}`;
     console.log(`Serving workflow-standalone at ${url}`);

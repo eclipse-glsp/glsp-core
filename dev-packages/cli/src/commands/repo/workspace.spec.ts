@@ -45,25 +45,25 @@ describe('workspace-action', () => {
 
     describe('generateWorkspaceContent', () => {
         it('should create folders with relative paths for each repo', () => {
-            const repos: GLSPRepo[] = ['glsp-client', 'glsp-server-node'];
+            const repos: GLSPRepo[] = ['glsp-core', 'glsp-theia-integration'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             expect(result.folders).toHaveLength(2);
-            expect(result.folders[0]).toEqual({ name: 'glsp-client', path: 'glsp-client' });
-            expect(result.folders[1]).toEqual({ name: 'glsp-server-node', path: 'glsp-server-node' });
+            expect(result.folders[0]).toEqual({ name: 'glsp-core', path: 'glsp-core' });
+            expect(result.folders[1]).toEqual({ name: 'glsp-theia-integration', path: 'glsp-theia-integration' });
         });
 
         it('should compute paths relative to custom output location', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const outputPath = path.join(tempDir, 'sub', 'dir', WORKSPACE_FILE_NAME);
 
             const result = generateWorkspaceContent(repos, tempDir, makeOptions({ outputPath }));
 
-            expect(result.folders[0].path).toBe(path.join('..', '..', 'glsp-client'));
+            expect(result.folders[0].path).toBe(path.join('..', '..', 'glsp-core'));
         });
 
         it('should include build, link, and unlink tasks', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             expect(result.tasks.version).toBe('2.0.0');
@@ -79,7 +79,7 @@ describe('workspace-action', () => {
         });
 
         it('should include Java build task when Java repos are present', () => {
-            const repos: GLSPRepo[] = ['glsp-client', 'glsp-server'];
+            const repos: GLSPRepo[] = ['glsp-core', 'glsp-server'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             const labels = result.tasks.tasks.map(t => t.label);
@@ -87,7 +87,7 @@ describe('workspace-action', () => {
         });
 
         it('should not include Java build task when no Java repos are present', () => {
-            const repos: GLSPRepo[] = ['glsp-client', 'glsp-server-node'];
+            const repos: GLSPRepo[] = ['glsp-core', 'glsp-theia-integration'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             const labels = result.tasks.tasks.map(t => t.label);
@@ -95,7 +95,7 @@ describe('workspace-action', () => {
         });
 
         it('should include preset build tasks for matching strict subsets', () => {
-            const repos: GLSPRepo[] = ['glsp-client', 'glsp-server-node', 'glsp-theia-integration'];
+            const repos: GLSPRepo[] = ['glsp-core', 'glsp-theia-integration', 'glsp-theia-integration'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             const labels = result.tasks.tasks.map(t => t.label);
@@ -103,7 +103,7 @@ describe('workspace-action', () => {
         });
 
         it('should include extension recommendations', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             expect(result.extensions.recommendations).toEqual([
@@ -114,7 +114,7 @@ describe('workspace-action', () => {
         });
 
         it('should have empty settings', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
             expect(result.settings).toEqual({});
@@ -123,7 +123,7 @@ describe('workspace-action', () => {
 
     describe('generateWorkspaceFile', () => {
         it('should write the workspace file to the dir by default', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const outputFile = generateWorkspaceFile(repos, tempDir, makeOptions());
 
             expect(outputFile).toBe(path.join(tempDir, WORKSPACE_FILE_NAME));
@@ -134,7 +134,7 @@ describe('workspace-action', () => {
         });
 
         it('should write to a custom output path', () => {
-            const repos: GLSPRepo[] = ['glsp-client'];
+            const repos: GLSPRepo[] = ['glsp-core'];
             const outputPath = path.join(tempDir, 'custom', 'my.code-workspace');
 
             const outputFile = generateWorkspaceFile(repos, tempDir, makeOptions({ outputPath }));
@@ -144,8 +144,8 @@ describe('workspace-action', () => {
         });
 
         it('should overwrite an existing workspace file', () => {
-            const repos1: GLSPRepo[] = ['glsp-client'];
-            const repos2: GLSPRepo[] = ['glsp-client', 'glsp-server-node'];
+            const repos1: GLSPRepo[] = ['glsp-core'];
+            const repos2: GLSPRepo[] = ['glsp-core', 'glsp-theia-integration'];
 
             generateWorkspaceFile(repos1, tempDir, makeOptions());
             generateWorkspaceFile(repos2, tempDir, makeOptions());

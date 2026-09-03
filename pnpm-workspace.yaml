@@ -1,0 +1,54 @@
+packages:
+    - 'dev-packages/*'
+    - 'packages/*/*'
+    - 'examples/*'
+
+auto-install-peers: false
+
+# Tooling (eslint, prettier, vitest, rimraf, @eclipse-glsp/*-config, ...) is provided
+# as transitive deps of @eclipse-glsp/dev and must resolve from the workspace root
+# (tsconfig `extends`, lint/test/build bins). Public-hoist only the dev tooling; app/runtime
+# deps stay strictly isolated. pnpm >=11 no longer reads non-auth settings from .npmrc, so
+# this lives here.
+publicHoistPattern:
+    - '@eclipse-glsp/*config*'
+    - '@eclipse-glsp/cli'
+    - 'eslint'
+    - 'eslint-*'
+    - '@eslint/*'
+    - '@stylistic/*'
+    - '@tony.ganchev/*'
+    - '@typescript-eslint/*'
+    - 'typescript-eslint'
+    - 'globals'
+    - 'prettier'
+    - 'prettier-plugin-*'
+    - 'vitest'
+    - '@vitest/*'
+    - 'rimraf'
+    # type stubs are compile-time-only dev tooling; hoist them all so `@types/<x>` resolves at the root
+    - '@types/*'
+
+# Force-resolve vulnerable transitive deps to patched versions (pnpm audit advisories).
+# All are minimum floors (>=), not forced downgrades — they only lift transitives that
+# resolve below the patched range.
+overrides:
+    # serialize-javascript XSS (GHSA-5c6j-r48x-rmvq high, GHSA-qj8w-gfj5-8c6v moderate)
+    serialize-javascript: '>=7.0.5'
+    # js-yaml special-char handling (GHSA-h67p-54hq-rp68)
+    js-yaml: '>=4.1.2'
+    # jsdiff ReDoS (GHSA-73rr-hh4g-fpgx)
+    diff: '>=8.0.3'
+    # shell-quote command injection (GHSA-g4rg-993r-mgx7)
+    shell-quote: '>=1.8.4'
+    # uuid bounds-check fix (GHSA-w5hq-g745-h8pq)
+    uuid: '>=11.1.1'
+
+# Deps allowed to run install/build scripts (pnpm >=11 replaces onlyBuiltDependencies).
+allowBuilds:
+    esbuild: true
+    unrs-resolver: true
+
+# Min age (minutes) of dependency versions to install — supply-chain hardening. 4320 = 72h.
+minimumReleaseAge: 4320
+minimumReleaseAgeIgnoreMissingTime: false

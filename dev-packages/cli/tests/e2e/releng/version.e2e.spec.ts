@@ -18,9 +18,9 @@ import { describe, it, beforeAll, afterEach, afterAll, expect } from 'vitest';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as YAML from 'yaml';
 import { runCli } from '../../helpers/cli-helper';
 import { shallowClone } from '../../helpers/clone-helper';
+import { findWorkspacePackageJsons } from '../../helpers/repo-helper';
 import { cleanupTempDir } from '../../helpers/test-helper';
 
 function git(args: string, cwd: string): string {
@@ -51,7 +51,7 @@ function isMavenAvailable(): boolean {
 
 // ── NPM standard repos ─────────────────────────────────────────────────────
 
-const NPM_REPOS = ['glsp', 'glsp-client', 'glsp-server-node', 'glsp-vscode-integration', 'glsp-playwright'] as const;
+const NPM_REPOS = ['glsp-core', 'glsp-vscode-integration', 'glsp-playwright'] as const;
 
 for (const repo of NPM_REPOS) {
     describe(`releng version — ${repo}`, function () {
@@ -100,13 +100,13 @@ for (const repo of NPM_REPOS) {
     });
 }
 
-// ── Additional tests on glsp-client (minor, verbose) ───────────────────────
+// ── Additional tests on glsp-core (minor, verbose) ─────────────────────────
 
-describe('releng version — glsp-client (extended)', function () {
+describe('releng version — glsp-core (extended)', function () {
     let repoDir: string;
 
     beforeAll(function () {
-        repoDir = shallowClone('glsp-client');
+        repoDir = shallowClone('glsp-core');
     });
 
     afterEach(function () {
@@ -278,44 +278,3 @@ describe.skipIf(!isMavenAvailable())('releng version — glsp-eclipse-integratio
         expect(serverPom).toMatch(/<version>\d+\.\d+\.\d+-SNAPSHOT<\/version>/);
     });
 });
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-/**
- * Reads the workspace package globs of a repo. pnpm repos declare them in `pnpm-workspace.yaml`;
- * legacy repos use the `workspaces` field in the root `package.json`.
- */
-function readWorkspaceGlobs(repoDir: string): string[] {
-    const pnpmWorkspace = path.join(repoDir, 'pnpm-workspace.yaml');
-    if (fs.existsSync(pnpmWorkspace)) {
-        const parsed = YAML.parse(fs.readFileSync(pnpmWorkspace, 'utf8')) as { packages?: string[] };
-        return parsed?.packages ?? [];
-    }
-    const rootPkg = readJson(path.join(repoDir, 'package.json'));
-    return Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : ((rootPkg.workspaces as { packages?: string[] })?.packages ?? []);
-}
-
-/**
- * Finds workspace package.json files (not the root) by resolving the workspace globs.
- */
-function findWorkspacePackageJsons(repoDir: string): string[] {
-    const results: string[] = [];
-    for (const pattern of readWorkspaceGlobs(repoDir)) {
-        // Expand simple glob patterns like "packages/*"
-        const base = pattern.replace(/\/?\*.*$/, '');
-        const fullBase = path.join(repoDir, base);
-        if (!fs.existsSync(fullBase)) {
-            continue;
-        }
-        const entries = fs.readdirSync(fullBase, { withFileTypes: true });
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                const pkgPath = path.join(fullBase, entry.name, 'package.json');
-                if (fs.existsSync(pkgPath)) {
-                    results.push(pkgPath);
-                }
-            }
-        }
-    }
-    return results;
-}

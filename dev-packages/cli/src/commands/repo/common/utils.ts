@@ -67,7 +67,7 @@ export function resolveWorkspaceDir(cliDir?: string): string {
  *
  * Accepts a `--dir` that points at the workspace (the common case) as well as one that already
  * points at the repository itself, so that callers passing `--dir <repo>` don't end up with the
- * repository segment duplicated (e.g. `.../glsp-server-node/glsp-server-node`).
+ * repository segment duplicated (e.g. `.../glsp-core/glsp-core`).
  */
 export function resolveRepoDir(repo: GLSPRepo, cliDir?: string): string {
     const workspaceDir = resolveWorkspaceDir(cliDir);
@@ -110,12 +110,12 @@ export function resolveTargetRepos(options: ResolveTargetReposOptions): { dir: s
 
 // ── Dependency graph ────────────────────────────────────────────────────────
 
+// `glsp-core` is the root of the npm dependency graph: it provides the dev-packages, the client and the
+// node server that every integration repository builds against.
 const DEPENDENCY_MAP: Partial<Record<GLSPRepo, GLSPRepo[]>> = {
-    'glsp-client': ['glsp'],
-    'glsp-server-node': ['glsp-client'],
-    'glsp-theia-integration': ['glsp-server-node'],
-    'glsp-vscode-integration': ['glsp-server-node'],
-    'glsp-eclipse-integration': ['glsp-client', 'glsp-server']
+    'glsp-theia-integration': ['glsp-core'],
+    'glsp-vscode-integration': ['glsp-core'],
+    'glsp-eclipse-integration': ['glsp-core', 'glsp-server']
 };
 
 export function getBuildOrder(repos: GLSPRepo[]): GLSPRepo[] {

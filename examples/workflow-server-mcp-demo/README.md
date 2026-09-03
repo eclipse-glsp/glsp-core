@@ -29,15 +29,15 @@ The Node path is additionally covered by the automated end-to-end spec at
 
 ## Running
 
-From the repository root:
+Build the workspace once so the web worker bundle exists, then serve the demo:
 
 ```bash
-pnpm start:mcp-demo
+pnpm build   # from the repository root; produces the bundled-web worker
+pnpm -C examples/workflow-server-mcp-demo start
 ```
 
-This builds the workflow server, copies the worker bundle from
-`@eclipse-glsp-examples/workflow-server-bundled-web`, builds the page-side bundle, and serves
-the directory on `http://localhost:8000/`.
+`start` copies the worker bundle from `@eclipse-glsp-examples/workflow-server-bundled-web`,
+builds the page-side bundle, and serves the directory on `http://localhost:8000/`.
 
 Open `http://localhost:8000/` in any modern browser. Step through the buttons
 top-to-bottom; the workflow auto-renders once MCP is initialized, and **Create task**

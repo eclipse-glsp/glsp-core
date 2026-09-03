@@ -298,8 +298,7 @@ describe('cli', () => {
 
         describe('subrepo commands', () => {
             const SHORT_ALIASES: Partial<Record<string, string>> = {
-                'glsp-client': 'client',
-                'glsp-server-node': 'server-node',
+                'glsp-core': 'core',
                 'glsp-theia-integration': 'theia',
                 'glsp-vscode-integration': 'vscode',
                 'glsp-eclipse-integration': 'eclipse',
@@ -395,47 +394,50 @@ describe('cli', () => {
 
             // ── Repo-specific extra commands ───────────────────────────
 
-            describe('glsp-client extras', () => {
-                const cmd = createSubrepoCommand('glsp-client');
-                const start = findSub(cmd, 'start');
+            describe('glsp-core extras', () => {
+                const cmd = createSubrepoCommand('glsp-core');
 
-                it('should have start command', () => {
-                    expect(subcommandNames(cmd)).toContain('start');
+                it('should contribute client and server component groups instead of a top-level start', () => {
+                    expect(subcommandNames(cmd)).toEqual(expect.arrayContaining(['client', 'server']));
+                    expect(subcommandNames(cmd)).not.toContain('start');
                 });
 
-                it('should have expected start options', () => {
-                    expect(optionLongs(start)).toEqual(expect.arrayContaining(['--dir', '--browser', '--dry-run', '--verbose']));
-                });
-            });
+                describe('client', () => {
+                    const client = findSub(cmd, 'client');
 
-            describe('glsp-server-node extras', () => {
-                const cmd = createSubrepoCommand('glsp-server-node');
-                const start = findSub(cmd, 'start');
+                    it('should have a start subcommand', () => {
+                        expect(subcommandNames(client)).toContain('start');
+                    });
 
-                it('should have start command', () => {
-                    expect(subcommandNames(cmd)).toContain('start');
-                });
-
-                it('should have expected start options', () => {
-                    expect(optionLongs(start)).toEqual(expect.arrayContaining(['--dir', '--socket', '--dry-run', '--verbose']));
+                    it('should have expected start options', () => {
+                        const start = findSub(client, 'start');
+                        expect(optionLongs(start)).toEqual(expect.arrayContaining(['--dir', '--browser', '--dry-run', '--verbose']));
+                    });
                 });
 
-                it('should have browser-bundle command', () => {
-                    expect(subcommandNames(cmd)).toContain('browser-bundle');
-                });
+                describe('server', () => {
+                    const server = findSub(cmd, 'server');
 
-                it('should have expected browser-bundle options', () => {
-                    const browserBundle = findSub(cmd, 'browser-bundle');
-                    expect(optionLongs(browserBundle)).toEqual(expect.arrayContaining(['--dir', '--verbose']));
-                });
+                    it('should have start, node-bundle and browser-bundle subcommands', () => {
+                        expect(subcommandNames(server)).toEqual(expect.arrayContaining(['start', 'node-bundle', 'browser-bundle']));
+                    });
 
-                it('should have node-bundle command', () => {
-                    expect(subcommandNames(cmd)).toContain('node-bundle');
-                });
+                    it('should have expected start options', () => {
+                        const start = findSub(server, 'start');
+                        expect(optionLongs(start)).toEqual(
+                            expect.arrayContaining(['--dir', '--port', '--socket', '--dry-run', '--verbose'])
+                        );
+                    });
 
-                it('should have expected node-bundle options', () => {
-                    const nodeBundle = findSub(cmd, 'node-bundle');
-                    expect(optionLongs(nodeBundle)).toEqual(expect.arrayContaining(['--dir', '--verbose']));
+                    it('should have expected browser-bundle options', () => {
+                        const browserBundle = findSub(server, 'browser-bundle');
+                        expect(optionLongs(browserBundle)).toEqual(expect.arrayContaining(['--dir', '--verbose']));
+                    });
+
+                    it('should have expected node-bundle options', () => {
+                        const nodeBundle = findSub(server, 'node-bundle');
+                        expect(optionLongs(nodeBundle)).toEqual(expect.arrayContaining(['--dir', '--verbose']));
+                    });
                 });
             });
 

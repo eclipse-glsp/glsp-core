@@ -18,12 +18,12 @@ import { Command } from 'commander';
 import { GLSPRepo, baseCommand } from '../../util';
 import { createScopedBuildCommand } from './build';
 import { createScopedCloneCommand } from './clone';
+import { CORE_COMPONENT_COMMANDS } from './core';
 import { createScopedLogCommand } from './log';
 import { TheiaOpenCommand } from './open';
 import { createScopedPwdCommand } from './pwd';
 import { createScopedRunCommand } from './run';
-import { BrowserBundleCommand, NodeBundleCommand } from './server-node';
-import { ClientStartCommand, ServerNodeStartCommand, ServerStartCommand, TheiaStartCommand } from './start';
+import { ServerStartCommand, TheiaStartCommand } from './start';
 import { createScopedSwitchCommand } from './switch';
 import {
     VscodePackageCommand,
@@ -35,8 +35,7 @@ import {
 } from './vscode';
 
 const SHORT_ALIASES: Partial<Record<GLSPRepo, string>> = {
-    'glsp-client': 'client',
-    'glsp-server-node': 'server-node',
+    'glsp-core': 'core',
     'glsp-theia-integration': 'theia',
     'glsp-vscode-integration': 'vscode',
     'glsp-eclipse-integration': 'eclipse',
@@ -45,8 +44,6 @@ const SHORT_ALIASES: Partial<Record<GLSPRepo, string>> = {
 };
 
 const START_COMMANDS: Partial<Record<GLSPRepo, Command>> = {
-    'glsp-client': ClientStartCommand,
-    'glsp-server-node': ServerNodeStartCommand,
     'glsp-server': ServerStartCommand,
     'glsp-theia-integration': TheiaStartCommand
 };
@@ -55,8 +52,10 @@ const OPEN_COMMANDS: Partial<Record<GLSPRepo, Command>> = {
     'glsp-theia-integration': TheiaOpenCommand
 };
 
+// glsp-core bundles several components in one repository, so instead of a single `start` it contributes
+// `client` and `server` command groups (see ./core.ts).
 const EXTRA_COMMANDS: Partial<Record<GLSPRepo, Command[]>> = {
-    'glsp-server-node': [BrowserBundleCommand, NodeBundleCommand],
+    'glsp-core': CORE_COMPONENT_COMMANDS,
     'glsp-vscode-integration': [
         VsixIdCommand,
         VsixPathCommand,

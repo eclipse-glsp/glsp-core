@@ -1,0 +1,10 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "lib",
+    "reactNamespace": "JSX"
+  },
+  "include": ["src"]
+}

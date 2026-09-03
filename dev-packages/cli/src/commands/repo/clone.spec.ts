@@ -48,87 +48,87 @@ describe('clone-action', () => {
 
     describe('cloneSingleRepo', () => {
         it('should call git clone with https URL', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions());
+            await cloneSingleRepo('glsp-core', makeOptions());
             expect(execStub).toHaveBeenCalledOnce();
             const cmd = execStub.mock.calls[0][0] as string;
             expect(cmd).toContain('git clone');
-            expect(cmd).toContain('https://github.com/eclipse-glsp/glsp-client.git');
-            expect(cmd).toContain(path.join(tempDir, 'glsp-client'));
+            expect(cmd).toContain('https://github.com/eclipse-glsp/glsp-core.git');
+            expect(cmd).toContain(path.join(tempDir, 'glsp-core'));
         });
 
         it('should call git clone with ssh URL', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ protocol: 'ssh' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ protocol: 'ssh' }));
             const cmd = execStub.mock.calls[0][0] as string;
-            expect(cmd).toContain('git@github.com:eclipse-glsp/glsp-client.git');
+            expect(cmd).toContain('git@github.com:eclipse-glsp/glsp-core.git');
         });
 
         it('should use fork org when --fork is set', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ fork: 'myuser' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ fork: 'myuser' }));
             const cmd = execStub.mock.calls[0][0] as string;
-            expect(cmd).toContain('myuser/glsp-client');
+            expect(cmd).toContain('myuser/glsp-core');
         });
 
         it('should add upstream remote when --fork is set', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ fork: 'myuser' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ fork: 'myuser' }));
             const upstreamCall = execStub.mock.calls.find(c => (c[0] as string).includes('remote add upstream'));
             expect(upstreamCall).toBeDefined();
-            expect(upstreamCall![0]).toContain('eclipse-glsp/glsp-client');
+            expect(upstreamCall![0]).toContain('eclipse-glsp/glsp-core');
         });
 
         it('should not add upstream if already present after clone', async () => {
-            vi.spyOn(forkUtils, 'getRemotes').mockReturnValue({ upstream: 'https://github.com/eclipse-glsp/glsp-client.git' });
-            await cloneSingleRepo('glsp-client', makeOptions({ fork: 'myuser' }));
+            vi.spyOn(forkUtils, 'getRemotes').mockReturnValue({ upstream: 'https://github.com/eclipse-glsp/glsp-core.git' });
+            await cloneSingleRepo('glsp-core', makeOptions({ fork: 'myuser' }));
             const upstreamCall = execStub.mock.calls.find(c => (c[0] as string).includes('remote add upstream'));
             expect(upstreamCall).toBeUndefined();
         });
 
         it('should call ensureFork when --fork is set', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ fork: 'myuser' }));
-            expect(vi.mocked(forkUtils.ensureFork)).toHaveBeenCalledExactlyOnceWith('myuser', 'glsp-client');
+            await cloneSingleRepo('glsp-core', makeOptions({ fork: 'myuser' }));
+            expect(vi.mocked(forkUtils.ensureFork)).toHaveBeenCalledExactlyOnceWith('myuser', 'glsp-core');
         });
 
         it('should not call ensureFork when --fork is not set', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions());
+            await cloneSingleRepo('glsp-core', makeOptions());
             expect(vi.mocked(forkUtils.ensureFork)).not.toHaveBeenCalled();
         });
 
         it('should include -b flag when --branch is set', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ branch: 'release/2.0' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ branch: 'release/2.0' }));
             const cmd = execStub.mock.calls[0][0] as string;
             expect(cmd).toContain('-b release/2.0');
         });
 
         it('should skip when target directory exists and no --override', async () => {
-            fs.mkdirSync(path.join(tempDir, 'glsp-client'));
-            const result = await cloneSingleRepo('glsp-client', makeOptions());
+            fs.mkdirSync(path.join(tempDir, 'glsp-core'));
+            const result = await cloneSingleRepo('glsp-core', makeOptions());
             expect(result).toBe(false);
             expect(execStub).not.toHaveBeenCalled();
         });
 
         it('should remove existing directory with --override remove', async () => {
-            const targetDir = path.join(tempDir, 'glsp-client');
+            const targetDir = path.join(tempDir, 'glsp-core');
             fs.mkdirSync(targetDir);
             fs.writeFileSync(path.join(targetDir, 'old.txt'), 'old');
-            await cloneSingleRepo('glsp-client', makeOptions({ override: 'remove' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ override: 'remove' }));
             expect(fs.existsSync(path.join(targetDir, 'old.txt'))).toBe(false);
             expect(execStub).toHaveBeenCalledOnce();
         });
 
         it('should rename existing directory with --override rename', async () => {
-            const targetDir = path.join(tempDir, 'glsp-client');
+            const targetDir = path.join(tempDir, 'glsp-core');
             fs.mkdirSync(targetDir);
             fs.writeFileSync(path.join(targetDir, 'marker.txt'), 'original');
-            await cloneSingleRepo('glsp-client', makeOptions({ override: 'rename' }));
-            const entries = fs.readdirSync(tempDir).filter(e => e.startsWith('glsp-client_'));
+            await cloneSingleRepo('glsp-core', makeOptions({ override: 'rename' }));
+            const entries = fs.readdirSync(tempDir).filter(e => e.startsWith('glsp-core_'));
             expect(entries).toHaveLength(1);
             expect(fs.readFileSync(path.join(tempDir, entries[0], 'marker.txt'), 'utf-8')).toBe('original');
         });
 
         it('should use gh repo clone for gh protocol', async () => {
-            await cloneSingleRepo('glsp-client', makeOptions({ protocol: 'gh' }));
+            await cloneSingleRepo('glsp-core', makeOptions({ protocol: 'gh' }));
             const cmd = execStub.mock.calls[0][0] as string;
             expect(cmd).toContain('gh repo clone');
-            expect(cmd).toContain('eclipse-glsp/glsp-client');
+            expect(cmd).toContain('eclipse-glsp/glsp-core');
         });
     });
 });
