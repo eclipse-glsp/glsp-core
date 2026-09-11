@@ -1,0 +1,18 @@
+# Placeholder. The real CodeQL analysis lands on `main` with the monorepo migration
+# (see the GLSP-1682 branches). The file has to exist on the default branch already, because
+# GitHub only schedules `cron` triggers from there.
+name: 'CodeQL'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '26 0 * * 4' # At 00:26 on Thursday
+
+jobs:
+  placeholder:
+    name: Placeholder
+    timeout-minutes: 5
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Placeholder
+        run: echo "CodeQL placeholder - the real analysis lands with the monorepo migration."

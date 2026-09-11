@@ -1,0 +1,31 @@
+# Placeholder. The real build/test/lint/e2e jobs land on `main` with the monorepo migration
+# (see the GLSP-1682 branches). The file has to exist on the default branch already, so that the
+# triggers below are registered and pull requests targeting `main` run the workflow.
+name: CI
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.vscode/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.vscode/**'
+
+jobs:
+  placeholder:
+    name: Placeholder
+    timeout-minutes: 5
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Placeholder
+        run: echo "CI placeholder - the real jobs land with the monorepo migration."
