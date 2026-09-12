@@ -1,8 +1,14 @@
 name: PR Preview Deploy
 
-# SECURITY: This workflow runs in a trusted context with write permissions.
-# The build step (pr-preview-build.yml) runs untrusted PR code without secrets.
-# This workflow only processes build artifacts and never executes PR-controlled code.
+# SECURITY: This workflow runs in a trusted context and holds the deployment token.
+# It is safe because:
+# 1. The build (pr-preview-build.yml) runs the untrusted pull request code without secrets
+# 2. This workflow only consumes the resulting artifact and never runs code from the pull request
+# 3. `GH_DEPLOY_TOKEN` is scoped to the separate `eclipse-glsp/glsp-previews` repository, so it
+#    cannot write to `glsp-core`, and the `GITHUB_TOKEN` has no write access to repository contents
+#
+# NOTE: Do not add steps that run scripts from the checked out repository. Doing so would let a
+# pull request author execute arbitrary code with access to the deployment token.
 
 on:
   workflow_run:
@@ -11,7 +17,7 @@ on:
 
 permissions:
   actions: read
-  contents: write
+  contents: read
   pull-requests: write
 
 concurrency:
@@ -19,7 +25,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  MAIN_URL: https://eclipse-glsp.github.io/glsp-core
+  MAIN_URL: https://eclipse-glsp.github.io/glsp-previews/glsp-core/main
+  PREVIEW_URL: https://eclipse-glsp.github.io/glsp-previews/glsp-core/pr-previews
+  DEPLOY_REPOSITORY: eclipse-glsp/glsp-previews
+  DEPLOY_BRANCH: previews
+  PREVIEW_DIR: glsp-core/pr-previews
 
 jobs:
   deploy:
@@ -87,9 +97,14 @@ jobs:
 
             Current `main` for comparison: [workflow diagram](${{ env.MAIN_URL }}/diagram.html) | [MCP demo](${{ env.MAIN_URL }}/mcp-demo/)
 
+      # Only needed because the deploy action expects to run inside a git repository. The checked
+      # out content is never used. `persist-credentials: false` keeps the `GITHUB_TOKEN` auth header
+      # from overriding the deployment token when pushing to the preview repository.
       - name: Checkout
         if: env.SUCCEEDED == 'true'
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
       - name: Download preview site
         if: env.SUCCEEDED == 'true'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -98,17 +113,22 @@ jobs:
           path: ./preview-site
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
+      # Stale files are deleted inside `target-folder` only, so the `main` deployment and the
+      # directories of the other GLSP repositories are left alone. `force: false` matters because
+      # the branch is shared: it rebases onto a concurrent deployment instead of overwriting it.
       - name: Deploy preview
         if: env.SUCCEEDED == 'true'
-        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
-        id: preview
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4.9.0
         with:
-          source-dir: ./preview-site
-          preview-branch: gh-pages
-          umbrella-dir: pr-previews
-          pr-number: ${{ steps.pr.outputs.number }}
-          action: deploy
-          comment: false
+          token: ${{ secrets.GH_DEPLOY_TOKEN }}
+          repository-name: ${{ env.DEPLOY_REPOSITORY }}
+          branch: ${{ env.DEPLOY_BRANCH }}
+          folder: ./preview-site
+          target-folder: ${{ env.PREVIEW_DIR }}/pr-${{ steps.pr.outputs.number }}
+          commit-message: Deploy preview for pull request ${{ steps.pr.outputs.number }}
+          force: false
+          git-config-name: github-actions[bot]
+          git-config-email: github-actions[bot]@users.noreply.github.com
       - name: Comment on PR
         if: env.SUCCEEDED == 'true'
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
@@ -120,5 +140,5 @@ jobs:
 
             | Demo | This pull request | Current `main` |
             | --- | --- | --- |
-            | Workflow diagram | [open](${{ steps.preview.outputs.deployment-url }}/diagram.html) | [open](${{ env.MAIN_URL }}/diagram.html) |
-            | MCP demo | [open](${{ steps.preview.outputs.deployment-url }}/mcp-demo/) | [open](${{ env.MAIN_URL }}/mcp-demo/) |
+            | Workflow diagram | [open](${{ env.PREVIEW_URL }}/pr-${{ steps.pr.outputs.number }}/diagram.html) | [open](${{ env.MAIN_URL }}/diagram.html) |
+            | MCP demo | [open](${{ env.PREVIEW_URL }}/pr-${{ steps.pr.outputs.number }}/mcp-demo/) | [open](${{ env.MAIN_URL }}/mcp-demo/) |
