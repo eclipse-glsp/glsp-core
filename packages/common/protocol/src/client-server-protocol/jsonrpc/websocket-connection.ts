@@ -47,7 +47,10 @@ export interface WebSocketWrapper extends Disposable {
  */
 export function wrap(socket: WebSocket): WebSocketWrapper {
     return {
-        send: content => socket.send(content),
+        // TypeScript 7's DOM lib narrows `WebSocket.send` to `string | Blob | BufferSource`, which rejects the
+        // wider `ArrayBufferLike` of the wrapper interface. Every value a GLSP writer hands in is a valid
+        // `BufferSource` at runtime, so narrow here instead of changing the public `WebSocketWrapper` signature.
+        send: content => socket.send(content as string | BufferSource),
         onMessage: cb => (socket.onmessage = event => cb(event.data)),
         onClose: cb => (socket.onclose = event => cb(event.code, event.reason)),
         onError: cb =>

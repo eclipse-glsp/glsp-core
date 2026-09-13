@@ -61,7 +61,7 @@ export interface AutoCompleteWidgetOptions {
     selectedSuggestionChanged?: (suggestion?: LabeledAction) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// oxlint-disable-next-line typescript/no-require-imports
 const configureAutocomplete: (settings: AutocompleteSettings<LabeledAction>) => AutocompleteResult = require('autocompleter');
 
 /**
@@ -216,7 +216,6 @@ export class AutoCompleteWidget {
     protected handleContainerMutations(mutations: MutationRecord[], selectionChanged: (action: LabeledAction | undefined) => void): void {
         const selectedElement = this.container.querySelector('.selected');
         // Trigger selection changed event
-        // eslint-disable-next-line no-null/no-null
         if (selectedElement !== null && selectedElement !== undefined) {
             const index = Array.from(this.container.children).indexOf(selectedElement);
             selectionChanged(this.contextActions?.[index]);

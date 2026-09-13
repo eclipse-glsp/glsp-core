@@ -119,7 +119,7 @@ export function generateWorkspaceContent(repos: GLSPRepo[], dir: string, options
             tasks
         },
         extensions: {
-            recommendations: ['dbaeumer.vscode-eslint', 'esbenp.prettier-vscode', 'DavidAnson.vscode-markdownlint']
+            recommendations: ['oxc.oxc-vscode', 'DavidAnson.vscode-markdownlint']
         }
     };
 }

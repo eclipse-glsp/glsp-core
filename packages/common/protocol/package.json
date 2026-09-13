@@ -3,20 +3,16 @@
   "version": "2.9.0-next",
   "description": "The protocol definition for client-server communication in GLSP",
   "keywords": [
-    "eclipse",
-    "graphics",
     "diagram",
-    "modeling",
-    "visualization",
+    "diagram editor",
+    "eclipse",
     "glsp",
-    "diagram editor"
+    "graphics",
+    "modeling",
+    "visualization"
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
@@ -28,19 +24,25 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "lib/index",
-  "types": "lib/index",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
   "files": [
     "lib",
     "src",
     "!**/*.spec.*",
     "!**/test/**"
   ],
+  "main": "lib/index",
+  "types": "lib/index",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf lib *.tsbuildinfo coverage",
     "generate:index": "glsp generateIndex src/di src -f -s",
-    "lint": "eslint ./src",
     "prepublishOnly": "pnpm build",
     "watch": "tsc -w"
   },
@@ -60,8 +62,5 @@
     "reflect-metadata": {
       "optional": true
     }
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

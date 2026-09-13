@@ -3,19 +3,15 @@
   "version": "2.9.0-next",
   "description": "Shared page objects and integration-agnostic tests for the GLSP workflow example",
   "keywords": [
-    "glsp",
-    "workflow",
     "diagram",
+    "e2e",
     "example",
+    "glsp",
     "playwright",
-    "e2e"
+    "workflow"
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
@@ -32,6 +28,17 @@
       "url": "https://me.big.tuwien.ac.at/"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
+  "files": [
+    "lib",
+    "src",
+    "configs"
+  ],
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/src/index.d.ts",
@@ -42,19 +49,14 @@
       "default": "./lib/configs/index.js"
     }
   },
-  "main": "lib/src/index.js",
-  "types": "lib/src/index.d.ts",
-  "files": [
-    "lib",
-    "src",
-    "configs"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "browsers": "playwright install chromium",
     "build": "tsc -b",
     "clean": "rimraf --glob lib tsconfig.tsbuildinfo playwright-report test-results",
     "generate:index": "glsp generateIndex src -f",
-    "lint": "eslint ./src ./tests ./configs",
     "test": "pnpm browsers && playwright test",
     "test:standalone": "pnpm test --project=standalone",
     "test:standalone-browser": "pnpm test --project=standalone-browser",
@@ -71,8 +73,5 @@
   },
   "peerDependencies": {
     "@playwright/test": "^1.47.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

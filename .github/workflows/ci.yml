@@ -76,13 +76,10 @@ jobs:
         with:
           node-version: 22.x
           cache: pnpm
-      - name: Create eslint json report
+      # Lints and type-checks without a prior build (oxlint resolves workspace packages through the tsconfig project
+      # references). Emits inline annotations for every finding and writes a Markdown table to the job summary.
+      - name: Lint
         run: pnpm lint:ci
-      - name: Create summary
-        if: always()
-        run: |
-          npm_config_yes=true npx github:10up/eslint-json-to-md#82ff16b --path ./eslint_report.json --output ./eslint_report.md
-          cat eslint_report.md >> $GITHUB_STEP_SUMMARY
   coverage:
     name: Coverage
     timeout-minutes: 60

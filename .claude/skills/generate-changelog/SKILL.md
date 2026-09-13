@@ -130,7 +130,7 @@ Pick the most fitting tag from the vocabulary (Step 1.2) based on PR title and b
 - Single space between `[tag]` and description text
 - Single space before PR link at end of line
 - PR links are mandatory, full URLs: `[#123](https://github.com/eclipse-glsp/glsp-core/pull/123)`
-- Prettier formats `CHANGELOG.md`; run `pnpm format` (or `npx prettier --write CHANGELOG.md`) after editing
+- oxfmt formats `CHANGELOG.md`; run `pnpm format` after editing
 
 **Wording:**
 

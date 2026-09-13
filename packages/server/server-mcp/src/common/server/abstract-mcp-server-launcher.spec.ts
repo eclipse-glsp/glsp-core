@@ -253,7 +253,6 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
         expect(response.status).toBe(400);
         const payload = (await response.json()) as { jsonrpc: string; error: { code: number; message: string }; id: unknown };
         expect(payload.jsonrpc).toBe('2.0');
-        // eslint-disable-next-line no-null/no-null
         expect(payload.id).toBe(null);
         expect(payload.error.code).toBe(-32000);
         expect(payload.error.message).toMatch(/No valid session ID/);

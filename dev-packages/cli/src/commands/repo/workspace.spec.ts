@@ -106,11 +106,7 @@ describe('workspace-action', () => {
             const repos: GLSPRepo[] = ['glsp-core'];
             const result = generateWorkspaceContent(repos, tempDir, makeOptions());
 
-            expect(result.extensions.recommendations).toEqual([
-                'dbaeumer.vscode-eslint',
-                'esbenp.prettier-vscode',
-                'DavidAnson.vscode-markdownlint'
-            ]);
+            expect(result.extensions.recommendations).toEqual(['oxc.oxc-vscode', 'DavidAnson.vscode-markdownlint']);
         });
 
         it('should have empty settings', () => {

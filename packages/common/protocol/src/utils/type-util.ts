@@ -27,7 +27,6 @@ export namespace AnyObject {
      * @returns The given object as {@link AnyObject} or `false`.
      */
     export function is(object: unknown): object is AnyObject {
-        // eslint-disable-next-line no-null/no-null
         return object !== null && typeof object === 'object';
     }
 }

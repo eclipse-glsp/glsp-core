@@ -100,7 +100,7 @@ export function workflowSuite<T extends WorkflowTestCases>(
                 // case would then report `suite.ts` instead of its own line. The body destructures
                 // no fixtures and none are `auto`, so no integration starts for a skipped case, and
                 // the annotation makes the reason visible during collection.
-                // eslint-disable-next-line no-empty-pattern
+                // oxlint-disable-next-line no-empty-pattern
                 const body = async ({}: WorkflowTestFixtures, testInfo: TestInfo): Promise<void> => testInfo.skip(true, skip);
                 return [title, { annotation: { type: 'skip', description: skip } }, body];
             }

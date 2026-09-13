@@ -7,5 +7,10 @@
     "reactNamespace": "JSX",
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../common/protocol"
+    }
+  ]
 }

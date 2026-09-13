@@ -4,9 +4,17 @@ packages:
     - 'examples/*'
     - 'e2e/*'
 
-auto-install-peers: false
+# Peers of the workspace packages (inversify, reflect-metadata, ...) are auto-installed. pnpm 11 only reads
+# the camelCase key here, the kebab-case `auto-install-peers` form is ignored.
+autoInstallPeers: true
 
-# Tooling (eslint, prettier, vitest, rimraf, @eclipse-glsp/*-config, ...) is provided
+# `@tony.ganchev/eslint-plugin-header` declares ESLint as a peer, but oxlint loads it as a JS plugin and ESLint is never
+# run (pnpm still auto-installs it, this only silences the peer check).
+peerDependencyRules:
+    ignoreMissing:
+        - eslint
+
+# Tooling (oxlint, oxfmt, vitest, rimraf, @eclipse-glsp/*-config, ...) is provided
 # as transitive deps of @eclipse-glsp/dev and must resolve from the workspace root
 # (tsconfig `extends`, lint/test/build bins). Public-hoist only the dev tooling; app/runtime
 # deps stay strictly isolated. pnpm >=11 no longer reads non-auth settings from .npmrc, so
@@ -14,16 +22,11 @@ auto-install-peers: false
 publicHoistPattern:
     - '@eclipse-glsp/*config*'
     - '@eclipse-glsp/cli'
-    - 'eslint'
-    - 'eslint-*'
-    - '@eslint/*'
-    - '@stylistic/*'
+    - 'oxlint'
+    - 'oxlint-tsgolint'
+    - '@oxlint-tsgolint/*'
     - '@tony.ganchev/*'
-    - '@typescript-eslint/*'
-    - 'typescript-eslint'
-    - 'globals'
-    - 'prettier'
-    - 'prettier-plugin-*'
+    - 'oxfmt'
     - 'vitest'
     - '@vitest/*'
     - 'rimraf'
@@ -51,7 +54,6 @@ overrides:
 # Deps allowed to run install/build scripts (pnpm >=11 replaces onlyBuiltDependencies).
 allowBuilds:
     esbuild: true
-    unrs-resolver: true
     # Playwright downloads browser binaries on install
     '@playwright/test': true
     playwright: true

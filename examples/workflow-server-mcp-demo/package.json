@@ -5,13 +5,13 @@
   "description": "Browser demo that drives the @eclipse-glsp/server-mcp portable Fetch handler against the workflow web server bundle.",
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
   },
   "scripts": {
     "build": "node ./scripts/prepare-dist.mjs && node esbuild.js",

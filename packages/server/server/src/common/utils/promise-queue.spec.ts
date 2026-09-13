@@ -16,7 +16,6 @@
 import { delay } from '../test/mock-util';
 
 import { beforeEach, describe, expect, it } from 'vitest';
-// eslint-disable-next-line import-x/no-deprecated
 import { PromiseQueue } from './promise-queue';
 
 // Helper types and functions that are needed for test setup
@@ -75,14 +74,11 @@ function newTestPromise(resolveTime: number): TestPromise {
     };
     return { state, promise };
 }
-
-// eslint-disable-next-line import-x/no-deprecated
 let queue = new PromiseQueue();
 
 // Test execution
 describe('test PromiseQueue', () => {
     beforeEach(() => {
-        // eslint-disable-next-line import-x/no-deprecated
         queue = new PromiseQueue();
     });
     it('enqueue - one element', async () => {

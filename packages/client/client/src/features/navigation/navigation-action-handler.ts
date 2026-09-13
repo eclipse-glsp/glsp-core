@@ -213,7 +213,7 @@ export class NavigationActionHandler implements IActionHandler {
     }
 
     protected containsArguments(args: Args | undefined): args is Args {
-        return args !== undefined && args !== undefined && Object.keys(args).length > 0;
+        return args !== undefined && Object.keys(args).length > 0;
     }
 
     protected navigateTo(target: SetResolvedNavigationTargetAction): void {

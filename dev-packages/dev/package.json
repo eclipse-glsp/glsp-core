@@ -3,15 +3,11 @@
   "version": "2.9.0-next",
   "description": "All-in-one meta package that provides the GLSP development and test configuration packages, as well as  the GLSP CLI package",
   "keywords": [
-    "eclipse",
-    "config"
+    "config",
+    "eclipse"
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
@@ -23,12 +19,16 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@eclipse-glsp/cli": "workspace:*",
     "@eclipse-glsp/config": "workspace:*",
     "@eclipse-glsp/config-test": "workspace:*"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

@@ -1,10 +1,12 @@
 {
-  "name": "@eclipse-glsp/config",
+  "name": "@eclipse-glsp/oxlint-config",
   "version": "2.9.0-next",
-  "description": "Meta package that provides TypeScript, oxlint and oxfmt configurations and common dev dependencies for GLSP projects",
+  "description": "Shared oxlint configuration for GLSP projects",
   "keywords": [
-    "config",
-    "eclipse"
+    "eclipse",
+    "glsp",
+    "linter",
+    "oxlint"
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
@@ -23,17 +25,26 @@
     "type": "git",
     "url": "https://github.com/eclipse-glsp/glsp-core.git"
   },
+  "files": [
+    "index.d.mts",
+    "index.mjs",
+    "oxlintrc.json"
+  ],
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": {
+      "types": "./index.d.mts",
+      "default": "./index.mjs"
+    },
+    "./oxlintrc.json": "./oxlintrc.json"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "@eclipse-glsp/oxfmt-config": "workspace:*",
-    "@eclipse-glsp/oxlint-config": "workspace:*",
-    "@eclipse-glsp/ts-config": "workspace:*",
-    "@tony.ganchev/eslint-plugin-header": "3.4.4",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "rimraf": "^6.1.3"
+  "peerDependencies": {
+    "@tony.ganchev/eslint-plugin-header": "^3.4.4",
+    "oxlint": "^1.82.0",
+    "oxlint-tsgolint": ">=7.0.2001"
   }
 }
