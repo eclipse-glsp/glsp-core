@@ -9,10 +9,6 @@
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
@@ -24,14 +20,18 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "./tsconfig.json",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
   "files": [
     "tsconfig.json"
   ],
-  "peerDependencies": {
-    "typescript": ">=5.5"
-  },
+  "main": "./tsconfig.json",
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "typescript": ">=6.0"
   }
 }

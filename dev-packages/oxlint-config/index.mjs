@@ -13,28 +13,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-// oxlint-disable-next-line no-restricted-imports -- this helper is the single sanctioned entry point for the 'uuid' dependency
-import { v4, validate } from 'uuid';
+import config from './oxlintrc.json' with { type: 'json' };
 
 /**
- * Generates a random RFC-4122 v4 UUID.
+ * The shared GLSP oxlint configuration as a plain object, for use in `extends` of an `oxlint.config.ts`.
  *
- * This is the single entry point for UUID creation across all GLSP components: routing every
- * caller through `@eclipse-glsp/protocol` keeps `uuid` an isolated, auditable dependency instead
- * of letting each package pull in (and pin) its own copy.
- *
- * @returns a newly generated v4 UUID
+ * `oxlintrc.json` is the single source of truth. The only adjustment made here is the copyright year in the
+ * template of the `header/header` rule: the JSON file carries the year of the last release, this module
+ * substitutes the current year so that `oxlint --fix` inserts up-to-date headers.
  */
-export function generateUuid(): string {
-    return v4();
-}
+const year = new Date().getFullYear();
+const [severity, style, [header]] = config.rules['header/header'];
 
-/**
- * Checks whether the given string is a well-formed RFC-4122 UUID.
- *
- * @param value the string to test
- * @returns `true` if {@link value} is a valid UUID
- */
-export function isUuid(value: string): boolean {
-    return validate(value);
-}
+export default {
+    ...config,
+    rules: {
+        ...config.rules,
+        'header/header': [
+            severity,
+            style,
+            [{ ...header, template: header.template.replace(/Copyright \(c\) \d{4}/, `Copyright (c) ${year}`) }]
+        ]
+    }
+};

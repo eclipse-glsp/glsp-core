@@ -89,7 +89,7 @@ export function deleteFile(filePath: string): void {
     try {
         const stats = fs.statSync(file);
         if (stats.isDirectory()) {
-            fs.rmdirSync(file, { recursive: true });
+            fs.rmSync(file, { recursive: true, force: true });
         } else {
             fs.unlinkSync(file);
         }

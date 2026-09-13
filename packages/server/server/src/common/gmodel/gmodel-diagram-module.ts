@@ -21,7 +21,7 @@ import { InstanceMultiBinding } from '../di/multi-binding';
 import { RequestClipboardDataActionHandler } from '../features/clipboard/request-clipboard-data-action-handler';
 import { GModelFactory, GModelFactoryNullImpl } from '../features/model/gmodel-factory';
 import { DefaultModelState, ModelState } from '../features/model/model-state';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line no-unused-vars
 import { OperationHandler, OperationHandlerConstructor } from '../operations/operation-handler';
 import { GModelApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 import { GModelChangeBoundsOperationHandler } from './change-bounds-operation-handler';

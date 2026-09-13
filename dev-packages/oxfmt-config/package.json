@@ -1,18 +1,15 @@
 {
-  "name": "@eclipse-glsp/prettier-config",
+  "name": "@eclipse-glsp/oxfmt-config",
   "version": "2.9.0-next",
-  "description": "Shared Prettier configuration for GLSP projects",
+  "description": "Shared oxfmt configuration for GLSP projects",
   "keywords": [
     "eclipse",
+    "formatter",
     "glsp",
-    "prettier"
+    "oxfmt"
   ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
-  },
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "author": {
     "name": "Eclipse GLSP"
@@ -24,11 +21,22 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
+  "files": [
+    "index.json"
+  ],
   "main": "index.json",
-  "dependencies": {
-    "prettier-plugin-packagejson": "^3.0.2"
+  "exports": {
+    ".": "./index.json",
+    "./index.json": "./index.json"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependencies": {
+    "oxfmt": ">=0.67.0"
   }
 }

@@ -33,8 +33,6 @@ e2e/.env
 *.jar
 
 *.tsbuildinfo
-eslint.xml
-eslint_report.json
 report.xml
 
 # Agent-specific files

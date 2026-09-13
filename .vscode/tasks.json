@@ -59,10 +59,10 @@
     },
     {
       "label": "[Core] Lint",
-      "detail": "Compile and run ESLint across the repository",
+      "detail": "Run oxlint (type-aware, with type checking) across the repository",
       "type": "shell",
       "group": "test",
-      "command": "pnpm lint",
+      "command": "pnpm lint --format stylish",
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
@@ -79,7 +79,7 @@
         "reveal": "always",
         "panel": "dedicated"
       },
-      "problemMatcher": ["$tsc", "$eslint-stylish"]
+      "problemMatcher": ["$tsc"]
     },
     {
       "label": "[Examples] Start Workflow Standalone (dev)",

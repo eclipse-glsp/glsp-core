@@ -61,7 +61,6 @@ export class FocusTrackerTool implements Tool {
         if (target instanceof HTMLElement) {
             const parent = this.parentWithAriaLabel(target);
             const textMessage = this.handleTextNode(target);
-            // eslint-disable-next-line no-null/no-null
             if (target.ariaLabel !== null) {
                 message = this.handleAriaLabel(target);
             } else {
@@ -92,7 +91,6 @@ export class FocusTrackerTool implements Tool {
     }
 
     protected handleAriaLabel(target: HTMLElement): string | undefined {
-        // eslint-disable-next-line no-null/no-null
         return target.ariaLabel === null ? undefined : target.ariaLabel;
     }
 
@@ -109,11 +107,9 @@ export class FocusTrackerTool implements Tool {
         let current = target.parentElement;
 
         while (
-            // eslint-disable-next-line no-null/no-null
             current !== null &&
             current !== document.body &&
             current !== document.getElementById(this.viewerOptions.baseDiv) &&
-            // eslint-disable-next-line no-null/no-null
             current.ariaLabel === null
         ) {
             current = current.parentElement;

@@ -149,7 +149,6 @@ export class KeyboardGrid extends GLSPAbstractUIExtension implements IActionHand
         let y = 0;
 
         const activeGridCell = document.getElementById(`keyboard-grid-item-${index}`);
-        // eslint-disable-next-line no-null/no-null
         if (activeGridCell !== null) {
             const positions = this.getCenterOfCell(activeGridCell);
             x = positions[0];

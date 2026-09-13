@@ -32,7 +32,6 @@ import { MouseListener, GModelElement } from '@eclipse-glsp/sprotty';
 export class SelectionClearingMouseListener extends MouseListener {
     override mouseDown(_target: GModelElement, event: MouseEvent): never[] {
         const selection = document.getSelection();
-        // eslint-disable-next-line no-null/no-null
         if (selection === null) {
             return [];
         }

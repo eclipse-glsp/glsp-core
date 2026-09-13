@@ -114,10 +114,8 @@ export function pickInitOptions(options: McpServerInitOptions): McpServerInitOpt
 
 /**
  * JSON-RPC 2.0 § 5 mandates `null` for error responses where the request id cannot be determined
- * (e.g., parse errors, batch-level rejection, missing session id). Centralized so the unavoidable
- * `null` literal lives behind one eslint exception instead of many.
+ * (e.g., parse errors, batch-level rejection, missing session id).
  */
-// eslint-disable-next-line no-null/no-null
 const JSON_RPC_NULL_ID = null;
 
 /**

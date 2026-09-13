@@ -38,8 +38,8 @@ The server targets Node, but every component is isomorphic and also provides a b
 ### `dev-packages`: shared development tooling
 
 - [`@eclipse-glsp/cli`](dev-packages/cli): Helpful scripts and commands for developing GLSP components and release engineering
-- [`@eclipse-glsp/config`](dev-packages/config), [`@eclipse-glsp/config-test`](dev-packages/config-test), [`@eclipse-glsp/dev`](dev-packages/dev): Shared TypeScript, ESLint, Prettier, and test configuration meta-packages
-- [`@eclipse-glsp/ts-config`](dev-packages/ts-config), [`@eclipse-glsp/eslint-config`](dev-packages/eslint-config), [`@eclipse-glsp/prettier-config`](dev-packages/prettier-config), [`@eclipse-glsp/vitest-config`](dev-packages/vitest-config): The individual shared configurations
+- [`@eclipse-glsp/config`](dev-packages/config), [`@eclipse-glsp/config-test`](dev-packages/config-test), [`@eclipse-glsp/dev`](dev-packages/dev): Shared TypeScript, oxlint, oxfmt, and test configuration meta-packages
+- [`@eclipse-glsp/ts-config`](dev-packages/ts-config), [`@eclipse-glsp/oxlint-config`](dev-packages/oxlint-config), [`@eclipse-glsp/oxfmt-config`](dev-packages/oxfmt-config), [`@eclipse-glsp/vitest-config`](dev-packages/vitest-config): The individual shared configurations
 
 These dev-packages provide every build, test and lint tool this repository uses. glsp-core bootstraps itself.
 
@@ -60,7 +60,7 @@ The Theia and VS Code integrations of the framework are tested in [`glsp-theia-i
 ### First time setup
 
 - Install [node.js](https://nodejs.org/) (requires Node v22.18+)
-- Install pnpm: <https://pnpm.io/installation> (use pnpm 11+); a recent pnpm automatically switches to the version pinned in the `packageManager` field
+- Install pnpm: <https://pnpm.io/installation> (use pnpm 12+); a recent pnpm automatically switches to the version pinned in the `packageManager` field
 - Clone this repository
 - Install dependencies: `pnpm i` or `pnpm i --frozen-lockfile`
 
@@ -74,6 +74,16 @@ The Theia and VS Code integrations of the framework are tested in [`glsp-theia-i
 - Clean (all packages): `pnpm clean`
 - Full validation (build + lint + format + headers + test): `pnpm check:all`
 - Auto-fix lint/format/headers: `pnpm fix:all`
+
+### Toolchain
+
+- **TypeScript 7** (`tsc -b`) compiles the workspace; the shared [`@eclipse-glsp/ts-config`](dev-packages/ts-config) uses `moduleResolution: bundler` with CommonJS output and requires TypeScript 6 or newer.
+- **oxlint** lints from the root only (`pnpm lint`); the rule set lives in [`@eclipse-glsp/oxlint-config`](dev-packages/oxlint-config) and the repository-specific import restrictions in `oxlint.config.mts`. Type-aware rules and the type check (`typeCheck`, via `oxlint-tsgolint`) resolve workspace packages to their sources through the tsconfig project references, so `pnpm lint` needs no prior build and also reports TypeScript compiler diagnostics.
+- **oxfmt** formats all sources, JSON, YAML, CSS and Markdown (`pnpm format`); the options live in [`@eclipse-glsp/oxfmt-config`](dev-packages/oxfmt-config) and are spread in `oxfmt.config.mts`.
+
+#### Editor support
+
+The [Oxc VS Code extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) provides lint diagnostics and format-on-save from the workspace `oxlint` and `oxfmt` binaries. The TypeScript 7 npm package contains the native compiler without a `tsserver`, so VS Code's built-in TypeScript features run on the editor's bundled TypeScript rather than the workspace install; type checking against the exact compiler version happens in `pnpm build` and `pnpm lint`. To use the native compiler for language features as well, install the TypeScript Native Preview extension and enable `js/ts.experimental.useTsgo`.
 
 ### GLSP CLI
 

@@ -274,9 +274,7 @@ export class HBoxLayouterExt extends HBoxLayouter {
             minHeight: 0,
             hGrab: false,
             vGrab: false,
-            // eslint-disable-next-line no-null/no-null
             prefHeight: null,
-            // eslint-disable-next-line no-null/no-null
             prefWidth: null
         };
     }
@@ -284,7 +282,6 @@ export class HBoxLayouterExt extends HBoxLayouter {
     protected filterContainerOptions(containerOptions: HBoxLayoutOptionsExt): HBoxLayoutOptionsExt {
         // Reset object-specific layout options to default before merging,
         // to make sure they won't be inherited (grab, prefSize)
-        // eslint-disable-next-line no-null/no-null
         const localOptions = { vGrab: false, hGrab: false, prefHeight: null, prefWidth: null };
         return { ...containerOptions, ...localOptions };
     }

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-/* eslint-disable @typescript-eslint/no-shadow */
+/* oxlint-disable no-shadow */
 
 import { Dimension, Point } from 'sprotty-protocol/lib/utils/geometry';
 import { equalUpTo } from './utils/math-util';
@@ -24,6 +24,7 @@ declare module 'sprotty-protocol/lib/utils/geometry' {
         /**
          * The smallest valid dimension with width, and height set to 0.
          */
+        // oxlint-disable-next-line no-unused-vars -- ambient declaration merged into the sprotty-protocol namespace; oxlint does not see the consumers
         const ZERO: Dimension;
 
         /**

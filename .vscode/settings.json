@@ -6,41 +6,40 @@
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always",
+    "source.fixAll.oxc": "always",
     "source.organizeImports": "always"
   },
-  "eslint.validate": ["javascript", "typescript"],
-  // Tooling is public-hoisted to the workspace root (see pnpm-workspace.yaml), so both resolve from there.
-  "prettier.prettierPath": "node_modules/prettier",
-  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  // The workspace compiles with TypeScript 7, whose npm package ships the native compiler only (no tsserver), so
+  // `js/ts.tsdk.path` cannot point at it. The editor uses its bundled TypeScript for language features; see the
+  // "Editor support" section of the root README.
   "search.exclude": {
     "**/node_modules": true,
     "**/lib": true
   },
   "task.autoDetect": "off",
   "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[yaml]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "markdownlint.config": {
     "MD007": {

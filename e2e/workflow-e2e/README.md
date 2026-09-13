@@ -4,7 +4,7 @@ This package contains code examples that demonstrate how to test diagram editors
 
 <details>
   <summary>Expand test list</summary>
-  
+
 | Feature                                                                              |      Standalone      | Theia Integration | VS Code Integration |
 | ------------------------------------------------------------------------------------ | :------------------: | :---------------: | :-----------------: |
 | Model Saving                                                                         |          -           |         -         |          -          |

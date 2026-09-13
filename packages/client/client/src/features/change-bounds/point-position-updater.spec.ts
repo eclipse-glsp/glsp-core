@@ -13,8 +13,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-/* eslint-disable import-x/no-deprecated */
-
 import { GModelElement } from '@eclipse-glsp/sprotty';
 import { describe, expect, it } from 'vitest';
 import { GridSnapper } from './../grid/grid-snapper';
