@@ -1,0 +1,16 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "resolveJsonModule": true,
+    "outDir": "lib",
+    "reactNamespace": "JSX"
+  },
+  "include": ["src", "src/**/*.json"],
+  "references": [
+    {
+      "path": "../glsp-sprotty"
+    }
+  ]
+}

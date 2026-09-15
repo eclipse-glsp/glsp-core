@@ -7,10 +7,10 @@
     "outDir": "lib",
     "esModuleInterop": true
   },
-  "include": ["src", "lib", "css", "app"],
+  "include": ["src"],
   "references": [
     {
-      "path": "../../packages/client"
+      "path": "../../packages/client/client"
     },
     {
       "path": "../workflow-glsp"

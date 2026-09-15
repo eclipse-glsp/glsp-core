@@ -1,7 +1,7 @@
 # Workflow Standalone Example
 
 Standalone browser application for the GLSP Workflow example diagram.
-This package supports two modes: a **Node** mode that connects to an external GLSP server via WebSocket (Node.js or Java), and a **Browser** mode that runs the GLSP server entirely in-browser as a Web Worker.
+The package supports two modes. Node mode connects to an external GLSP server over WebSocket, written in Node.js or Java. Browser mode runs the GLSP server in the browser as a Web Worker.
 
 ## Prerequisites
 
@@ -11,26 +11,18 @@ Build the GLSP client packages from the repository root:
 pnpm build
 ```
 
-## Node Mode (WebSocket)
+## Node mode (WebSocket)
 
-In this mode the client connects to an external GLSP server over a WebSocket. By default a pre-built Node.js server is downloaded and started, but this mode can also be used with a [Java-based GLSP server](https://github.com/eclipse-glsp/glsp-server#workflow-diagram-example).
+In this mode the client connects to a GLSP server over a WebSocket. By default `pnpm start` builds and starts the Node.js workflow server from this workspace (`@eclipse-glsp-examples/workflow-server`), but this mode also works with a [Java-based GLSP server](https://github.com/eclipse-glsp/glsp-server#workflow-diagram-example).
 
 ```bash
 pnpm start
 ```
 
-This downloads the GLSP server (on first run), starts it, and launches the webpack dev server on port **8082**.
+This starts the GLSP server (building its bundle on first run if needed) and launches the esbuild dev server on port 8082.
 The application opens at `http://localhost:8082/diagram.html`.
 
-To use a locally built server bundle:
-
-```bash
-pnpm start --external-server /path/to/wf-glsp-server-node.js
-```
-
-This copies the provided bundle, skips the npm download, and starts the server from it.
-
-To use your own GLSP server running from source (e.g. launched from your IDE), start the client without any built-in server:
+To use your own GLSP server (e.g. the Java server launched from your IDE), start the client without any built-in server:
 
 ```bash
 pnpm start --external-server
@@ -42,38 +34,32 @@ You can also configure the server port and host:
 pnpm start --port 9090 --host 0.0.0.0
 ```
 
-## Browser Mode (Web Worker)
+## Browser mode (Web Worker)
 
-In this mode the GLSP server is bundled as a Web Worker and runs directly in the browser. No external server process is needed.
+In this mode esbuild compiles the GLSP server into a Web Worker straight from the `workflow-server` sources, and it runs directly in the browser. No external server process is needed.
 
 ```bash
 pnpm start:browser
 ```
 
-This downloads the Web Worker server bundle (on first run) and launches the webpack dev server on port **8083**.
+This builds the client and the Web Worker server bundle and launches the esbuild dev server on port 8083.
 The application opens at `http://localhost:8083/diagram.html`.
 
-To use a locally built Web Worker server bundle instead of the published one:
+## Development (watch mode)
+
+For active development, the `dev` scripts watch the sources and serve the app with live reload:
 
 ```bash
-pnpm start:browser --external-server /path/to/wf-glsp-server-web.js
-```
-
-This copies the provided bundle into the `server/` directory and skips the npm download.
-
-## Development (Watch Mode)
-
-For active development, the `dev` scripts compile TypeScript in watch mode and start the webpack dev server with hot reloading:
-
-```bash
-# Node mode – watches sources, starts GLSP server, starts webpack dev server
+# Node mode: watch client and server sources, (re)start the GLSP server, serve the client
 pnpm dev
 
-# Browser mode – watches sources, starts webpack dev server
+# Browser mode: watch client and Web Worker server sources, serve the client
 pnpm dev:browser
 ```
 
-Changes to TypeScript sources are recompiled automatically. Reload the browser to pick up changes.
+The watchers pick up both client and server changes. In Node mode the server restarts and the client reconnects over the WebSocket. In browser mode esbuild rebuilds the client and the worker, and the page reloads.
+
+This also covers edits in the workspace packages the app bundles, such as `@eclipse-glsp/client` and `@eclipse-glsp/server`. The `dev` scripts run an incremental `tsc -b --watch` over the whole workspace alongside esbuild, so editing any package's `src/` recompiles its `lib/`, which the esbuild watchers then bundle and live-reload. esbuild resolves these packages from their compiled `lib/`, matching the production build.
 
 ## Building
 
@@ -85,23 +71,19 @@ pnpm build
 pnpm build:browser
 ```
 
-Both produce a `bundle.js` in the `app/` directory. The browser build additionally downloads the Web Worker server bundle and copies it into the app directory.
+Both produce a `bundle.js` in the `app/` directory. The browser build also compiles the Web Worker server bundle (`wf-glsp-server-webworker.js`) into the app directory from the `workflow-server` sources.
 
-## Additional Options
+## Additional options
 
 All `start` and `dev` scripts support the following flags:
 
-- `--external-server [path]` – Use an external server instead of the default bundled one.
-  With a **path**: copies the provided bundle and skips the npm download. In node mode the server is started from the copied bundle; in browser mode it is served as a Web Worker.
-  **Without a path** (Node mode only): skips the server download and startup entirely — you run the server yourself.
-- `--no-open` – Don't open the browser automatically
-- `--port <port>` – Set the GLSP server port (Node mode only, default: 8081)
-- `--host <host>` – Set the GLSP server host (Node mode only, default: localhost)
-- `--client-port <port>` – Set the webpack dev server port (default: 8082 in Node mode, 8083 in Browser mode)
+- `--external-server`: Node/WebSocket mode only. Skip starting the built-in workflow server. You run the GLSP server yourself, for example the Java workflow server or a Node server launched from an IDE, and the client connects to it over WebSocket.
+- `--no-open`: Don't open the browser automatically
+- `--port <port>`: Set the GLSP server port (Node mode only, default: 8081)
+- `--host <host>`: Set the GLSP server host (Node mode only, default: localhost)
+- `--client-port <port>`: Set the esbuild dev server port (default: 8082 in Node mode, 8083 in browser mode)
 
-The server bundle download can also be skipped by setting the `SKIP_DOWNLOAD=true` environment variable.
-
-## URL Parameters
+## URL parameters
 
 The running application reads the following query parameters from the diagram URL. They are independent and can be combined, e.g.:
 

@@ -4,17 +4,17 @@ Common shared configuration for Eclipse GLSP components that are implemented wit
 Provides a meta package that export common configuration objects for:
 
 - [Typescript](https://www.typescriptlang.org/) (`tsconfig.json`)
-- [ESLint](https://eslint.org/) (`.eslintrc`)
-- [Prettier](https://prettier.io/) (`.prettierrc`).
+- [oxlint](https://oxc.rs/docs/guide/usage/linter) (`oxlint.config.mts`)
+- [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (`oxfmt.config.mts`).
 
 The package is available via npm and is used by all GLSP components implemented with Typescript.
-ESLint and prettier are included as direct dependencies.
+oxlint and oxfmt are included as transitive dependencies of the configuration packages.
 
 ## Components
 
 - [`@eclipse-glsp/ts-config`](https://www.npmjs.com/package/@eclipse-glsp/ts-config): Shared Typescript configuration for GLSP projects
-- [`@eclipse-glsp/eslint-config`](https://www.npmjs.com/package/@eclipse-glsp/eslint-config): Shared ESLint configuration for GLSP projects
-- [`@eclipse-glsp/prettier-config`](https://www.npmjs.com/package/@eclipse-glsp/prettier-config): Shared Prettier configuration for GLSP projects
+- [`@eclipse-glsp/oxlint-config`](https://www.npmjs.com/package/@eclipse-glsp/oxlint-config): Shared oxlint configuration for GLSP projects
+- [`@eclipse-glsp/oxfmt-config`](https://www.npmjs.com/package/@eclipse-glsp/oxfmt-config): Shared oxfmt configuration for GLSP projects
 
 ## Install
 
@@ -42,37 +42,47 @@ In addition, a custom configuration for projects that use `mocha` is available:
 
 - `@eclipse-glsp/ts-config/mocha`
 
-### ESLint
+### oxlint
 
-**Create a `.eslintrc.js`**:
+**Create an `oxlint.config.mts` at the workspace root**:
 
-```javascript
-/** @type {import('eslint').Linter.Config} */
-module.exports = {
-    extends: '@eclipse-glsp',
-    parserOptions: {
-        tsconfigRootDir: __dirname,
-        project: 'tsconfig.json'
-    }
-};
+```typescript
+import glspConfig from '@eclipse-glsp/oxlint-config';
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({
+    extends: [glspConfig],
+    // Enables the type-aware rules of the shared configuration (requires `oxlint-tsgolint`, a dependency of the config package)
+    options: { typeAware: true },
+    ignorePatterns: ['**/lib', '**/dist', '**/*.d.ts']
+});
 ```
 
-### Prettier
-
-**Add to the `package.json`**:
+Projects that prefer a JSON configuration can extend the shared rules by path in a `.oxlintrc.json`:
 
 ```json
 {
-    // ...
-    "prettier": "@eclipse-glsp/prettier-config"
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "extends": ["./node_modules/@eclipse-glsp/oxlint-config/oxlintrc.json"],
+    "options": { "typeAware": true }
 }
 ```
 
-**Or add a `.prettierrc` file to the workspace root**:
+### oxfmt
 
-```json
-"@eclipse-glsp/prettier-config"
+**Create an `oxfmt.config.mts` at the workspace root**:
+
+```typescript
+import shared from '@eclipse-glsp/oxfmt-config' with { type: 'json' };
+import { defineConfig } from 'oxfmt';
+
+export default defineConfig({
+    ...shared,
+    ignorePatterns: ['lib/', 'dist/']
+});
 ```
+
+Format with `oxfmt` and verify with `oxfmt --check`.
 
 ## More information
 

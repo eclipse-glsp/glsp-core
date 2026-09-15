@@ -1,0 +1,50 @@
+/********************************************************************************
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+import { DefaultTypes, Point } from '@eclipse-glsp/protocol';
+import { GAlignable, GAlignableBuilder } from './galignable';
+import { GEdgeLayoutable, GEdgeLayoutableBuilder, GEdgePlacement } from './gedge-layoutable';
+import { GModelElementConstructor } from './gmodel-element';
+import { GShapeElement, GShapeElementBuilder } from './gshape-element';
+
+export class GLabel extends GShapeElement implements GAlignable, GEdgeLayoutable {
+    static builder<G extends GLabel = GLabel>(constructor?: GModelElementConstructor<G>): GLabelBuilder {
+        return new GLabelBuilder(constructor ?? GLabel).type(DefaultTypes.LABEL);
+    }
+
+    override type = DefaultTypes.LABEL;
+    text: string;
+    alignment: Point = Point.ORIGIN;
+    edgePlacement?: GEdgePlacement;
+    [GAlignable] = true;
+    [GEdgeLayoutable] = true;
+}
+
+export class GLabelBuilder<G extends GLabel = GLabel> extends GShapeElementBuilder<G> {
+    alignment(x: number, y: number): this;
+    alignment(alignment: Point): this;
+    alignment(xOrAlign: number | Point, y?: number): this {
+        return GAlignableBuilder.alignment(this, xOrAlign, y);
+    }
+
+    text(text: string): this {
+        this.proxy.text = text;
+        return this;
+    }
+
+    edgePlacement(placement: GEdgePlacement): this {
+        return GEdgeLayoutableBuilder.edgePlacement(this, placement);
+    }
+}

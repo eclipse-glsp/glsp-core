@@ -19,7 +19,7 @@ import { GLSPRepo, resolveRepoFilter } from './index';
 
 describe('repo-filter', () => {
     describe('resolveRepoFilter', () => {
-        const configuredRepos: GLSPRepo[] = ['glsp-client', 'glsp-server-node', 'glsp-theia-integration'];
+        const configuredRepos: GLSPRepo[] = ['glsp-core', 'glsp-theia-integration'];
 
         it('should return configured repos when no filter is specified', () => {
             const result = resolveRepoFilter(configuredRepos, {});
@@ -27,19 +27,19 @@ describe('repo-filter', () => {
         });
 
         it('should filter to specific repos with --repo', () => {
-            const result = resolveRepoFilter(configuredRepos, { repo: ['glsp-client'] });
-            expect(result).toEqual(['glsp-client']);
+            const result = resolveRepoFilter(configuredRepos, { repo: ['glsp-core'] });
+            expect(result).toEqual(['glsp-core']);
         });
 
         it('should allow repos not in config with --repo', () => {
-            const result = resolveRepoFilter(configuredRepos, { repo: ['glsp-playwright'] });
-            expect(result).toEqual(['glsp-playwright']);
+            const result = resolveRepoFilter(configuredRepos, { repo: ['glsp-vscode-integration'] });
+            expect(result).toEqual(['glsp-vscode-integration']);
         });
 
         it('should expand preset with --preset', () => {
-            const result = resolveRepoFilter(configuredRepos, { preset: 'core' });
-            expect(result).toContain('glsp-client');
-            expect(result).toContain('glsp-server-node');
+            const result = resolveRepoFilter(configuredRepos, { preset: 'theia' });
+            expect(result).toContain('glsp-core');
+            expect(result).toContain('glsp-theia-integration');
         });
 
         it('should throw for unknown preset', () => {

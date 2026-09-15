@@ -21,7 +21,13 @@
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
     "module": "commonjs",
-    "moduleResolution": "node",
+    // `node` (node10) resolution was removed in TypeScript 7; `bundler` is the documented upgrade path and
+    // additionally honours `exports` maps. Kept on `commonjs` output for the Node server and Vite/esbuild bundles.
+    "moduleResolution": "bundler",
+    // TypeScript 6 turned this check on by default, which rejects the CSS side-effect imports of the client
+    // packages (TS2882). Disabled so that the same tsconfig compiles under TypeScript 6 and 7; opt in later
+    // by adding an ambient `declare module '*.css'` to the consuming packages and removing this line.
+    "noUncheckedSideEffectImports": false,
     "target": "ES2023",
     "jsx": "react",
     "lib": ["ES2023", "dom"],

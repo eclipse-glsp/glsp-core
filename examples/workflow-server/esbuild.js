@@ -74,7 +74,7 @@ const nodeConfig = {
     outfile: resolve(bundledDir, 'wf-glsp-server-node.js'),
     platform: 'node',
     format: 'cjs',
-    target: 'node22',
+    target: 'node24',
     // `ws` requires these optional native deps in a try/catch; keep them external so the
     // graceful-fallback path works and esbuild does not error on the missing modules.
     external: ['bufferutil', 'utf-8-validate']
