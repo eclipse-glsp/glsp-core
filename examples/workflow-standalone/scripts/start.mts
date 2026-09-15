@@ -76,20 +76,16 @@ async function run(): Promise<void> {
     process.env.CLIENT_PORT = clientPort;
 
     if (isDev) {
-        // esbuild bundles the client and server from the workspace packages' compiled `lib/`, and
-        // nothing else regenerates `lib/` in dev. Run an incremental `tsc -b --watch` over the whole
-        // workspace so that editing any package's `src/` recompiles its `lib/`, which the esbuild
-        // watchers then pick up and live-reload (client) / restart (server). Without this, cross-package
-        // source edits do not reach the running app. `pnpm -w exec` runs tsc from the workspace root,
-        // where the root `tsconfig.json` references every package and example.
-        //
-        // Watch the parent directory rather than the file (tsc's default `useFsEvents` watches a file
-        // by inode). Editors save atomically - write a temp file, then rename it over the original -
-        // which creates a new inode; the default watch stays bound to the old, now-unlinked inode and
-        // silently stops re-emitting after the first edit. Watching the parent directory sees the
-        // rename and picks up every edit, without the CPU cost of polling every file.
-        const tscWatch = 'tsc -b --watch --preserveWatchOutput --watchFile useFsEventsOnParentDirectory';
-        commands.push({ command: `pnpm -w exec ${tscWatch}`, name: 'tsc' });
+        // esbuild bundles from the packages' compiled `lib/`, so source edits only reach the running
+        // app if something recompiles them: nodemon runs an incremental `tsc -b` (from the workspace
+        // root via `pnpm -w`) on every change. One-shot builds instead of `tsc -b --watch` because
+        // TypeScript 7's watch mode re-triggers on its own emit; plain directories instead of globs
+        // because nodemon's glob watching misses atomic editor saves. The ignores keep the build
+        // outputs from re-triggering the loop.
+        const tscBuild =
+            'nodemon --watch packages --watch examples --ext ts,tsx,json ' +
+            "--ignore '**/lib/**' --ignore 'examples/workflow-standalone/app/**' --delay 0.3 --exec 'tsc -b'";
+        commands.push({ command: `pnpm -w exec ${tscBuild}`, name: 'tsc' });
         prefixColors.push('blue');
     }
 

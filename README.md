@@ -59,7 +59,7 @@ The Theia and VS Code integrations of the framework are tested in [`glsp-theia-i
 
 ### First time setup
 
-- Install [node.js](https://nodejs.org/) (requires Node v22.18+)
+- Install [node.js](https://nodejs.org/) (requires Node v24+)
 - Install pnpm: <https://pnpm.io/installation> (use pnpm 12+); a recent pnpm automatically switches to the version pinned in the `packageManager` field
 - Clone this repository
 - Install dependencies: `pnpm i` or `pnpm i --frozen-lockfile`

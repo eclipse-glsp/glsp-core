@@ -41,8 +41,8 @@ This package contains code examples that demonstrate how to test diagram editors
 
 The following libraries/frameworks need to be installed on your system:
 
-- [Node.js](https://nodejs.org/en/) `>=22.18`
-- [pnpm](https://pnpm.io/installation) `>=11`
+- [Node.js](https://nodejs.org/en/) `>=24`
+- [pnpm](https://pnpm.io/installation) `>=12`
 
 Everything under test comes from this workspace.
 [`examples/workflow-standalone`](../../examples/workflow-standalone) provides the diagram client

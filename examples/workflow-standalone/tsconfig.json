@@ -7,7 +7,7 @@
     "outDir": "lib",
     "esModuleInterop": true
   },
-  "include": ["src", "lib", "css", "app"],
+  "include": ["src"],
   "references": [
     {
       "path": "../../packages/client/client"

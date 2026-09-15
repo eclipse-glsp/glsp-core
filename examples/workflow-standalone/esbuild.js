@@ -34,8 +34,18 @@ const noOpen = args.includes('--no-open');
 // there is no EventSource endpoint, so the guard turns this into a harmless no-op for production builds.
 // The same banner is prepended to the web-worker bundle; gate on `window` (absent in a Worker) so the
 // worker no-ops instead of calling the non-existent `WorkerLocation.reload`.
+//
+// Reload only when a non-sourcemap output changed: esbuild watches the original .ts(x) sources (it
+// reads them to fill the output map's `sourcesContent`), so an editor save rebuilds once *before*
+// the dev tsc has recompiled `lib/`. That early rebuild only updates the `.map`; the real reload
+// follows when tsc's fresh `lib/` changes the bundle itself.
 const liveReloadBanner = {
-    js: ";(() => { if (typeof window !== 'undefined' && typeof EventSource !== 'undefined') { new EventSource('/esbuild').addEventListener('change', () => location.reload()); } })();"
+    js:
+        ";(() => { if (typeof window !== 'undefined' && typeof EventSource !== 'undefined') {" +
+        " new EventSource('/esbuild').addEventListener('change', e => {" +
+        ' const { added, removed, updated } = JSON.parse(e.data);' +
+        " if ([...added, ...removed, ...updated].some(p => !p.endsWith('.map'))) { location.reload(); }" +
+        ' }); } })();'
 };
 
 /**

@@ -43,13 +43,14 @@
   },
   "devDependencies": {
     "@eclipse-glsp/dev": "workspace:*",
-    "@types/node": "22.x",
+    "@types/node": "24.x",
     "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14",
     "reflect-metadata": "^0.2.2",
     "typescript": "^7.0.2"
   },
   "engines": {
-    "node": ">=22.18",
+    "node": ">=24",
     "pnpm": ">=12"
   },
   "packageManager": "pnpm@12.4.0"

@@ -215,12 +215,25 @@ export class JsonrpcClientProxy implements GLSPClientProxy {
     initialize(clientConnection: MessageConnection, enableLogging = false): void {
         this.clientConnection = clientConnection;
         this.enableLogging = enableLogging;
+        // Sending on a closed or disposed connection throws. Session-scoped async work (e.g. the
+        // debounced live validation) can still dispatch client-bound actions after the client
+        // disconnected, so drop the reference and silently discard those actions instead of
+        // failing the dispatch with an unhandled rejection.
+        const clearConnection = (): void => {
+            this.clientConnection = undefined;
+        };
+        clientConnection.onClose(clearConnection);
+        clientConnection.onDispose(clearConnection);
     }
 
     process(message: ActionMessage): void {
+        if (!this.clientConnection) {
+            return;
+        }
         if (this.enableLogging) {
             console.log(`Send action '${message.action.kind}' to client '${message.clientId}'`);
         }
-        this.clientConnection?.sendNotification(JsonrpcGLSPClient.ActionMessageNotification, message);
+        // Catch the race where the connection goes down mid-send; the client is gone, the action obsolete.
+        this.clientConnection.sendNotification(JsonrpcGLSPClient.ActionMessageNotification, message).catch(() => undefined);
     }
 }
