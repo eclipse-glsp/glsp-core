@@ -71,9 +71,17 @@ export namespace VersionType {
     }
 }
 
-export function npmVersionExists(packageName: string, version: string): boolean {
+/**
+ * Checks whether the given package version already exists on npm. Lookup failures (e.g. network
+ * errors) are treated as "not published".
+ * @param packageName The npm package name
+ * @param version The exact version to check
+ * @param registry Optional custom registry URL (e.g. a local verdaccio for testing)
+ */
+export function npmVersionExists(packageName: string, version: string, registry?: string): boolean {
+    const registryArg = registry ? ` --registry ${registry}` : '';
     try {
-        const result = exec(`npm view ${packageName}@${version} version`, { silent: true }).trim();
+        const result = exec(`npm view ${packageName}@${version} version${registryArg}`, { silent: true }).trim();
         return result.trim() === version;
     } catch {
         return false;

@@ -59,6 +59,8 @@ describe('releng publish', () => {
         changedFiles?: string[];
         /** Version returned for `npm view <pkg> dist-tags.next` calls (default: not published) */
         distTagVersion?: string;
+        /** Packages whose exact target version already exists on npm (default: none) */
+        publishedVersions?: string[];
     }
 
     function stubGit(lastTag: string | undefined, commitCount: string, options: GitStubOptions = {}): void {
@@ -84,11 +86,18 @@ describe('releng publish', () => {
             if (/git diff --name-only/.test(cmd)) {
                 return (options.changedFiles ?? []).join('\n');
             }
-            if (/npm view/.test(cmd)) {
+            if (/npm view \S+ dist-tags\./.test(cmd)) {
                 if (!options.distTagVersion) {
                     throw new Error('404');
                 }
                 return options.distTagVersion;
+            }
+            if (/npm view \S+@\S+ version/.test(cmd)) {
+                const match = cmd.match(/npm view (.+)@(\S+) version/);
+                if (match && (options.publishedVersions ?? []).includes(match[1])) {
+                    return match[2];
+                }
+                throw new Error('404');
             }
             return undefined;
         });
@@ -166,14 +175,17 @@ describe('releng publish', () => {
             expect(execAsyncStub.mock.calls[0][0]).toContain('--dry-run');
         });
 
-        it('should pass a custom registry to pnpm publish', async () => {
+        it('should pass a custom registry to pnpm publish and the npm version lookups', async () => {
             createRootPackage('2.8.0-next');
             stubGit('v2.7.0', '7');
-            vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([]);
+            const pkgA = createPackage('packages/a', { name: '@eclipse-glsp/a', version: '2.8.0-next' });
+            vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
 
             await publish('next', makeOptions({ registry: 'http://localhost:4873' }));
 
             expect(execAsyncStub.mock.calls[0][0]).toContain('--registry http://localhost:4873');
+            const versionLookup = execStub.mock.calls.map(call => call[0] as string).find(cmd => /npm view \S+@\S+ version/.test(cmd));
+            expect(versionLookup).toContain('--registry http://localhost:4873');
         });
 
         it('should bump versions and print the publish command without publishing in interactive mode', async () => {
@@ -400,6 +412,53 @@ describe('releng publish', () => {
             expect(execAsyncStub.mock.calls[0][0]).toBe('pnpm publish -r --tag next --no-git-checks --report-summary');
         });
 
+        it('should skip packages whose canary version was already published by an earlier run over the same commit', async () => {
+            const { client } = createWorkspace();
+            stubGit('v2.7.0', '42', {
+                baselineAncestor: true,
+                changedFiles: ['packages/client/client/src/change.ts'],
+                distTagVersion: '2.8.0-next.30',
+                publishedVersions: ['@eclipse-glsp/client']
+            });
+
+            await publish('next', makeOptions());
+
+            const cmd = execAsyncStub.mock.calls[0][0] as string;
+            expect(cmd).toContain('--filter @eclipse-glsp-examples/workflow-glsp');
+            expect(cmd).not.toContain('--filter @eclipse-glsp/client');
+            // the skipped package still gets the canary version locally so the exact pins of its dependents resolve
+            expect(readVersion(client)).toBe('2.8.0-next.42');
+        });
+
+        it('should publish nothing on a re-run when all affected canary versions already exist', async () => {
+            createWorkspace();
+            stubGit('v2.7.0', '42', {
+                baselineAncestor: true,
+                changedFiles: ['packages/client/client/src/change.ts'],
+                distTagVersion: '2.8.0-next.30',
+                publishedVersions: ['@eclipse-glsp/client', '@eclipse-glsp-examples/workflow-glsp']
+            });
+
+            await publish('next', makeOptions());
+
+            expect(execAsyncStub).not.toHaveBeenCalled();
+        });
+
+        it('should skip already published canary versions in a full publish', async () => {
+            createWorkspace();
+            stubGit('v2.7.0', '42', { baselineAncestor: true, publishedVersions: ['@eclipse-glsp/protocol'] });
+
+            await publish('next', makeOptions({ full: true }));
+
+            const cmd = execAsyncStub.mock.calls[0][0] as string;
+            expect(cmd).not.toContain('--filter @eclipse-glsp/protocol');
+            expect(cmd).toContain('--filter @eclipse-glsp/sprotty');
+            expect(cmd).toContain('--filter @eclipse-glsp/client');
+            expect(cmd).toContain('--filter @eclipse-glsp/server');
+            expect(cmd).toContain('--filter @eclipse-glsp-examples/workflow-glsp');
+            expect(cmd).not.toContain('workflow-standalone');
+        });
+
         it('should pass package filters and --dry-run without writing versions in dry-run mode', async () => {
             const { client } = createWorkspace();
             stubGit('v2.7.0', '42', {
@@ -505,7 +564,8 @@ describe('releng publish', () => {
         it('should report and remove the pnpm publish summary', async () => {
             createRootPackage('2.8.0-next');
             stubGit('v2.7.0', '7');
-            vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([]);
+            const pkgA = createPackage('packages/a', { name: '@eclipse-glsp/a', version: '2.8.0-next' });
+            vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
             const summaryPath = path.join(tempDir, 'pnpm-publish-summary.json');
             execAsyncStub.mockImplementation(() => {
                 fs.writeFileSync(

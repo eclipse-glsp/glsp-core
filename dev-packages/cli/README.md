@@ -207,7 +207,9 @@ always forms one consistent, reproducible set. If an unaffected package has no p
 yet (e.g. a brand-new package), a full publish is performed instead. A change to the root
 `tsconfig.json` affects the compiled output of all packages and therefore also forces a full publish,
 as does a missing/invalid baseline or the `--full` flag. If no group is affected (e.g. docs- or CI-only
-changes), the command succeeds without publishing anything.
+changes), the command succeeds without publishing anything. Canary versions that already exist on the
+registry are skipped: the commit count only grows, so they can only stem from an earlier run over the
+same commit — this makes re-runs (e.g. to heal a partially failed publish) idempotent.
 
 `pnpm publish -r` does the publishing, so it rewrites `workspace:` dependency ranges to exact
 versions; npm provenance/trusted publishing (`NPM_CONFIG_PROVENANCE`) is preserved.
