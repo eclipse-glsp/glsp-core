@@ -115,6 +115,43 @@ function refExists(ref: string, path?: string): boolean {
     }
 }
 
+// refs are interpolated into shell commands (exec runs with shell: true), so restrict them to a safe charset
+const SAFE_REF_PATTERN = /^[A-Za-z0-9_./^~-]+$/;
+
+/**
+ * Checks whether the given ref resolves to a commit that is an ancestor of (or equal to) HEAD.
+ * @param ref A git ref (branch, tag, or commit). Refs with unsafe characters are rejected.
+ * @param path The path to the git repository. If not provided, the current working directory is used.
+ * @returns `true` if the ref exists and is an ancestor of HEAD, `false` otherwise.
+ */
+export function isAncestorCommit(ref: string, path?: string): boolean {
+    if (!SAFE_REF_PATTERN.test(ref)) {
+        return false;
+    }
+    try {
+        exec(`git merge-base --is-ancestor ${ref} HEAD`, { cwd: path, silent: true, fatal: false });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Returns the repo-relative paths of all files changed between the given ref and HEAD.
+ * @param since A git ref (branch, tag, or commit). Refs with unsafe characters are rejected.
+ * @param path The path to the git repository. If not provided, the current working directory is used.
+ * @throws If the ref contains unsafe characters.
+ */
+export function getChangedFilesSince(since: string, path?: string): string[] {
+    if (!SAFE_REF_PATTERN.test(since)) {
+        throw new Error(`Not a valid git ref: ${since}`);
+    }
+    return exec(`git diff --name-only ${since}..HEAD`, { cwd: path, silent: true })
+        .split('\n')
+        .map(file => file.trim())
+        .filter(file => file.length !== 0);
+}
+
 /**
  * Returns the commit message of the last commit
  *

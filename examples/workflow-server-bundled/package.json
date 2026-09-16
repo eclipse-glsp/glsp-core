@@ -46,5 +46,8 @@
   "scripts": {
     "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map",
     "prepublishOnly": "pnpm -C ../workflow-server build"
+  },
+  "devDependencies": {
+    "@eclipse-glsp-examples/workflow-server": "workspace:*"
   }
 }

@@ -32,7 +32,8 @@ import {
     getVersionFromPom,
     GLSPRepo,
     isGithubCLIAuthenticated,
-    isNextVersion
+    isNextVersion,
+    npmDistTagVersion
 } from './common';
 
 describe('common', () => {
@@ -119,6 +120,32 @@ describe('common', () => {
 
             const result = getGLSPDependencies(pkg);
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('npmDistTagVersion', () => {
+        it('should return the version published under the dist-tag', () => {
+            const execStub = vi.spyOn(processUtil, 'exec').mockReturnValue('2.8.0-next.30\n');
+            expect(npmDistTagVersion('@eclipse-glsp/client', 'next')).toBe('2.8.0-next.30');
+            expect(execStub.mock.calls[0][0]).toBe('npm view @eclipse-glsp/client dist-tags.next');
+        });
+
+        it('should return undefined when the package or dist-tag does not exist', () => {
+            vi.spyOn(processUtil, 'exec').mockImplementation(() => {
+                throw new Error('404');
+            });
+            expect(npmDistTagVersion('@eclipse-glsp/unknown', 'next')).toBeUndefined();
+        });
+
+        it('should return undefined for empty output', () => {
+            vi.spyOn(processUtil, 'exec').mockReturnValue('');
+            expect(npmDistTagVersion('@eclipse-glsp/client', 'next')).toBeUndefined();
+        });
+
+        it('should query a custom registry when provided', () => {
+            const execStub = vi.spyOn(processUtil, 'exec').mockReturnValue('2.8.0-next.30');
+            npmDistTagVersion('@eclipse-glsp/client', 'next', 'http://localhost:4873');
+            expect(execStub.mock.calls[0][0]).toContain('--registry http://localhost:4873');
         });
     });
 
