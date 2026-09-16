@@ -22,7 +22,7 @@ Options:
 
 Commands:
   checkHeaders [options] <rootDir>      Validates the copyright year range (end year) of license header files
-  updateNext|u [options] [rootDir]      Updates all `next` dependencies in GLSP project to the latest version
+  updateNext|u [options] [rootDir]      Updates all pinned `next` dependencies in a GLSP project to the currently published 'next' versions
   generateIndex [options] <rootDir...>  Generate index files in a given source directory.
   releng                                Commands for GLSP release engineering (Linux only, intended for CI/Maintainer use).
   repo                                  Multi-repository management for GLSP projects
@@ -62,11 +62,20 @@ Options:
 
 ## updateNext
 
+The `updateNext` command updates the cross-repo GLSP nightly dependencies of a downstream repository
+(e.g. the Theia or VS Code integration). Since GLSP nightlies are published as consistent exact-pinned
+sets, downstream repositories pin them explicitly too: every `@eclipse-glsp/*` / `@eclipse-glsp-examples/*`
+dependency with an exact next version (e.g. `2.9.0-next.3`) is rewritten in the `package.json` files to
+the version currently published under the `next` dist-tag, followed by a `pnpm install` to reconcile the
+lockfile. Every nightly bump is therefore an explicit, reviewable manifest diff. Legacy literal `next`
+(dist-tag) ranges are migrated to exact pins on the first run; exact next versions of non-GLSP packages
+are left alone.
+
 ```console
 $ glsp updateNext -h
 Usage: glsp updateNext|u [options] [rootDir]
 
-Updates all `next` dependencies in GLSP project to the latest version
+Updates all pinned `next` dependencies in a GLSP project to the currently published 'next' versions
 
 Arguments:
   rootDir        The repository root (default: "<cwd>")

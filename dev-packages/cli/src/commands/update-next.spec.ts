@@ -17,7 +17,6 @@
 import { describe, it, beforeEach, afterEach, expect, vi, type Mock } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as YAML from 'yaml';
 import { cleanupTempDir, createTempDir } from '../../tests/helpers/test-helper';
 import { PackageData, PackageHelper } from '../util';
 import * as gitUtil from '../util/git-util';
@@ -51,80 +50,114 @@ describe('updateNext', () => {
         return new PackageHelper(filePath, content.name);
     }
 
-    /** Runs updateNext and returns the pnpm-workspace.yaml content captured during the (first) install. */
-    async function runAndCaptureWorkspaceYaml(workspaceYamlPath: string): Promise<string> {
-        let captured: string | undefined;
-        execAsyncStub.mockImplementation(() => {
-            if (captured === undefined) {
-                captured = fs.readFileSync(workspaceYamlPath, 'utf8');
-            }
-            return Promise.resolve('');
-        });
-        await updateNext(tempDir, { verbose: false });
-        return captured ?? '';
+    function readManifest(pkg: PackageHelper): PackageData {
+        return JSON.parse(fs.readFileSync(pkg.filePath, 'utf8'));
     }
 
-    it('should pin next deps via pnpm-workspace.yaml overrides and install (without opportunistic updates)', async () => {
-        createPackage('.', { name: 'root', private: true });
-        const pkgA = createPackage('packages/a', { name: '@eclipse-glsp/a', dependencies: { '@eclipse-glsp/protocol': 'next' } });
-        vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
-        const workspaceYamlPath = path.join(tempDir, 'pnpm-workspace.yaml');
-        const originalYaml = "packages:\n    - 'packages/*'\n";
-        fs.writeFileSync(workspaceYamlPath, originalYaml);
+    /** Stubs `npm view <dep>@next version` lookups with the given versions by dependency name. */
+    function stubNextVersions(versions: Record<string, string>): void {
         execStub.mockImplementation((...args: any[]) => {
-            if (/npm view/.test(args[0])) {
-                return '2.8.0-next.6';
+            const match = (args[0] as string).match(/npm view (\S+)@next version/);
+            if (match) {
+                const version = versions[match[1]];
+                if (!version) {
+                    throw new Error('404');
+                }
+                return version;
             }
             return undefined;
         });
+    }
 
-        const yamlDuringInstall = await runAndCaptureWorkspaceYaml(workspaceYamlPath);
+    it('should update exact next pins of GLSP dependencies in the manifests and install', async () => {
+        const pkgA = createPackage('packages/a', {
+            name: '@example/a',
+            dependencies: { '@eclipse-glsp/protocol': '2.9.0-next.2', 'unrelated-dep': '^1.0.0' },
+            devDependencies: { '@eclipse-glsp/cli': '2.9.0-next.2' }
+        });
+        vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
+        stubNextVersions({ '@eclipse-glsp/protocol': '2.9.0-next.3', '@eclipse-glsp/cli': '2.9.0-next.3' });
 
-        // the resolved next version is pinned via the overrides block while installing ...
-        expect(YAML.parse(yamlDuringInstall).overrides).toEqual({ '@eclipse-glsp/protocol': '2.8.0-next.6' });
-        // ... and the file is restored verbatim afterwards
-        expect(fs.readFileSync(workspaceYamlPath, 'utf8')).toBe(originalYaml);
+        await updateNext(tempDir, { verbose: false });
 
+        const written = readManifest(pkgA);
+        expect(written.dependencies!['@eclipse-glsp/protocol']).toBe('2.9.0-next.3');
+        expect(written.devDependencies!['@eclipse-glsp/cli']).toBe('2.9.0-next.3');
+        expect(written.dependencies!['unrelated-dep']).toBe('^1.0.0');
         const commands = execAsyncStub.mock.calls.map(call => call[0] as string);
         // uses `pnpm install` (lockfile-respecting), never `pnpm update` (opportunistic in-range bumps)
-        expect(commands.some(cmd => cmd.includes('pnpm install'))).toBe(true);
-        expect(commands.some(cmd => cmd.includes('pnpm update'))).toBe(false);
+        expect(commands).toEqual(['pnpm install']);
     });
 
-    it('should merge into an existing overrides block (ours win) and restore it afterwards', async () => {
-        createPackage('.', { name: 'root', private: true });
-        const pkgA = createPackage('packages/a', { name: '@eclipse-glsp/a', dependencies: { '@eclipse-glsp/protocol': 'next' } });
+    it('should migrate legacy literal `next` ranges to exact pins', async () => {
+        const pkgA = createPackage('packages/a', {
+            name: '@example/a',
+            dependencies: { '@eclipse-glsp/client': 'next', 'other-tool': 'next' }
+        });
         vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
-        const workspaceYamlPath = path.join(tempDir, 'pnpm-workspace.yaml');
-        const originalYaml = YAML.stringify({
-            packages: ['packages/*'],
-            overrides: { 'unrelated-dep': '1.2.3', '@eclipse-glsp/protocol': 'next' }
-        });
-        fs.writeFileSync(workspaceYamlPath, originalYaml);
-        execStub.mockImplementation((...args: any[]) => {
-            if (/npm view/.test(args[0])) {
-                return '2.8.0-next.6';
-            }
-            return undefined;
-        });
+        stubNextVersions({ '@eclipse-glsp/client': '2.9.0-next.3', 'other-tool': '1.5.0-next.7' });
 
-        const yamlDuringInstall = await runAndCaptureWorkspaceYaml(workspaceYamlPath);
+        await updateNext(tempDir, { verbose: false });
 
-        // existing override preserved, our pin merged in / overriding the stale one
-        expect(YAML.parse(yamlDuringInstall).overrides).toEqual({
-            'unrelated-dep': '1.2.3',
-            '@eclipse-glsp/protocol': '2.8.0-next.6'
-        });
-        // original file restored verbatim
-        expect(fs.readFileSync(workspaceYamlPath, 'utf8')).toBe(originalYaml);
+        const written = readManifest(pkgA);
+        expect(written.dependencies!['@eclipse-glsp/client']).toBe('2.9.0-next.3');
+        // literal `next` ranges are migrated regardless of scope (matching the previous behavior)
+        expect(written.dependencies!['other-tool']).toBe('1.5.0-next.7');
     });
 
-    it('should do nothing when a pnpm repo has no next dependencies', async () => {
-        const pkgA = createPackage('packages/a', { name: '@eclipse-glsp/a', dependencies: { '@eclipse-glsp/protocol': '^2.0.0' } });
+    it('should leave exact next versions of non-GLSP packages alone', async () => {
+        const pkgA = createPackage('packages/a', {
+            name: '@example/a',
+            dependencies: { '@eclipse-glsp/protocol': '2.9.0-next.2', 'some-lib': '1.0.0-next.5' }
+        });
+        vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
+        stubNextVersions({ '@eclipse-glsp/protocol': '2.9.0-next.3' });
+
+        await updateNext(tempDir, { verbose: false });
+
+        const written = readManifest(pkgA);
+        expect(written.dependencies!['@eclipse-glsp/protocol']).toBe('2.9.0-next.3');
+        expect(written.dependencies!['some-lib']).toBe('1.0.0-next.5');
+        // no dist-tag lookup is performed for the unmanaged dependency
+        const lookups = execStub.mock.calls.map(call => call[0] as string).filter(cmd => /npm view/.test(cmd));
+        expect(lookups).toHaveLength(1);
+    });
+
+    it('should not install when all next dependencies are already up to date', async () => {
+        const pkgA = createPackage('packages/a', {
+            name: '@example/a',
+            dependencies: { '@eclipse-glsp/protocol': '2.9.0-next.3' }
+        });
+        vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
+        stubNextVersions({ '@eclipse-glsp/protocol': '2.9.0-next.3' });
+
+        await updateNext(tempDir, { verbose: false });
+
+        expect(readManifest(pkgA).dependencies!['@eclipse-glsp/protocol']).toBe('2.9.0-next.3');
+        expect(execAsyncStub).not.toHaveBeenCalled();
+    });
+
+    it('should do nothing when the repo has no next dependencies', async () => {
+        const pkgA = createPackage('packages/a', { name: '@example/a', dependencies: { '@eclipse-glsp/protocol': '^2.0.0' } });
         vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
 
         await updateNext(tempDir, { verbose: false });
 
+        expect(execAsyncStub).not.toHaveBeenCalled();
+    });
+
+    it('should abort when a workspace manifest has uncommitted changes', async () => {
+        const pkgA = createPackage('packages/a', {
+            name: '@example/a',
+            dependencies: { '@eclipse-glsp/protocol': '2.9.0-next.2' }
+        });
+        vi.spyOn(packageUtil, 'getWorkspacePackages').mockReturnValue([pkgA]);
+        vi.spyOn(gitUtil, 'getUncommittedChanges').mockReturnValue([pkgA.filePath]);
+        stubNextVersions({ '@eclipse-glsp/protocol': '2.9.0-next.3' });
+
+        await updateNext(tempDir, { verbose: false });
+
+        expect(readManifest(pkgA).dependencies!['@eclipse-glsp/protocol']).toBe('2.9.0-next.2');
         expect(execAsyncStub).not.toHaveBeenCalled();
     });
 });
