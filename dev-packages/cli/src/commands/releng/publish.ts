@@ -81,7 +81,9 @@ export const PublishCommand = baseCommand()
  * - `next`: applies a canary version (`<root-version>.<commit-count>`) and publishes it under the
  *    `next` dist-tag. Only the packages affected by the last commit (or the changes since `--since`)
  *    are published (see {@link computePublishSet}); their `workspace:` ranges are rewritten to
- *    exact versions that are guaranteed to exist on npm (see {@link applyVersions}).
+ *    exact versions that are guaranteed to exist on npm (see {@link applyVersions}). Already
+ *    published canary versions are skipped, so re-runs over an already (partially) published
+ *    commit are idempotent.
  * - `latest`: publishes the current package versions under the `latest` dist-tag (`workspace:` ranges
  *    are rewritten to exact versions by pnpm). Already published versions are skipped.
  */
@@ -119,6 +121,25 @@ async function publishNext(options: PublishCmdOptions): Promise<void> {
             // an unaffected package was never published -> an exact pin on it could not resolve, so publish everything
             publishNames = undefined;
         }
+    }
+
+    // The commit count only grows, so an existing canary version can only stem from an earlier run over
+    // the same commit. Skipping it makes re-runs (e.g. to heal a partially failed publish) idempotent
+    // instead of failing on npm's "cannot publish over previously published versions".
+    const candidates = publishNames ?? packages.filter(pkg => !pkg.content.private).map(pkg => pkg.name);
+    const toPublish = candidates.filter(name => {
+        if (npmVersionExists(name, canary.version, options.registry)) {
+            LOGGER.info(`Skipping ${name}@${canary.version} - already published`);
+            return false;
+        }
+        return true;
+    });
+    if (toPublish.length === 0) {
+        LOGGER.info('All affected package versions are already published. Nothing to publish.');
+        return;
+    }
+    if (toPublish.length < candidates.length) {
+        publishNames = toPublish;
     }
 
     applyVersions(packages, canary, pinnedVersions, options);
@@ -244,7 +265,7 @@ async function publishLatest(options: PublishCmdOptions): Promise<void> {
 
     const publicPackages = getWorkspacePackages(options.repoDir).filter(pkg => !pkg.content.private);
     const unpublished = publicPackages.filter(pkg => {
-        if (npmVersionExists(pkg.name, pkg.content.version)) {
+        if (npmVersionExists(pkg.name, pkg.content.version, options.registry)) {
             LOGGER.info(`Skipping ${pkg.name}@${pkg.content.version} - already published`);
             return false;
         }
