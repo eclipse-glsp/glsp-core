@@ -18,12 +18,14 @@ import { describe, it, beforeEach, expect, vi, type MockInstance } from 'vitest'
 import * as processUtil from './process-util';
 import {
     commitChanges,
+    getChangedFilesSince,
     getChangesComparedToDefaultBranch,
     getDefaultBranch,
     getDefaultBranchRef,
     getLastModificationDate,
     getUncommittedChanges,
-    hasChanges
+    hasChanges,
+    isAncestorCommit
 } from './git-util';
 
 describe('git-util', () => {
@@ -56,6 +58,40 @@ describe('git-util', () => {
         it('should return false when there are no changes', () => {
             execStub.mockReturnValue('');
             expect(hasChanges('/repo')).toBe(false);
+        });
+    });
+
+    describe('isAncestorCommit', () => {
+        it('should return true when git merge-base succeeds', () => {
+            execStub.mockReturnValue('');
+            expect(isAncestorCommit('v1.0.0', '/repo')).toBe(true);
+            expect(execStub.mock.calls[0][0]).toBe('git merge-base --is-ancestor v1.0.0 HEAD');
+        });
+
+        it('should return false when the ref does not exist or is not an ancestor', () => {
+            execStub.mockImplementation(() => {
+                throw new Error('fatal: Not a valid object name');
+            });
+            expect(isAncestorCommit('v1.0.0', '/repo')).toBe(false);
+        });
+
+        it('should reject refs with unsafe characters without invoking git', () => {
+            expect(isAncestorCommit('v1.0.0; rm -rf .', '/repo')).toBe(false);
+            expect(isAncestorCommit('$(evil)', '/repo')).toBe(false);
+            expect(execStub).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getChangedFilesSince', () => {
+        it('should parse the diff output into repo-relative file paths', () => {
+            execStub.mockReturnValue('packages/a/src/index.ts\nREADME.md\n');
+            expect(getChangedFilesSince('v1.0.0', '/repo')).toEqual(['packages/a/src/index.ts', 'README.md']);
+            expect(execStub.mock.calls[0][0]).toBe('git diff --name-only v1.0.0..HEAD');
+        });
+
+        it('should throw for refs with unsafe characters', () => {
+            expect(() => getChangedFilesSince('$(evil)', '/repo')).toThrow(/Not a valid git ref/);
+            expect(execStub).not.toHaveBeenCalled();
         });
     });
 

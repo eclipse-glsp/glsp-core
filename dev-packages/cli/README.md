@@ -183,13 +183,31 @@ Options:
 
 ### publish
 
-Publishes all (public) workspace packages of a GLSP repository via `pnpm publish -r` (replaces `lerna publish`).
+Publishes the (public) workspace packages of a GLSP repository via `pnpm publish -r` (replaces `lerna publish`).
 
-- `next`: applies a canary version (`<root-version>.<commits-since-last-tag>`, e.g. `2.8.0-next.42`) to all
-  workspace packages and publishes them under the `next` dist-tag. Requires the full git history
-  (`fetch-depth: 0` in CI) to derive the commit count.
+- `next`: applies a canary version (`<root-version>.<commit-count>`, e.g. `2.8.0-next.42`, counted since the
+  last release tag `v*` or from the root commit if none exists) and publishes under the `next` dist-tag.
+  Requires the full git history (`fetch-depth: 0` in CI) to derive the commit count.
 - `latest`: publishes the current package versions under the `latest` dist-tag. Packages whose version
   already exists on the registry are skipped.
+
+`next` publishing is _affected-only_ per package. Changes are detected from the last commit
+(`HEAD^..HEAD`, matching the previous per-repo publish workflows; override the baseline with
+`--since <ref>`). A package is published when files in its directory changed, or when a package it
+(transitively) depends on via a `workspace:` range is published (e.g. a `protocol` change also
+publishes `sprotty`, `client`, `server` and the examples, so the newest nightlies always form a
+consistent set — while a `client`-only change publishes just `client` and its dependents).
+
+Published packages carry exact-pinned internal dependencies: packages in the affected groups get the
+canary version, while packages outside them are locally pinned to their currently published `next`
+version (resolved via `npm view`), so every `workspace:` pin of a published package resolves to a
+version that exists on npm. Because a dependency change always republishes all dependents, the pinned
+version is the same one the other nightlies already reference — the newest nightly of every package
+always forms one consistent, reproducible set. If an unaffected package has no published `next` version
+yet (e.g. a brand-new package), a full publish is performed instead. A change to the root
+`tsconfig.json` affects the compiled output of all packages and therefore also forces a full publish,
+as does a missing/invalid baseline or the `--full` flag. If no group is affected (e.g. docs- or CI-only
+changes), the command succeeds without publishing anything.
 
 `pnpm publish -r` does the publishing, so it rewrites `workspace:` dependency ranges to exact
 versions; npm provenance/trusted publishing (`NPM_CONFIG_PROVENANCE`) is preserved.
@@ -198,7 +216,7 @@ versions; npm provenance/trusted publishing (`NPM_CONFIG_PROVENANCE`) is preserv
 $ glsp releng publish -h
 Usage: glsp releng publish [options] <distTag>
 
-Publish all workspace packages of a GLSP repository via `pnpm publish`
+Publish the affected workspace packages of a GLSP repository via `pnpm publish`
 
 Arguments:
   distTag                  The npm dist-tag to publish under (choices: "next", "latest")
@@ -208,6 +226,8 @@ Options:
   -r, --repoDir <repoDir>  Path to the component repository (default: "<cwd>")
   --dry-run                Derive versions and run `pnpm publish` in dry-run mode without applying changes (default: false)
   --registry <url>         Publish to a custom npm registry (e.g. a local verdaccio for testing)
+  --since <ref>            Baseline for affected-only 'next' publishing (default: HEAD^, i.e. the changes of the last commit)
+  --full                   Publish all packages, ignoring the affected-only baseline ('next' only) (default: false)
   -h, --help               display help for command
 ```
 

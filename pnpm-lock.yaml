@@ -381,7 +381,11 @@ importers:
         specifier: ~0.28.0
         version: 0.28.1
 
-  examples/workflow-server-bundled: {}
+  examples/workflow-server-bundled:
+    devDependencies:
+      '@eclipse-glsp-examples/workflow-server':
+        specifier: workspace:*
+        version: link:../workflow-server
 
   examples/workflow-server-bundled-web: {}
 

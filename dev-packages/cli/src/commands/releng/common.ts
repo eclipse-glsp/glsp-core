@@ -80,6 +80,24 @@ export function npmVersionExists(packageName: string, version: string): boolean 
     }
 }
 
+/**
+ * Returns the version currently published under the given dist-tag, or `undefined` if the package
+ * (or the dist-tag) does not exist. Lookup failures (e.g. network errors) are also treated as
+ * "not published".
+ * @param packageName The npm package name
+ * @param distTag The dist-tag to resolve (e.g. `next`)
+ * @param registry Optional custom registry URL (e.g. a local verdaccio for testing)
+ */
+export function npmDistTagVersion(packageName: string, distTag: string, registry?: string): string | undefined {
+    const registryArg = registry ? ` --registry ${registry}` : '';
+    try {
+        const result = exec(`npm view ${packageName} dist-tags.${distTag}${registryArg}`, { silent: true }).trim();
+        return result.length > 0 ? result : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
 export function asMvnVersion(version: string): string {
     LOGGER.debug(`Convert to maven conform version: ${version}`);
     const mavenVersion = isNextVersion(version) ? version.replace('-next', '-SNAPSHOT') : version;
@@ -149,9 +167,9 @@ export function isNextVersion(version: string): boolean {
 export interface CanaryVersion {
     /** The base version from the root package.json, e.g. `2.8.0-next` */
     base: string;
-    /** The most recent git tag */
-    lastTag: string;
-    /** The number of commits since {@link lastTag} */
+    /** The most recent release tag (`v*`), or `undefined` if none is reachable from HEAD */
+    lastTag?: string;
+    /** The number of commits since {@link lastTag} (or since the root commit if no release tag exists) */
     commitCount: number;
     /** The derived canary version, e.g. `2.8.0-next.42` */
     version: string;
@@ -160,23 +178,29 @@ export interface CanaryVersion {
 /**
  * Derives a canary version for `next` publishing (replacement for `lerna publish --canary`).
  * The version is the root package version suffixed with the number of commits since the last
- * git tag, e.g. `2.8.0-next.42`. Requires the full git history (fetch-depth: 0 in CI).
+ * release tag (`v*`), e.g. `2.8.0-next.42`. If no release tag is reachable from HEAD, all commits
+ * are counted from the root commit instead. Requires the full git history (fetch-depth: 0 in CI).
  * @param repoDir The root path of the repository
  */
 export function deriveCanaryVersion(repoDir: string): CanaryVersion {
     const base = getVersionFromPackage(repoDir);
-    let lastTag: string;
-    try {
-        lastTag = exec('git describe --tags --abbrev=0', { cwd: repoDir, silent: true }).trim();
-    } catch (error) {
+    if (exec('git rev-parse --is-shallow-repository', { cwd: repoDir, silent: true }).trim() === 'true') {
         throw new Error(
-            `Could not determine the last git tag in '${repoDir}'.` +
-                ' Deriving a canary version requires at least one tag and the full git history (fetch-depth: 0 in CI).'
+            `Cannot derive a canary version in the shallow clone '${repoDir}'.` +
+                ' Counting commits requires the full git history (fetch-depth: 0 in CI).'
         );
     }
-    const commitCount = Number.parseInt(exec(`git rev-list --count ${lastTag}..HEAD`, { cwd: repoDir, silent: true }).trim(), 10);
+    let lastTag: string | undefined;
+    try {
+        // only consider release tags so that moving marker tags (e.g. `published/next`) don't corrupt the commit count
+        lastTag = exec("git describe --tags --abbrev=0 --match 'v[0-9]*'", { cwd: repoDir, silent: true }).trim();
+    } catch {
+        lastTag = undefined;
+    }
+    const countRange = lastTag ? `${lastTag}..HEAD` : 'HEAD';
+    const commitCount = Number.parseInt(exec(`git rev-list --count ${countRange}`, { cwd: repoDir, silent: true }).trim(), 10);
     if (Number.isNaN(commitCount)) {
-        throw new Error(`Could not determine the number of commits since tag '${lastTag}' in '${repoDir}'.`);
+        throw new Error(`Could not determine the number of commits for '${countRange}' in '${repoDir}'.`);
     }
     return { base, lastTag, commitCount, version: `${base}.${commitCount}` };
 }
