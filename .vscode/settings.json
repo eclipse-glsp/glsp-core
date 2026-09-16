@@ -1,0 +1,57 @@
+// If one would like to add/remove/modify user preferences without modifying the content of the
+// workspace settings file, then one would need to modify the `settings.json` under here:
+// - Windows: %APPDATA%\Code\User\settings.json
+// - Linux: $HOME/.config/Code/User/settings.json
+// - Mac: $HOME/Library/Application Support/Code/User/settings.json
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always",
+    "source.organizeImports": "always"
+  },
+  // The workspace compiles with TypeScript 7, whose npm package ships the native compiler only (no tsserver), so
+  // `js/ts.tsdk.path` cannot point at it. Language features are provided by the TypeScript Native Preview extension
+  // instead, which brings its own tsgo build; see the "Editor support" section of the root README.
+  "js/ts.experimental.useTsgo": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/lib": true
+  },
+  "task.autoDetect": "off",
+  "[css]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "markdownlint.config": {
+    "MD007": {
+      "indent": 4
+    },
+    "MD030": {
+      "ul_single": 1,
+      "ul_multi": 1
+    },
+    "no-inline-html": {
+      "allowed_elements": ["br", "details", "summary"]
+    }
+  }
+}

@@ -11,7 +11,7 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../../packages/client"
+      "path": "../../packages/client/client"
     }
   ]
 }

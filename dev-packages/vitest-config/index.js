@@ -28,6 +28,9 @@ import { defineConfig } from 'vitest/config';
  * - Specs import the test API explicitly (`import { describe, it, expect, vi } from 'vitest'`,
  *   like sprotty), so no ambient globals or extra `vitest/globals` tsconfig variant are needed.
  * - `restoreMocks: true` auto-restores `vi` mocks between tests (replaces Sinon sandboxes).
+ * - `silent: 'passed-only'` keeps console output of passing tests (e.g. the server launchers'
+ *   lifecycle logging) out of the report while failing tests still print theirs for debugging.
+ *   Override with `--silent=false` to see everything.
  * - `include` globs every package's specs (`**​/src/**`), so it works flat from the repo root and
  *   from within a single package, while ignoring non-`src` trees like `tests/e2e`.
  * - Coverage is provided by `@vitest/coverage-v8`.
@@ -38,6 +41,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     test: {
         restoreMocks: true,
+        silent: 'passed-only',
         include: ['**/src/**/*.spec.{ts,tsx}'],
         coverage: {
             provider: 'v8',

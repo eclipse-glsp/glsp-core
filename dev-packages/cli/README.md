@@ -1,9 +1,9 @@
 # Eclipse GLSP - CLI
 
 The `@eclipse-glsp/cli` package provides helpful scripts and commands for extension and application development.
-The contributed `glsp`, is a command line tool that offers all contributed commands.
+It contributes `glsp`, a command line tool that offers all of these commands.
 
-## Getting Started
+## Getting started
 
 Install `@eclipse-glsp/cli` as a dev dependency in your application.
 
@@ -31,10 +31,10 @@ Commands:
 
 ## checkHeaders
 
-The `checkHeaders` command can be used to validate the copyright year (range) of license headers.
+The `checkHeaders` command validates the copyright year (range) of license headers.
 It checks for each file (matching the include pattern) whether the defined copyright range is in line with the first and last modification date in the git repository.
-Found violations are printed to the console and can be fixed automatically.
-The validation check can be restricted to pending changes and/or the last commit e.g. to validate a commit before creating a PR.
+It prints the violations it finds to the console and can fix them automatically.
+Restrict the check to pending changes or the last commit, for example to validate a commit before opening a PR.
 
 ```console
 $ glsp checkHeaders -h
@@ -78,7 +78,7 @@ Options:
 
 ## generateIndex
 
-Use this command to create an index file of all sources for a given directory and all it's sub directories.
+Use this command to create an index file of all sources in a given directory and its sub-directories.
 
 ```console
 $ glsp generateIndex -h
@@ -131,8 +131,8 @@ Commands:
 
 Command to bump the version of all packages in a GLSP repository.
 This bumps the version of all workspace packages (the root `package.json` version is the source of truth).
-In addition, external GLSP dependencies are considered and bumped as well; `workspace:` ranges are preserved.
-The glsp repository type ("glsp-client", "glsp-server-node" etc.) is auto detected from the given repository path.
+It also bumps external GLSP dependencies and preserves `workspace:` ranges.
+The glsp repository type ("glsp-core", "glsp-theia-integration" etc.) is auto detected from the given repository path.
 If the command is invoked in a non-GLSP repository it will fail.
 
 ```console
@@ -155,10 +155,10 @@ Options:
 ### prepare
 
 Prepares a new release for a GLSP repository.
-This includes bumping the version, updating the changelog, commit & push the changes
+This includes bumping the version, updating the changelog, committing and pushing the changes
 and opening a PR for the release.
 
-The glsp repository type ("glsp-client", "glsp-server-node" etc.) is auto detected from the given repository path.
+The glsp repository type ("glsp-core", "glsp-theia-integration" etc.) is auto detected from the given repository path.
 If the command is invoked in a non-GLSP repository it will fail.
 
 ```console
@@ -191,7 +191,7 @@ Publishes all (public) workspace packages of a GLSP repository via `pnpm publish
 - `latest`: publishes the current package versions under the `latest` dist-tag. Packages whose version
   already exists on the registry are skipped.
 
-Publishing is delegated to `pnpm publish -r`, so `workspace:` dependency ranges are rewritten to exact
+`pnpm publish -r` does the publishing, so it rewrites `workspace:` dependency ranges to exact
 versions; npm provenance/trusted publishing (`NPM_CONFIG_PROVENANCE`) is preserved.
 
 ```console
@@ -214,10 +214,10 @@ Options:
 ## repo
 
 Multi-repository workspace management for GLSP development.
-All repositories are expected to live as siblings in a shared workspace directory (e.g. `~/glsp/glsp-client`, `~/glsp/glsp-server-node`, etc.).
-Repositories are auto-discovered by scanning the workspace directory for known GLSP repo names.
-The workspace directory is resolved automatically by walking up from the current directory; it can be overridden with `--dir`.
-The clone protocol is auto-detected: if the GitHub CLI (`gh`) is installed and authenticated, `gh` is used; otherwise `https`.
+All repositories are expected to live as siblings in a shared workspace directory (e.g. `~/glsp/glsp-core`, `~/glsp/glsp-theia-integration`, etc.).
+The CLI discovers repositories by scanning the workspace directory for known GLSP repo names.
+It finds the workspace directory by walking up from the current directory. Override it with `--dir`.
+The clone protocol is detected automatically. If the GitHub CLI (`gh`) is installed and authenticated, the CLI uses `gh`, otherwise `https`.
 This can be overridden per command via `--protocol`.
 
 ```bash
@@ -238,14 +238,11 @@ Commands:
   pwd [options]                     Print resolved paths for all discovered repositories
   log [options]                     Print the last commit for all discovered repositories
   workspace                         Manage VS Code workspace files for GLSP projects
-  glsp                              Operations on the glsp repository
-  glsp-server-node|server-node      Operations on the glsp-server-node repository
-  glsp-client|client                Operations on the glsp-client repository
+  glsp-core|core                    Operations on the glsp-core repository
   glsp-theia-integration|theia      Operations on the glsp-theia-integration repository
   glsp-vscode-integration|vscode    Operations on the glsp-vscode-integration repository
   glsp-eclipse-integration|eclipse  Operations on the glsp-eclipse-integration repository
   glsp-server|server-java           Operations on the glsp-server repository
-  glsp-playwright|playwright        Operations on the glsp-playwright repository
   help [command]                    display help for command
 ```
 
@@ -328,8 +325,8 @@ Options:
 
 Links (or unlinks) repositories for cross-repo development by injecting `link:` overrides into each
 consumer's `pnpm-workspace.yaml` and reinstalling. Repositories are processed in dependency order, and
-singleton dependencies (sprotty, sprotty-protocol, vscode-jsonrpc, inversify) are shared from `glsp-client`
-to avoid duplicate instances. After linking a repo it is **built** so the `link:` overrides resolve to
+singleton dependencies (sprotty, sprotty-protocol, vscode-jsonrpc, inversify) are shared from `glsp-core`
+to avoid duplicate instances. After linking a repo the CLI builds it, so the `link:` overrides resolve to
 compiled `lib/` output rather than empty source directories (pass `--no-build` to skip); only the npm/pnpm
 side is built, so the `glsp-eclipse-integration` Maven server is left to a separate build. `unlink` removes
 those overrides again and reinstalls.
@@ -422,33 +419,51 @@ Options:
 ### Scoped repository commands
 
 Each repository has a set of scoped subcommands accessible via `glsp repo <name>` or its short alias.
-Short aliases: `client`, `server-node`, `theia`, `vscode`, `eclipse`, `server-java`, `playwright`.
+Short aliases: `core`, `theia`, `vscode`, `eclipse`, `server-java`.
 
 All repos support `clone`, `switch`, `build`, `pwd`, and `log` subcommands.
 Some repos have additional repo-specific commands:
 
 | Repo                      | Extra commands         |
 | ------------------------- | ---------------------- |
-| `glsp-client`             | `start`                |
-| `glsp-server-node`        | `start`                |
+| `glsp-core`               | `client`, `server`     |
 | `glsp-server`             | `start`                |
 | `glsp-theia-integration`  | `start`, `open`        |
 | `glsp-vscode-integration` | `vsix-path`, `package` |
 
-```console
-$ glsp repo client -h
-Usage: glsp repo glsp-client|client [options] [command]
+`glsp-core` bundles several components in one repository, so it groups them instead of offering a single `start`.
+`glsp repo core client start` runs the standalone example, `glsp repo core server start` the node GLSP
+server, and `glsp repo core server node-bundle` / `browser-bundle` print the built server bundle paths.
 
-Operations on the glsp-client repository
+```console
+$ glsp repo core -h
+Usage: glsp repo glsp-core|core [options] [command]
+
+Operations on the glsp-core repository
 
 Commands:
-  clone [options]   Clone the glsp-client repository
-  switch [options]  Switch branch or checkout a PR in glsp-client
-  build [options]   Build the glsp-client repository
-  pwd [options]     Print the resolved path for glsp-client
-  log [options]     Print the last commit for glsp-client
-  start [options]   Start the standalone example for glsp-client
+  clone [options]   Clone the glsp-core repository
+  switch [options]  Switch branch or checkout a PR in glsp-core
+  build [options]   Build the glsp-core repository
+  pwd [options]     Print the resolved path for glsp-core
+  log [options]     Print the last commit for glsp-core
+  run [options]     Run an arbitrary package.json script in glsp-core
+  client            Operations on the GLSP client and its standalone example
+  server            Operations on the node GLSP server and its workflow example
   help [command]    display help for command
+```
+
+```console
+$ glsp repo core server -h
+Usage: glsp repo glsp-core|core server [options] [command]
+
+Operations on the node GLSP server and its workflow example
+
+Commands:
+  start [options]           Start the workflow example node GLSP server
+  node-bundle [options]     Print the absolute path to the Node.js server bundle
+  browser-bundle [options]  Print the absolute path to the browser (Web Worker) server bundle
+  help [command]            display help for command
 ```
 
 ```console

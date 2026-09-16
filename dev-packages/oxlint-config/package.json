@@ -1,0 +1,50 @@
+{
+  "name": "@eclipse-glsp/oxlint-config",
+  "version": "2.9.0-next",
+  "description": "Shared oxlint configuration for GLSP projects",
+  "keywords": [
+    "eclipse",
+    "glsp",
+    "linter",
+    "oxlint"
+  ],
+  "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
+  "contributors": [
+    {
+      "name": "Eclipse GLSP Project",
+      "email": "glsp-dev@eclipse.org",
+      "url": "https://projects.eclipse.org/projects/ecd.glsp"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
+  "files": [
+    "index.d.mts",
+    "index.mjs",
+    "oxlintrc.json"
+  ],
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": {
+      "types": "./index.d.mts",
+      "default": "./index.mjs"
+    },
+    "./oxlintrc.json": "./oxlintrc.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@tony.ganchev/eslint-plugin-header": "^3.4.4",
+    "oxlint": "^1.82.0",
+    "oxlint-tsgolint": ">=7.0.2001"
+  }
+}

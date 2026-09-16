@@ -1,0 +1,55 @@
+{
+  "name": "@eclipse-glsp/graph",
+  "version": "2.9.0-next",
+  "description": "The typescript implementation of the GLSP graphical model (GModel)",
+  "keywords": [
+    "diagram",
+    "diagram editor",
+    "eclipse",
+    "glsp",
+    "graphics",
+    "modeling",
+    "visualization"
+  ],
+  "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
+  "contributors": [
+    {
+      "name": "STMicroelectronics",
+      "url": "https://www.st.com/"
+    },
+    {
+      "name": "Eclipse GLSP Project",
+      "email": "glsp-dev@eclipse.org",
+      "url": "https://projects.eclipse.org/projects/ecd.glsp"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+  },
+  "files": [
+    "lib",
+    "src",
+    "!**/*.spec.*",
+    "!**/test/**"
+  ],
+  "main": "lib/index",
+  "types": "lib/index",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf lib *.tsbuildinfo coverage",
+    "generate:index": "glsp generateIndex src -f -s",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@eclipse-glsp/protocol": "workspace:*"
+  }
+}
