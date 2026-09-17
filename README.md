@@ -1,17 +1,14 @@
-# Eclipse GLSP - Core
+# Eclipse GLSP - Core [![CI](https://github.com/eclipse-glsp/glsp-core/actions/workflows/ci.yml/badge.svg)](https://github.com/eclipse-glsp/glsp-core/actions/workflows/ci.yml) [![CodeQL](https://github.com/eclipse-glsp/glsp-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/eclipse-glsp/glsp-core/actions/workflows/codeql-analysis.yml)
 
 The core framework of the [Graphical Language Server Platform (GLSP)](https://github.com/eclipse-glsp/glsp): a web-based diagram client framework (based on [Eclipse Sprotty](https://github.com/eclipse/sprotty)) and a TypeScript/Node-based server framework, together with the shared protocol, common development tooling, and the Workflow diagram examples.
 
-This monorepo consolidates the formerly separate `glsp-client`, `glsp-server-node`, `glsp` (dev-packages), and `glsp-playwright` (e2e) repositories into a single, self-bootstrapping pnpm workspace.
+This monorepo consolidated the formerly separate [`glsp-client`](https://github.com/eclipse-glsp/glsp-client), [`glsp-server-node`](https://github.com/eclipse-glsp/glsp-server-node), [`glsp`](https://github.com/eclipse-glsp/glsp) (dev-packages), and [`glsp-playwright`](https://github.com/eclipse-glsp/glsp-playwright) repositories into a single, self-bootstrapping pnpm workspace.
 
-> [!WARNING]
-> **Migration in progress.** The consolidation of the formerly separate
-> [`glsp-client`](https://github.com/eclipse-glsp/glsp-client),
-> [`glsp-server-node`](https://github.com/eclipse-glsp/glsp-server-node),
-> [`glsp`](https://github.com/eclipse-glsp/glsp) and
-> [`glsp-playwright`](https://github.com/eclipse-glsp/glsp-playwright) repositories into this monorepo is still underway.
-> This repository is **not ready for use yet**. Please keep using the original repositories
-> until the first consolidated release is published from here.
+> [!NOTE]
+> The consolidation is complete. The first consolidated release will be `2.9.0`; all releases up to and including `2.8.0`
+> were published from the former repositories linked above. `glsp-client`, `glsp-server-node` and `glsp-playwright`
+> are deprecated and will be archived. The [`glsp`](https://github.com/eclipse-glsp/glsp) umbrella repository stays
+> in place as the home of issues, discussions and the cross-component documentation; only its dev-packages moved here.
 
 ## Structure
 
@@ -54,6 +51,28 @@ These dev-packages provide every build, test and lint tool this repository uses.
 - [`@eclipse-glsp-examples/workflow-e2e`](e2e/workflow-e2e): Page objects and reusable test suites for the Workflow example, plus the standalone end-to-end tests of this repository
 
 The Theia and VS Code integrations of the framework are tested in [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration) and [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration), which reuse the suites from `@eclipse-glsp-examples/workflow-e2e`.
+
+## Getting started
+
+If you want to build a diagram editor with GLSP, start with the [GLSP getting started guide](https://www.eclipse.org/glsp/documentation/gettingstarted) on the project website.
+The two entry packages of this repository are [`@eclipse-glsp/client`](https://www.npmjs.com/package/@eclipse-glsp/client) for the diagram client and [`@eclipse-glsp/server`](https://www.npmjs.com/package/@eclipse-glsp/server) for the TypeScript/Node server; everything else is either a dependency of these two, optional tooling, or example code.
+
+## Releases and published packages
+
+Starting with `2.9.0`, all packages of this repository are released together and the release notes are published as [GitHub releases of `eclipse-glsp/glsp-core`](https://github.com/eclipse-glsp/glsp-core/releases).
+Releases up to and including `2.8.0` were published from the former repositories (see the note at the top).
+
+The workspace publishes the following packages to npm, grouped as in [Structure](#structure):
+
+- `packages/common`: [`@eclipse-glsp/protocol`](https://www.npmjs.com/package/@eclipse-glsp/protocol)
+- `packages/client`: [`@eclipse-glsp/sprotty`](https://www.npmjs.com/package/@eclipse-glsp/sprotty), [`@eclipse-glsp/client`](https://www.npmjs.com/package/@eclipse-glsp/client)
+- `packages/server`: [`@eclipse-glsp/graph`](https://www.npmjs.com/package/@eclipse-glsp/graph), [`@eclipse-glsp/server`](https://www.npmjs.com/package/@eclipse-glsp/server), [`@eclipse-glsp/layout-elk`](https://www.npmjs.com/package/@eclipse-glsp/layout-elk), [`@eclipse-glsp/server-mcp`](https://www.npmjs.com/package/@eclipse-glsp/server-mcp)
+- `dev-packages`: [`@eclipse-glsp/cli`](https://www.npmjs.com/package/@eclipse-glsp/cli), [`@eclipse-glsp/dev`](https://www.npmjs.com/package/@eclipse-glsp/dev), [`@eclipse-glsp/config`](https://www.npmjs.com/package/@eclipse-glsp/config), [`@eclipse-glsp/config-test`](https://www.npmjs.com/package/@eclipse-glsp/config-test), [`@eclipse-glsp/ts-config`](https://www.npmjs.com/package/@eclipse-glsp/ts-config), [`@eclipse-glsp/oxlint-config`](https://www.npmjs.com/package/@eclipse-glsp/oxlint-config), [`@eclipse-glsp/oxfmt-config`](https://www.npmjs.com/package/@eclipse-glsp/oxfmt-config), [`@eclipse-glsp/vitest-config`](https://www.npmjs.com/package/@eclipse-glsp/vitest-config)
+- `examples`: [`@eclipse-glsp-examples/workflow-glsp`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-glsp), [`@eclipse-glsp-examples/workflow-server`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server), [`@eclipse-glsp-examples/workflow-server-bundled`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server-bundled)
+- `e2e`: [`@eclipse-glsp/playwright`](https://www.npmjs.com/package/@eclipse-glsp/playwright), [`@eclipse-glsp-examples/workflow-e2e`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-e2e)
+
+The standalone example application, the bundled web server and the MCP demo are workspace-private and are not published.
+Unreleased development builds of every published package are available under the `next` dist-tag.
 
 ## Developer documentation
 
@@ -157,3 +176,12 @@ GitHub Pages serves both browser demos from the separate [`glsp-previews`](https
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).
 If you have questions, please raise them in the [discussions](https://github.com/eclipse-glsp/glsp/discussions) and have a look at our [communication and support options](https://www.eclipse.org/glsp/contact/).
+
+## Contributing and license
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute, sign the Eclipse Contributor Agreement, and the branch and commit message conventions
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): the code of conduct all participants are expected to follow
+- [SECURITY.md](SECURITY.md): how to report a security vulnerability (never via a public issue or pull request)
+- [LICENSE](LICENSE): all packages are licensed under `(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)`
+
+Issues are not tracked in this repository: bugs and feature requests for all GLSP components are reported in the [GLSP umbrella repository](https://github.com/eclipse-glsp/glsp/issues).

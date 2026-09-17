@@ -68,8 +68,8 @@ const configureAutocomplete: (settings: AutocompleteSettings<LabeledAction>) => 
  * The `AutoCompleteWidget` is a reusable UI element that provides a text input supporting auto-completion,
  * validation, validation messages, etc.
  *
- * An example for using it is available in the workflow diagram:
- * https://github.com/eclipse-glsp/glsp-client/blob/master/examples/workflow-glsp/src/direct-task-editing/direct-task-editor.ts
+ * An example for using it is available in the workflow diagram example of this repository:
+ * `examples/workflow-glsp/src/direct-task-editing/direct-task-editor.ts`
  */
 export class AutoCompleteWidget {
     loadingIndicatorClasses = codiconCSSClasses('loading', false, true, ['loading']);

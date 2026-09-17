@@ -2,11 +2,10 @@
 Thank you for your Pull Request. Please provide a description and review
 the requirements below.
 
-Contributors guide: https://github.com/eclipse-glsp/glsp/blob/master/CONTRIBUTING.md
+Contributors guide: /CONTRIBUTING.md
 
 Note: Security vulnerabilities should not be disclosed on GitHub, through a PR or any
-other means. See [SECURITY.md](https://github.com/eclipse-glsp/glsp/blob/master/SECURITY.md),
-to learn how to report vulnerabilities.
+other means. See [SECURITY.md](/SECURITY.md), to learn how to report vulnerabilities.
 -->
 
 #### What it does

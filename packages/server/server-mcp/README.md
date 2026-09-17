@@ -2,7 +2,7 @@
 
 > **Status: Experimental.** The MCP integration is under active development. Option names, schema shapes, and handler contracts MAY change in minor releases until the feature graduates from experimental status. Pin the package version in adopter projects; track release notes for breaking changes.
 
-An extension of the [GLSP Node Server](https://github.com/eclipse-glsp/glsp-server-node) that exposes a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server alongside the existing GLSP server. This allows AI agents and LLM-based tools to interact with graphical diagram models using the standardized MCP interface.
+An extension of the [GLSP TypeScript/Node server](../server) ([`@eclipse-glsp/server`](https://www.npmjs.com/package/@eclipse-glsp/server)) that exposes a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server alongside the existing GLSP server. This allows AI agents and LLM-based tools to interact with graphical diagram models using the standardized MCP interface.
 
 ## What it provides
 
@@ -15,8 +15,6 @@ The MCP server is initialized as part of the GLSP server startup sequence and cr
 ## Installation
 
 ```bash
-npm install @eclipse-glsp/server-mcp
-# or
 pnpm add @eclipse-glsp/server-mcp
 ```
 

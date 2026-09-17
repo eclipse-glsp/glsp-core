@@ -12,8 +12,7 @@ The package is available via npm and can be used by all GLSP components implemen
     - [`@eclipse-glsp/oxlint-config`](https://www.npmjs.com/package/@eclipse-glsp/oxlint-config): Shared oxlint configuration for GLSP projects
     - [`@eclipse-glsp/oxfmt-config`](https://www.npmjs.com/package/@eclipse-glsp/oxfmt-config): Shared oxfmt configuration for GLSP projects
 - [`@eclipse-glsp/config-test`](https://www.npmjs.com/package/@eclipse-glsp/config-test): Meta package for shared test configuration
-    - [`@eclipse-glsp/mocha-config`](https://www.npmjs.com/package/@eclipse-glsp/mocha-config): Shared Mocha configuration for GLSP projects
-    - [`@eclipse-glsp/nyc-config`](https://www.npmjs.com/package/@eclipse-glsp/nyc-config): Shared nyc configuration for GLSP projects
+    - [`@eclipse-glsp/vitest-config`](https://www.npmjs.com/package/@eclipse-glsp/vitest-config): Shared Vitest configuration for GLSP projects
 - [`@eclipse-glsp/cli`](https://www.npmjs.com/package/@eclipse-glsp/cli): CLI Tooling & scripts for GLSP projects
 
 ## Install
@@ -37,10 +36,6 @@ pnpm add --save-dev @eclipse-glsp/dev
     }
 }
 ```
-
-In addition, a custom configuration for projects that use `mocha` is available:
-
-- `@eclipse-glsp/ts-config/mocha`
 
 ### oxlint
 
@@ -84,28 +79,16 @@ export default defineConfig({
 
 Format with `oxfmt` and verify with `oxfmt --check`.
 
-### Mocha
+### Vitest
 
-**Create a `.mocharc`**:
+**Create a `vite.config.ts` at the workspace root**:
 
-```json
-{
-    "$schema": "https://json.schemastore.org/mocharc",
-    "extends": "@eclipse-glsp/mocha-config"
-}
+```ts
+export { default } from '@eclipse-glsp/vitest-config';
 ```
 
-### Nyc
-
-**Add a `.nycrc` to your project root**:
-
-```json
-{
-    "extends": "@eclipse-glsp/nyc-config"
-}
-```
-
-Configuration can also be provided by `nyc.config.js` if programmed logic is required.
+The default export is a ready-to-use config (mock auto-restore, v8 coverage, CI annotations, and an `include` that globs every package's specs).
+See the [`@eclipse-glsp/vitest-config` README](https://www.npmjs.com/package/@eclipse-glsp/vitest-config) for customization and for the per-file opt-in to a DOM environment.
 
 ## More information
 
