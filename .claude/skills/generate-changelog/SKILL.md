@@ -1,6 +1,6 @@
 ---
 name: generate-changelog
-description: Generate changelog entries from merged PRs since the last release. Fetches PR data, assigns each change to a component (protocol/client/server/dev packages), classifies it as normal or breaking, presents for user review, and optionally creates a PR with the updates.
+description: Generate changelog entries from merged PRs since the last release
 disable-model-invocation: true
 ---
 

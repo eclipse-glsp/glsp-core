@@ -11,6 +11,8 @@ on:
       - '**/*.md'
       - 'LICENSE'
       - '.vscode/**'
+      - '.claude/**'
+      - '.agents/**'
   workflow_dispatch:
 
 permissions:
