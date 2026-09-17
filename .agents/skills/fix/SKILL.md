@@ -1,7 +1,6 @@
 ---
 name: fix
 description: Use after completing any code changes (new features, bug fixes, refactors) before reporting completion.
-
 ---
 
 Run the auto-fix and validation suite for the GLSP Core monorepo from the repository root.
