@@ -11,12 +11,16 @@ on:
       - '**/*.md'
       - 'LICENSE'
       - '.vscode/**'
+      - '.claude/**'
+      - '.agents/**'
   pull_request:
     branches: [main]
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'
       - '.vscode/**'
+      - '.claude/**'
+      - '.agents/**'
 
 jobs:
   build:

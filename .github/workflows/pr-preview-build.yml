@@ -8,6 +8,8 @@ on:
       - '**/*.md'
       - 'LICENSE'
       - '.vscode/**'
+      - '.claude/**'
+      - '.agents/**'
 
 permissions:
   contents: read

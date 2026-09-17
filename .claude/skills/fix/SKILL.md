@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Run the fix-and-verify suite for the workspace (build, auto-fix lint/format/headers, test). IMPORTANT - Proactively invoke this skill after completing any code changes (new features, bug fixes, refactors) before reporting completion. Re-run it after manually addressing anything it could not auto-fix.
+description: Use after completing any code changes (new features, bug fixes, refactors) before reporting completion
 ---
 
 Run the auto-fix and validation suite for the GLSP Core monorepo from the repository root.
