@@ -50,9 +50,14 @@ jobs:
       - name: Test
         run: pnpm test
   e2e:
-    name: E2E
+    name: E2E (${{ matrix.project }})
     timeout-minutes: 60
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      # One runner per Playwright project, so the standalone and browser-worker suites run concurrently.
+      matrix:
+        project: [standalone, standalone-browser]
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -62,12 +67,12 @@ jobs:
           cache: pnpm
       # Builds first: Playwright serves the built bundles of the workflow example.
       - name: Run Playwright tests
-        run: pnpm test:e2e
+        run: pnpm test:e2e:${{ matrix.project }}
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: e2e/*/playwright-report/
   lint:
     name: Lint
