@@ -24,7 +24,7 @@ client at that URL:
 - Claude Code, Cursor, or any other MCP-aware client also work.
 
 The automated end-to-end spec at
-`packages/server-mcp/src/node/server/mcp-http-transport-e2e.spec.ts` also covers the Node path.
+`packages/server/server-mcp/src/node/server/mcp-http-transport-e2e.spec.ts` also covers the Node path.
 It runs an MCP SDK `Client` over real HTTP against the launcher.
 
 ## Running

@@ -38,10 +38,6 @@ pnpm add --save-dev @eclipse-glsp/config
 }
 ```
 
-In addition, a custom configuration for projects that use `mocha` is available:
-
-- `@eclipse-glsp/ts-config/mocha`
-
 ### oxlint
 
 **Create an `oxlint.config.mts` at the workspace root**:
@@ -83,6 +79,11 @@ export default defineConfig({
 ```
 
 Format with `oxfmt` and verify with `oxfmt --check`.
+
+### Testing
+
+The test configuration is not part of this package.
+Add [`@eclipse-glsp/config-test`](https://www.npmjs.com/package/@eclipse-glsp/config-test) for the shared [Vitest](https://vitest.dev) configuration and dependencies, or [`@eclipse-glsp/dev`](https://www.npmjs.com/package/@eclipse-glsp/dev) for both plus the GLSP CLI.
 
 ## More information
 

@@ -2,6 +2,16 @@
   "name": "@eclipse-glsp/sprotty",
   "version": "2.9.0-next",
   "description": "Augmented reexport of the sprotty API for GLSP",
+  "keywords": [
+    "diagram",
+    "diagram editor",
+    "eclipse",
+    "glsp",
+    "graphics",
+    "modeling",
+    "sprotty",
+    "visualization"
+  ],
   "homepage": "https://www.eclipse.org/glsp/",
   "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
@@ -17,7 +27,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git",
+    "directory": "packages/client/glsp-sprotty"
   },
   "files": [
     "lib",

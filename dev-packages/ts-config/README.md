@@ -22,9 +22,7 @@ pnpm add --save-dev @eclipse-glsp/ts-config
 }
 ```
 
-In addition, a custom configuration for projects that use `mocha` is available:
-
-- `@eclipse-glsp/ts-config/mocha`
+The package ships a single configuration (`tsconfig.json`), which is also its `main` entry, so `"extends": "@eclipse-glsp/ts-config"` and `"extends": "@eclipse-glsp/ts-config/tsconfig.json"` are equivalent.
 
 ## More information
 

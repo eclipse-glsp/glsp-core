@@ -26,7 +26,7 @@ The `Standalone-Integration` should be used for web applications. It has a requi
 
 ### Theia- and VSCode-Integration
 
-These live in separate packages, `@eclipse-glsp/playwright-theia` and `@eclipse-glsp/playwright-vscode`, so that a consumer only pulls in the tool platform it actually tests. Install the one you need alongside `@eclipse-glsp/playwright`.
+These live in separate packages, [`@eclipse-glsp/playwright-theia`](https://www.npmjs.com/package/@eclipse-glsp/playwright-theia) and [`@eclipse-glsp/playwright-vscode`](https://www.npmjs.com/package/@eclipse-glsp/playwright-vscode), so that a consumer only pulls in the tool platform it actually tests. They are maintained and released with the platform integrations they test, in [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration/tree/master/e2e/playwright-theia) and [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration/tree/master/e2e/playwright-vscode). Install the one you need alongside `@eclipse-glsp/playwright`.
 
 ## Selecting an integration
 

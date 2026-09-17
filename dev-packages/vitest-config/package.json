@@ -23,7 +23,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git",
+    "directory": "dev-packages/vitest-config"
   },
   "files": [
     "index.js",

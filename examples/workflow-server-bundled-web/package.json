@@ -31,7 +31,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eclipse-glsp/glsp-core.git"
+    "url": "https://github.com/eclipse-glsp/glsp-core.git",
+    "directory": "examples/workflow-server-bundled-web"
   },
   "files": [
     "wf-glsp-server-webworker.js",

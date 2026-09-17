@@ -5,8 +5,11 @@ A Playwright-based framework for testing diagram editors built with the
 
 The package provides page objects for the GLSP diagram model, flows for editor interactions such
 as click, drag and rename, and an integration API that runs one test suite against several tool
-platforms. The standalone integration is part of this package. `@eclipse-glsp/playwright-theia`
-and `@eclipse-glsp/playwright-vscode` add Theia and VS Code.
+platforms. The standalone integration is part of this package. Theia and VS Code are added by
+[`@eclipse-glsp/playwright-theia`](https://www.npmjs.com/package/@eclipse-glsp/playwright-theia) and
+[`@eclipse-glsp/playwright-vscode`](https://www.npmjs.com/package/@eclipse-glsp/playwright-vscode),
+which are released from the [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration/tree/master/e2e/playwright-theia)
+and [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration/tree/master/e2e/playwright-vscode) repositories.
 
 ## Documentation
 
