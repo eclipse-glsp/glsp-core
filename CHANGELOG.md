@@ -8,11 +8,17 @@ Entries are grouped by component (Protocol, Client, Server, Dev Packages, E2E) p
 
 #### Changes
 
+- [build] Develop and release the protocol from the consolidated `glsp-core` monorepo [#2](https://github.com/eclipse-glsp/glsp-core/pull/2) [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [build] Stop shipping specs and test helpers in the published package [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+
 #### Potentially Breaking Changes
 
 ### Client
 
 #### Changes
+
+- [build] Develop and release the client packages from the consolidated `glsp-core` monorepo [#2](https://github.com/eclipse-glsp/glsp-core/pull/2) [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [build] Stop shipping specs and test helpers in the published packages [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
 
 #### Potentially Breaking Changes
 
@@ -20,19 +26,46 @@ Entries are grouped by component (Protocol, Client, Server, Dev Packages, E2E) p
 
 #### Changes
 
+- [build] Develop and release the server packages from the consolidated `glsp-core` monorepo [#2](https://github.com/eclipse-glsp/glsp-core/pull/2) [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [build] Stop shipping specs and test helpers in the published packages [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+
 #### Potentially Breaking Changes
 
 ### Dev Packages
 
 #### Changes
 
+- [build] Develop and release the dev packages from the consolidated `glsp-core` monorepo [#2](https://github.com/eclipse-glsp/glsp-core/pull/2) [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [config] Keep the console output of passing tests out of the Vitest report via `silent: 'passed-only'`, so failing tests still print theirs; override with `--silent=false` [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [cli] Adapt the `glsp` CLI to the consolidated repository structure: the `repo` commands address the client, server and dev packages in a single checkout, and `releng prepare` maintains the component-grouped changelog layout [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [cli] Rework `glsp releng publish next` to publish only affected packages, i.e. packages with changes since the last publish plus their transitive workspace dependents [#11](https://github.com/eclipse-glsp/glsp-core/pull/11)
+- [cli] Skip already published canary versions in `glsp releng publish next`, so re-running over a partially published commit is idempotent instead of failing on npm's "cannot publish over previously published versions" [#12](https://github.com/eclipse-glsp/glsp-core/pull/12)
+    - Skipped packages still receive the canary version locally, so the exact pins of their dependents resolve
+    - The npm version-existence lookup now supports a custom registry
+- [cli] Rework `glsp updateNext` to maintain exact next dependency pins: GLSP-scoped dependencies are rewritten in the `package.json` files and the lockfile is reconciled with a plain `pnpm install`, so every nightly bump is a reviewable manifest diff [#13](https://github.com/eclipse-glsp/glsp-core/pull/13)
+    - Legacy literal `next` ranges are migrated to exact pins on the first run; exact next versions of non-GLSP packages are left alone
+    - The command aborts when workspace manifests have uncommitted changes, to keep the update diff clean
+
 #### Potentially Breaking Changes
+
+- [config] Replace ESLint and Prettier with oxlint and oxfmt [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+    - `@eclipse-glsp/oxlint-config` and `@eclipse-glsp/oxfmt-config` supersede `@eclipse-glsp/eslint-config` and `@eclipse-glsp/prettier-config`, which are no longer published
+    - The rule set is simplified: stylistic, compiler-redundant and `no-null` rules are dropped, while the layering and license header checks are kept
+    - Linting no longer requires a prior build, as type-aware rules resolve workspace packages via project references; `pnpm lint` therefore also reports compiler diagnostics
+- [deps] Upgrade `@eclipse-glsp/ts-config` to TypeScript 7 with `bundler` module resolution [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
 
 ### E2E
 
 #### Changes
 
+- [build] Develop and release `@eclipse-glsp/playwright` and `@eclipse-glsp-examples/workflow-e2e` from the `glsp-core` monorepo [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [playwright] Run the suites against the workflow standalone example of this workspace instead of cloning and building the source repositories [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+- [config] Centralize the environment handling in `e2e/workflow-e2e/configs/env.ts`: a shared `e2e/.env` covers the applications shipped here, and the exported `loadEnv` and `getPort` let integration repositories anchor their own `.env` and pass the ports of their own applications [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+
 #### Potentially Breaking Changes
+
+- [playwright] Rename the testing framework package from `@eclipse-glsp/glsp-playwright` to `@eclipse-glsp/playwright` [#5](https://github.com/eclipse-glsp/glsp-core/pull/5)
+    - Adopters have to switch the dependency and update their imports; `@eclipse-glsp/glsp-playwright` is no longer published
 
 ---
 
