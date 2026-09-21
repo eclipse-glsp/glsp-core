@@ -70,7 +70,8 @@
   },
   "devDependencies": {
     "@estruyf/github-actions-reporter": "^1.7.0",
-    "@playwright/test": "^1.59.1"
+    "@playwright/test": "^1.59.1",
+    "workflow-standalone": "workspace:*"
   },
   "peerDependencies": {
     "@playwright/test": "^1.47.0"

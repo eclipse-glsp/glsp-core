@@ -26,10 +26,13 @@ export type WebServerConfig = Exclude<NonNullable<PlaywrightTestConfig['webServe
  * Directory of the `workflow-standalone` example, which provides the diagram client and — unless
  * an external server is used — the Workflow GLSP server.
  *
- * @param configDir Directory of the calling `playwright.config.ts`, i.e. `__dirname`
+ * Resolved through the module resolution of the `workflow-standalone` dependency rather than by a
+ * relative path, so that the build-order dependency on the example is a real edge in the workspace
+ * graph instead of a string this file has to keep in sync with the directory layout. The example is
+ * `private`, so the dependency can only be expressed as `workspace:*`.
  */
-function getStandaloneDir(configDir: string): string {
-    return path.resolve(configDir, '..', '..', 'examples', 'workflow-standalone');
+function getStandaloneDir(): string {
+    return path.dirname(require.resolve('workflow-standalone/package.json'));
 }
 
 /**
@@ -49,10 +52,9 @@ function usesExternalServer(): boolean {
  * one entry per project covers everything the tests need. Run `pnpm build` beforehand — `start`
  * serves the built bundles and does not compile.
  *
- * @param configDir Directory of the calling `playwright.config.ts`, i.e. `__dirname`
  * @param project Project the web server is started for
  */
-export function buildStandaloneWebServer(configDir: string, project: ProjectName): WebServerConfig {
+export function buildStandaloneWebServer(project: ProjectName): WebServerConfig {
     const isBrowser = project === 'standalone-browser';
     const clientPort = getPort(isBrowser ? 'STANDALONE_BROWSER_PORT' : 'STANDALONE_PORT');
     const glspServerPort = getPort('GLSP_SERVER_PORT');
@@ -63,7 +65,7 @@ export function buildStandaloneWebServer(configDir: string, project: ProjectName
     const script = isBrowser ? 'start:browser' : 'start';
 
     return {
-        command: `pnpm -C "${getStandaloneDir(configDir)}" ${script} --no-open --client-port ${clientPort} --port ${glspServerPort}${externalServer}`,
+        command: `pnpm -C "${getStandaloneDir()}" ${script} --no-open --client-port ${clientPort} --port ${glspServerPort}${externalServer}`,
         url: `http://localhost:${clientPort}/diagram.html`,
         reuseExistingServer: !process.env.CI,
         // stdout is just build/serve progress; stderr stays piped so a missing bundle or a failing
@@ -81,9 +83,8 @@ export function buildStandaloneWebServer(configDir: string, project: ProjectName
 /**
  * The web servers for the active standalone projects.
  *
- * @param configDir Directory of the calling `playwright.config.ts`, i.e. `__dirname`
  * @param activeProjects Projects the run was started for
  */
-export function buildWebServers(configDir: string, activeProjects: ProjectName[]): PlaywrightTestConfig['webServer'] {
-    return activeProjects.map(project => buildStandaloneWebServer(configDir, project));
+export function buildWebServers(activeProjects: ProjectName[]): PlaywrightTestConfig['webServer'] {
+    return activeProjects.map(project => buildStandaloneWebServer(project));
 }
