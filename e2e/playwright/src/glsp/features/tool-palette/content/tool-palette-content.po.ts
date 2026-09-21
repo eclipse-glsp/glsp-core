@@ -17,6 +17,7 @@ import { definedAttr } from '../../../../utils/ts.utils';
 import type { GLSPToolPalette } from '../tool-palette.po';
 import { ToolPaletteContentGroup, ToolPaletteContentGroupConstructor } from './tool-palette-content-group.po';
 import { ToolPaletteContentItem, ToolPaletteContentItemConstructor } from './tool-palette-content-item.po';
+import { ClientCSS, classSelector } from '../../../client-dom';
 
 export class GLSPToolPaletteContent {
     readonly paletteLocator;
@@ -28,7 +29,7 @@ export class GLSPToolPaletteContent {
     async groupsOfType<TToolGroup extends ToolPaletteContentGroup>(
         constructor: ToolPaletteContentGroupConstructor<TToolGroup>
     ): Promise<TToolGroup[]> {
-        const toolGroupLocator = this.paletteLocator.child('.tool-group');
+        const toolGroupLocator = this.paletteLocator.child(classSelector(ClientCSS.TOOL_GROUP));
         const groups: TToolGroup[] = [];
 
         for await (const locator of await toolGroupLocator.locate().all()) {
@@ -54,8 +55,8 @@ export class GLSPToolPaletteContent {
         headerText: string,
         constructor: ToolPaletteContentGroupConstructor<TToolGroup>
     ): Promise<TToolGroup> {
-        const toolGroupLocator = this.paletteLocator.locate().locator('.tool-group', {
-            has: this.paletteLocator.page.locator('.group-header', { hasText: headerText })
+        const toolGroupLocator = this.paletteLocator.locate().locator(classSelector(ClientCSS.TOOL_GROUP), {
+            has: this.paletteLocator.page.locator(classSelector(ClientCSS.GROUP_HEADER), { hasText: headerText })
         });
 
         const id = await definedAttr(toolGroupLocator, 'id');

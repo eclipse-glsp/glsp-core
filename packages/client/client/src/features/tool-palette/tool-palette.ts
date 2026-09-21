@@ -45,6 +45,19 @@ import { IGridManager } from '../grid/grid-manager';
 import { MouseDeleteTool } from '../tools/deletion/delete-tool';
 import { MarqueeMouseTool } from '../tools/marquee-selection/marquee-mouse-tool';
 
+/**
+ * CSS classes of the tool palette that external tooling selects on.
+ *
+ * The Playwright page objects of `@eclipse-glsp/playwright` navigate the palette through these
+ * classes, so they are a contract rather than styling: renaming one breaks the e2e suites of every
+ * GLSP integration. Palette classes that are purely presentational stay inline below.
+ */
+export const CSS_MINIMIZE_PALETTE_BUTTON = 'minimize-palette-button';
+export const CSS_HEADER_TOOLS = 'header-tools';
+export const CSS_TOOL_BUTTON = 'tool-button';
+export const CSS_TOOL_GROUP = 'tool-group';
+export const CSS_GROUP_HEADER = 'group-header';
+
 const CLICKED_CSS_CLASS = 'clicked';
 const SEARCH_ICON_ID = 'search';
 const PALETTE_ICON_ID = 'tools';
@@ -143,7 +156,7 @@ export class ToolPalette extends GLSPAbstractUIExtension implements IActionHandl
             return;
         }
         const toggleButton = document.createElement('div');
-        toggleButton.classList.add('minimize-palette-button');
+        toggleButton.classList.add(CSS_MINIMIZE_PALETTE_BUTTON);
         this.containerElement.classList.add('collapsible-palette');
         const minimizeIcon = createIcon(CHEVRON_DOWN_ICON_ID);
         this.updateMinimizePaletteButtonTooltip(toggleButton);
@@ -196,7 +209,7 @@ export class ToolPalette extends GLSPAbstractUIExtension implements IActionHandl
         if (this.paletteItems.length === 0) {
             const noResultsDiv = document.createElement('div');
             noResultsDiv.innerText = messages.tool_palette.no_items;
-            noResultsDiv.classList.add('tool-button');
+            noResultsDiv.classList.add(CSS_TOOL_BUTTON);
             bodyDiv.appendChild(noResultsDiv);
         }
         // Remove existing body to refresh filtered entries
@@ -226,7 +239,7 @@ export class ToolPalette extends GLSPAbstractUIExtension implements IActionHandl
 
     protected createHeaderTools(): HTMLElement {
         const headerTools = document.createElement('div');
-        headerTools.classList.add('header-tools');
+        headerTools.classList.add(CSS_HEADER_TOOLS);
 
         this.defaultToolsButton = this.createDefaultToolButton();
         headerTools.appendChild(this.defaultToolsButton);
@@ -396,7 +409,7 @@ export class ToolPalette extends GLSPAbstractUIExtension implements IActionHandl
     protected createToolButton(item: PaletteItem, index: number): HTMLElement {
         const button = document.createElement('div');
         button.tabIndex = index;
-        button.classList.add('tool-button');
+        button.classList.add(CSS_TOOL_BUTTON);
         if (item.icon) {
             button.appendChild(createIcon(item.icon));
         }
@@ -560,10 +573,10 @@ export function createIcon(codiconId: string): HTMLElement {
 
 export function createToolGroup(item: PaletteItem): HTMLElement {
     const group = document.createElement('div');
-    group.classList.add('tool-group');
+    group.classList.add(CSS_TOOL_GROUP);
     group.id = item.id;
     const header = document.createElement('div');
-    header.classList.add('group-header');
+    header.classList.add(CSS_GROUP_HEADER);
     if (item.icon) {
         header.appendChild(createIcon(item.icon));
     }

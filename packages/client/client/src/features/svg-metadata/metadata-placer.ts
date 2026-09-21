@@ -18,6 +18,7 @@ import { DOMHelper, GChildElement, GModelElement, GModelRoot, IVNodePostprocesso
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { GEdge } from '../../model';
+import { SVGMetadata } from './svg-metadata';
 
 @injectable()
 export class MetadataPlacer implements IVNodePostprocessor {
@@ -25,20 +26,20 @@ export class MetadataPlacer implements IVNodePostprocessor {
 
     decorate(vnode: VNode, element: GModelElement): VNode {
         if (element instanceof GModelRoot) {
-            setAttr(vnode, 'data-svg-metadata-api', true);
+            setAttr(vnode, SVGMetadata.api, true);
         }
 
-        setAttr(vnode, 'data-svg-metadata-type', element.type);
+        setAttr(vnode, SVGMetadata.type, element.type);
 
         if (element instanceof GChildElement) {
-            setAttr(vnode, 'data-svg-metadata-parent-id', this.domHelper.createUniqueDOMElementId(element.parent));
+            setAttr(vnode, SVGMetadata.parentId, this.domHelper.createUniqueDOMElementId(element.parent));
         }
         if (element instanceof GEdge) {
             if (element.source !== undefined) {
-                setAttr(vnode, 'data-svg-metadata-edge-source-id', this.domHelper.createUniqueDOMElementId(element.source));
+                setAttr(vnode, SVGMetadata.Edge.sourceId, this.domHelper.createUniqueDOMElementId(element.source));
             }
             if (element.target !== undefined) {
-                setAttr(vnode, 'data-svg-metadata-edge-target-id', this.domHelper.createUniqueDOMElementId(element.target));
+                setAttr(vnode, SVGMetadata.Edge.targetId, this.domHelper.createUniqueDOMElementId(element.target));
             }
         }
         return vnode;

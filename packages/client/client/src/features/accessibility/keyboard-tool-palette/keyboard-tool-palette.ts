@@ -28,7 +28,15 @@ import {
 import { injectable } from 'inversify';
 import { messages } from '../../../base/messages';
 import { EnableDefaultToolsAction, EnableToolsAction } from '../../../base/tool-manager/tool';
-import { compare, createIcon, createToolGroup, EnableToolPaletteAction, ToolPalette } from '../../tool-palette/tool-palette';
+import {
+    compare,
+    createIcon,
+    createToolGroup,
+    CSS_HEADER_TOOLS,
+    CSS_TOOL_BUTTON,
+    EnableToolPaletteAction,
+    ToolPalette
+} from '../../tool-palette/tool-palette';
 import { MouseDeleteTool } from '../../tools/deletion/delete-tool';
 import { MarqueeMouseTool } from '../../tools/marquee-selection/marquee-mouse-tool';
 import { FocusDomAction } from '../actions';
@@ -166,7 +174,7 @@ export class KeyboardToolPalette extends ToolPalette {
         if (this.paletteItems.length === 0) {
             const noResultsDiv = document.createElement('div');
             noResultsDiv.innerText = messages.tool_palette.no_items;
-            noResultsDiv.classList.add('tool-button');
+            noResultsDiv.classList.add(CSS_TOOL_BUTTON);
             bodyDiv.appendChild(noResultsDiv);
         }
         // Replace existing body to refresh filtered entries
@@ -182,7 +190,7 @@ export class KeyboardToolPalette extends ToolPalette {
         let mappingIndex = 0;
 
         const headerTools = document.createElement('div');
-        headerTools.classList.add('header-tools');
+        headerTools.classList.add(CSS_HEADER_TOOLS);
 
         this.defaultToolsButton = this.createDefaultToolButton();
         this.headerToolsButtonMapping.set(mappingIndex++, this.defaultToolsButton);
@@ -351,7 +359,7 @@ export class KeyboardToolPalette extends ToolPalette {
             button.appendChild(this.createKeyboardShotcut(AVAILABLE_KEYS[buttonIndex]));
         }
         button.tabIndex = tabIndex;
-        button.classList.add('tool-button');
+        button.classList.add(CSS_TOOL_BUTTON);
         if (item.icon) {
             button.appendChild(createIcon(item.icon));
         }

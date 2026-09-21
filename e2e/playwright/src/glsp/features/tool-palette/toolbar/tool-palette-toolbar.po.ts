@@ -20,12 +20,13 @@ import {
     ToolPaletteToolbarItemConstructor,
     ValidationToolbarItem
 } from './tool-palette-toolbar-item.po';
+import { ClientCSS, classSelector } from '../../../client-dom';
 
 export class GLSPToolPaletteToolbar {
     readonly toolbarLocator;
 
     constructor(public readonly toolPalette: GLSPToolPalette) {
-        this.toolbarLocator = this.toolPalette.locator.child('.header-tools');
+        this.toolbarLocator = this.toolPalette.locator.child(classSelector(ClientCSS.HEADER_TOOLS));
     }
 
     itemByIcon<TElement extends ToolPaletteToolbarItem>(

@@ -21,6 +21,7 @@ import { definedGLSPAttr } from '../../../../utils/ts.utils';
 import { BaseToolPaletteItem } from '../tool-palette-item.base';
 import type { GLSPToolPalette } from '../tool-palette.po';
 import { ToolPaletteContentItem } from './tool-palette-content-item.po';
+import { ClientCSS, classSelector } from '../../../client-dom';
 
 export type ToolPaletteContentGroupConstructor<TToolGroup extends ToolPaletteContentGroup> = ConstructorT<
     TToolGroup,
@@ -29,8 +30,8 @@ export type ToolPaletteContentGroupConstructor<TToolGroup extends ToolPaletteCon
 
 const ToolPaletteContentGroupMixin = Mix(BaseToolPaletteItem).flow(useClickableFlow).build();
 export class ToolPaletteContentGroup extends ToolPaletteContentGroupMixin {
-    readonly headerLocator = this.locator.child('.group-header');
-    readonly itemsLocator = this.locator.child('.tool-button');
+    readonly headerLocator = this.locator.child(classSelector(ClientCSS.GROUP_HEADER));
+    readonly itemsLocator = this.locator.child(classSelector(ClientCSS.TOOL_BUTTON));
 
     async idAttr(): Promise<string> {
         return definedGLSPAttr(this.locator, 'id');

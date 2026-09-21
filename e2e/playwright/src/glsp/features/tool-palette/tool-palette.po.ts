@@ -18,6 +18,7 @@ import { Locateable } from '../../../remote';
 import type { GLSPLocator } from '../../../remote/locator';
 import { GLSPToolPaletteContent } from './content/tool-palette-content.po';
 import { GLSPToolPaletteToolbar } from './toolbar/tool-palette-toolbar.po';
+import { ClientCSS, classSelector } from '../../client-dom';
 
 export interface GLSPToolPaletteOptions {
     locator: GLSPLocator;
@@ -36,7 +37,7 @@ export class GLSPToolPalette extends Locateable {
 
     constructor(protected readonly options: GLSPToolPaletteOptions) {
         super(options.locator);
-        this.buttonLocator = options.minimizeButtonLocator ?? this.app.locator.child('.minimize-palette-button');
+        this.buttonLocator = options.minimizeButtonLocator ?? this.app.locator.child(classSelector(ClientCSS.MINIMIZE_PALETTE_BUTTON));
 
         this.toolbar = this.createToolbar();
         this.content = this.createContent();

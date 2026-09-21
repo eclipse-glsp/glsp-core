@@ -189,6 +189,7 @@ export * from './features/source-model-watcher/source-model-watcher-module';
 export * from './features/status/status-module';
 export * from './features/status/status-overlay';
 export * from './features/svg-metadata/metadata-placer';
+export * from './features/svg-metadata/svg-metadata';
 export * from './features/svg-metadata/svg-metadata-module';
 export * from './features/tool-palette/tool-palette';
 export * from './features/tool-palette/tool-palette-module';

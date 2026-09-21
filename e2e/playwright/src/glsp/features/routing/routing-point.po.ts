@@ -19,6 +19,7 @@ import { Clickable, Mix, useDraggableFlow } from '../../../extension';
 import { ModelElementMetadata, PEdge, PMetadata, PModelElement, PModelElementData, PModelElementSnapshot, SVGMetadata } from '../../graph';
 import type { Position } from '../../../types';
 import { definedAttr, definedGLSPAttr } from '../../../utils/ts.utils';
+import { ClientAttribute } from '../../client-dom';
 
 export type RoutingPointKind = 'junction' | 'line' | 'source' | 'target';
 
@@ -147,7 +148,7 @@ export abstract class BaseRoutingPoint extends BaseRoutingPointMixin {
     }
 
     async dataKindAttr(): Promise<RoutingPointKind> {
-        return (await definedGLSPAttr(this.locator, 'data-kind')) as RoutingPointKind;
+        return (await definedGLSPAttr(this.locator, ClientAttribute.RESIZE_HANDLE_KIND)) as RoutingPointKind;
     }
 
     override async dragToAbsolutePosition(position: Position, options?: AutoPrepareOptions): Promise<void> {

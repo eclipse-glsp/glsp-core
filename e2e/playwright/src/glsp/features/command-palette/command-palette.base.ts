@@ -17,6 +17,7 @@ import type { Locator } from '@playwright/test';
 import { waitForFunction } from '../../../integration/wait.fixes';
 import type { GLSPLocator } from '../../../remote';
 import { Input, Locateable } from '../../../remote';
+import { ClientCSS, classSelector } from '../../client-dom';
 
 export interface GLSPBaseCommandPaletteOptions {
     locator: GLSPLocator;
@@ -34,7 +35,7 @@ export abstract class GLSPBaseCommandPalette extends Locateable {
     constructor(protected readonly options: GLSPBaseCommandPaletteOptions) {
         super(options.locator);
         this.suggestionLocator = options.suggestionLocator ?? this.locator.child('.command-palette-suggestions');
-        this.loadingLocator = options.loadingLocator ?? this.locator.child('.loading');
+        this.loadingLocator = options.loadingLocator ?? this.locator.child(classSelector(ClientCSS.LOADING_INDICATOR));
 
         this.keyboard = this.app.page.keyboard;
         this.input = new Input(this.locator.child('input'));

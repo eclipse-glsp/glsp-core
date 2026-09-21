@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import glspVitestConfig, { defineConfig } from '@eclipse-glsp/vitest-config';
+import { resolve } from 'path';
 
 // One named test project per workspace group instead of a single flat suite:
 // `vitest --project <name>` scopes a run to one group, while a bare `vitest run --coverage`
@@ -41,7 +42,26 @@ export default defineConfig({
                 extends: true,
                 test: { name: 'server', setupFiles: ['reflect-metadata'], include: ['packages/server/*/src/**/*.spec.{ts,tsx}'] }
             },
-            { extends: true, test: { name: 'dev', include: ['dev-packages/*/src/**/*.spec.{ts,tsx}'] } }
+            { extends: true, test: { name: 'dev', include: ['dev-packages/*/src/**/*.spec.{ts,tsx}'] } },
+            // Unit tests of the e2e packages, not the Playwright suites — those are driven by
+            // `pnpm e2e test` and live outside `src`. `reflect-metadata` because the DOM-contract
+            // spec imports the (inversify-decorated) `@eclipse-glsp/client` barrel.
+            {
+                extends: true,
+                resolve: {
+                    // The client barrel pulls in CSS via `import '…/foo.css'`. Resolved to its
+                    // built CommonJS, Vitest hands that to Node, which parses the stylesheets as
+                    // JavaScript and fails. Pointing at the TypeScript entry routes the package
+                    // through Vite, which stubs CSS imports (`test.css` is off). It is the same
+                    // barrel either way, and it matches how the other projects test sources.
+                    alias: { '@eclipse-glsp/client': resolve(__dirname, 'packages/client/client/src/index.ts') }
+                },
+                test: {
+                    name: 'e2e',
+                    setupFiles: ['reflect-metadata'],
+                    include: ['e2e/*/src/**/*.spec.{ts,tsx}']
+                }
+            }
         ]
     }
 });

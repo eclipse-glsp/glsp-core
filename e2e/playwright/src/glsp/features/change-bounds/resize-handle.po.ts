@@ -18,6 +18,7 @@ import { AutoPrepareOptions, AutoWaitOptions, Clickable, Mix, useDraggableFlow }
 import { ModelElementMetadata, PMetadata, PNode, SVGMetadata } from '../../graph';
 import { GLSPLocator, Locateable } from '../../../remote';
 import type { Position } from '../../../types';
+import { ClientAttribute } from '../../client-dom';
 
 type Vertical = 'top' | 'bottom';
 type Horizontal = 'left' | 'right';
@@ -37,7 +38,9 @@ export class ResizeHandles {
 
     async waitForKind(kind: ResizeHandleKind, options?: AutoWaitOptions): Promise<ResizeHandle> {
         const resizeHandle = new ResizeHandle(
-            this.element.locator.child(`[${SVGMetadata.type}="${PMetadata.getType(ResizeHandle)}"][data-kind="${kind}"]`),
+            this.element.locator.child(
+                `[${SVGMetadata.type}="${PMetadata.getType(ResizeHandle)}"][${ClientAttribute.RESIZE_HANDLE_KIND}="${kind}"]`
+            ),
             this,
             kind
         );

@@ -36,6 +36,7 @@
   "files": [
     "lib",
     "src",
+    "!**/*.spec.*",
     "configs"
   ],
   "main": "lib/src/index.js",
@@ -69,6 +70,7 @@
     "ts-dedent": "^2.2.0"
   },
   "devDependencies": {
+    "@eclipse-glsp/client": "workspace:*",
     "@estruyf/github-actions-reporter": "^1.7.0",
     "@playwright/test": "^1.59.1",
     "workflow-standalone": "workspace:*"

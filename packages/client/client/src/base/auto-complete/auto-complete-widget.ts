@@ -65,6 +65,15 @@ export interface AutoCompleteWidgetOptions {
 const configureAutocomplete: (settings: AutocompleteSettings<LabeledAction>) => AutocompleteResult = require('autocompleter');
 
 /**
+ * CSS class marking the loading indicator of the auto-complete widget, added on top of the codicon
+ * classes so that the indicator is addressable independently of the icon it currently shows.
+ *
+ * The Playwright page objects of `@eclipse-glsp/playwright` wait on this class to detect a pending
+ * suggestion lookup, so it is a contract with the e2e suites rather than pure styling.
+ */
+export const CSS_LOADING_INDICATOR = 'loading';
+
+/**
  * The `AutoCompleteWidget` is a reusable UI element that provides a text input supporting auto-completion,
  * validation, validation messages, etc.
  *
@@ -72,7 +81,7 @@ const configureAutocomplete: (settings: AutocompleteSettings<LabeledAction>) => 
  * `examples/workflow-glsp/src/direct-task-editing/direct-task-editor.ts`
  */
 export class AutoCompleteWidget {
-    loadingIndicatorClasses = codiconCSSClasses('loading', false, true, ['loading']);
+    loadingIndicatorClasses = codiconCSSClasses('loading', false, true, [CSS_LOADING_INDICATOR]);
 
     protected containerElement: HTMLElement;
     protected inputElement: HTMLInputElement;

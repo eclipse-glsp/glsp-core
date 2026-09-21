@@ -125,8 +125,16 @@ export function feedbackEdgeEndId(root: GModelRoot): string {
     return root.id + '_feedback_anchor';
 }
 
+/**
+ * CSS class of the dangling edge rendered while an edge is being created.
+ *
+ * The Playwright page objects of `@eclipse-glsp/playwright` filter feedback edges out of graph
+ * queries by this class, so it is a contract with the e2e suites rather than pure styling.
+ */
+export const CSS_FEEDBACK_EDGE = 'feedback-edge';
+
 export const defaultFeedbackEdgeSchema: Partial<GEdgeSchema> = {
-    cssClasses: ['feedback-edge'],
+    cssClasses: [CSS_FEEDBACK_EDGE],
     opacity: 0.3
 };
 

@@ -19,6 +19,14 @@ import { injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { GResizeHandle } from '../../change-bounds/model';
 
+/**
+ * Attribute that carries the {@link GResizeHandle.location} of a rendered resize handle.
+ *
+ * The Playwright page objects of `@eclipse-glsp/playwright` address individual handles by this
+ * attribute, so it is a contract with the e2e suites rather than an internal rendering detail.
+ */
+export const RESIZE_HANDLE_KIND_ATTR = 'data-kind';
+
 @injectable()
 export class GResizeHandleView implements IView {
     render(handle: GResizeHandle, context: RenderingContext): VNode | undefined {
@@ -36,7 +44,7 @@ export class GResizeHandleView implements IView {
                     r={this.getRadius()}
                 />
             );
-            setAttr(node, 'data-kind', handle.location);
+            setAttr(node, RESIZE_HANDLE_KIND_ATTR, handle.location);
             return node;
         }
         // Fallback: Create an empty group

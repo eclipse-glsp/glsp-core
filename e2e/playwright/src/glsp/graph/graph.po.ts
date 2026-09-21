@@ -27,6 +27,7 @@ import { isEqualLocatorType, PModelElement, PModelElementConstructor } from './e
 import { isPNodeConstructor, PNode, PNodeConstructor } from './elements/node';
 import type { EdgeConstructorOptions, EdgeSearchOptions, GraphConstructorOptions, TypedEdge } from './graph.type';
 import { SVGMetadata, SVGMetadataUtils } from './svg-metadata-api';
+import { ClientCSS, classSelector } from '../client-dom';
 
 export interface GLSPGraphOptions {
     locator: GLSPLocator;
@@ -261,7 +262,7 @@ export class GLSPGraph extends PModelElement {
 
         // Exclude transient creation feedback in addition to the already-present elements.
         // This ensures stability against timing issues under load
-        const ignore = ['.ghost-element', '.feedback-edge', ...ids.map(id => `[id="${id}"]`)];
+        const ignore = [classSelector(ClientCSS.GHOST_ELEMENT), classSelector(ClientCSS.FEEDBACK_EDGE), ...ids.map(id => `[id="${id}"]`)];
         const createdLocator = this.locate().locator(`[data-svg-metadata-type="${elementType}"]:not(${ignore.join(',')})`);
 
         await expect(createdLocator.first()).toBeVisible();

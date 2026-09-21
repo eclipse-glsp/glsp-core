@@ -10,5 +10,5 @@
     "declarationMap": true
   },
   "include": ["src", "tests", "playwright.config.ts", "./configs/*.ts"],
-  "references": [{ "path": "../playwright" }]
+  "references": [{ "path": "../playwright" }, { "path": "../../packages/client/client" }]
 }

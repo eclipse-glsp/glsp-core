@@ -334,6 +334,9 @@ importers:
         specifier: ^2.2.0
         version: 2.3.0
     devDependencies:
+      '@eclipse-glsp/client':
+        specifier: workspace:*
+        version: link:../../packages/client/client
       '@estruyf/github-actions-reporter':
         specifier: ^1.7.0
         version: 1.12.0(@playwright/test@1.63.0)
