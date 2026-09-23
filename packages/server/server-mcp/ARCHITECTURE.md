@@ -128,7 +128,7 @@ If the deployment shape changes — exposing the server to a network, or allowin
 
 ## Diagram-Specific Overrides
 
-The MCP integration ships drop-in defaults that work on any GLSP model, but three of them produce deliberately generic output and emit a one-time warning when used. Non-workflow adopters get measurably better LLM-driven results by binding diagram-specific subclasses on their `DiagramModule`:
+The MCP integration ships drop-in defaults that work on any GLSP model, but three of them produce deliberately generic output and emit a one-time warning when used. Non-workflow adopters get measurably better LLM-driven results by binding diagram-specific subclasses in their diagram setup (e.g. by subclassing `DefaultMcpDiagramModule`):
 
 | Service                | Default behavior                                                                                                                                        | Why override                                                                                                                      |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |

@@ -16,7 +16,7 @@
 import { MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable, interfaces } from 'inversify';
 import { Command } from '../command/command';
-import { ModelState } from '../features/model/model-state';
+import { ModelState } from '../model/model-state';
 
 /**
  * An operation handler can execute {@link Operation}s of a certain type (subclass).

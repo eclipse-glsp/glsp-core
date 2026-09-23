@@ -22,6 +22,7 @@ import {
     GLSPServerInitializer,
     GLSPServerListener,
     InitializeClientSessionParameters,
+    InitializeClientSessionResult,
     InitializeParameters,
     InitializeResult,
     MaybePromise,
@@ -30,11 +31,14 @@ import {
     RequestAction,
     ResponseAction,
     ServerActions,
+    ServerCapabilities,
+    SessionCapabilities,
     distinctAdd,
     remove
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { GlobalActionProvider } from '../actions/global-action-provider';
+import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { ClientSession } from '../session/client-session';
 import { ClientSessionManager } from '../session/client-session-manager';
 import { GLSPServerError } from '../utils/glsp-server-error';
@@ -105,7 +109,10 @@ export class DefaultGLSPServer implements GLSPServer {
 
         this.actionProvider.actionKinds.forEach((kinds, diagramType) => (serverActions[diagramType] = kinds));
 
-        let result = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions };
+        const capabilities = await this.getServerCapabilities();
+
+        // Capabilities are set before the initializers run, so that GLSPServerInitializers can inspect/extend them.
+        let result: InitializeResult = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions, capabilities };
 
         result = await this.initializeServer(params, result);
         // keep for backwards compatibility
@@ -113,6 +120,17 @@ export class DefaultGLSPServer implements GLSPServer {
         this.getListenersToNotify('serverInitialized').forEach((listener: GLSPServerListener) => listener.serverInitialized!(this));
         this.initializeResult = result;
         return result;
+    }
+
+    /**
+     * Resolves the static (connection-scoped) capabilities of all configured diagram types.
+     */
+    protected async getServerCapabilities(): Promise<ServerCapabilities> {
+        const diagramTypes: Required<ServerCapabilities>['diagramTypes'] = {};
+        (await this.actionProvider.getDiagramCapabilities()).forEach(
+            (capabilities, diagramType) => (diagramTypes[diagramType] = capabilities)
+        );
+        return { diagramTypes };
     }
 
     protected async initializeServer(params: InitializeParameters, result: InitializeResult): Promise<InitializeResult> {
@@ -134,7 +152,7 @@ export class DefaultGLSPServer implements GLSPServer {
         return result;
     }
 
-    public async initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {
+    public async initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult> {
         this.logger.info(
             `Initializing client session with: clientSessionId: '${params.clientSessionId}', diagramType: '${params.diagramType}'`
         );
@@ -143,7 +161,28 @@ export class DefaultGLSPServer implements GLSPServer {
         const session = this.sessionManager.getOrCreateClientSession(params);
 
         this.clientSessions.set(params.clientSessionId, session);
-        return this.handleInitializeClientSessionArgs(params.args);
+        await this.handleInitializeClientSessionArgs(params.args);
+        const capabilities = await this.getSessionCapabilities(session, params);
+        if (capabilities) {
+            this.logger.info(`Initialized client session '${params.clientSessionId}' with capabilities:`, capabilities);
+        } else {
+            this.logger.info(`Initialized client session '${params.clientSessionId}' without capabilities`);
+        }
+        return { capabilities };
+    }
+
+    /**
+     * Resolves the effective capabilities of the given (newly initialized) client session.
+     * Returns `undefined` if the session container does not provide a {@link SessionCapabilityProvider}.
+     */
+    protected async getSessionCapabilities(
+        session: ClientSession,
+        params: InitializeClientSessionParameters
+    ): Promise<SessionCapabilities | undefined> {
+        if (!session.container.isBound(SessionCapabilityProvider)) {
+            return undefined;
+        }
+        return session.container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities(params.args);
     }
 
     protected handleInitializeClientSessionArgs(args: Args | undefined): MaybePromise<void> {

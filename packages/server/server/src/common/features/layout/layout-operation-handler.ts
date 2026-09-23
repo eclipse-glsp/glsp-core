@@ -20,7 +20,7 @@ import { GModelRecordingCommand } from '../../command/recording-command';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { OperationHandler } from '../../operations/operation-handler';
 import { Logger } from '../../utils/logger';
-import { GModelSerializer } from '../model/gmodel-serializer';
+import { GModelSerializer } from '../../model/gmodel-serializer';
 import { LayoutEngine } from './layout-engine';
 
 /**

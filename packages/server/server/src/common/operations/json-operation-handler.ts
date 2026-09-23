@@ -30,7 +30,7 @@ import {
 import { injectable } from 'inversify';
 import { Command } from '../command/command';
 import { AbstractRecordingCommand } from '../command/recording-command';
-import { ModelState } from '../features/model/model-state';
+import { ModelState } from '../model/model-state';
 import { getRelativeLocation } from '../utils/layout-util';
 import { CreateEdgeOperationHandler, CreateNodeOperationHandler } from './create-operation-handler';
 import { OperationHandler } from './operation-handler';

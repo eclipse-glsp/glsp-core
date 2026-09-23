@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args } from '@eclipse-glsp/protocol';
-import { inject, injectable, optional } from 'inversify';
+import { Args, MaybeArray, asArray } from '@eclipse-glsp/protocol';
+import { inject, injectable, multiInject, optional } from 'inversify';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { MultiRegistry } from '../utils/registry';
 import { ActionHandler, ActionHandlerConstructor, ActionHandlerFactory } from './action-handler';
@@ -46,15 +46,20 @@ export class ActionHandlerRegistryInitializer implements ClientSessionInitialize
     @inject(ActionHandlerFactory)
     protected factory: ActionHandlerFactory;
 
-    @inject(ActionHandlerConstructor)
+    /**
+     * Each module contributes its own (array) binding for {@link ActionHandlerConstructor}
+     * (see {@link InstanceMultiBinding}), so the injected value is a list of contributions that is flattened on use.
+     */
+    @multiInject(ActionHandlerConstructor)
     @optional()
-    protected handlerConstructors: ActionHandlerConstructor[] = [];
+    protected handlerConstructors: MaybeArray<ActionHandlerConstructor>[] = [];
 
     @inject(ActionHandlerRegistry)
     protected registry: ActionHandlerRegistry;
 
     initialize(_args?: Args): void {
-        const handlers = this.handlerConstructors.map(constructor => this.factory(constructor));
+        const constructors = new Set(this.handlerConstructors.flatMap(contribution => asArray(contribution)));
+        const handlers = [...constructors].map(constructor => this.factory(constructor));
         handlers.forEach(handler => this.registry.registerHandler(handler));
     }
 }

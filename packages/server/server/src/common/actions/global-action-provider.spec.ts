@@ -64,4 +64,9 @@ describe('test DefaultGlobalActionProvider', () => {
         expect(resultServerActions).toBeDefined();
         expect(serverActions.every(action => resultServerActions!.includes(action))).toBe(true);
     });
+
+    it('getDiagramCapabilities - without SessionCapabilityProvider', async () => {
+        const result = await actionProvider.getDiagramCapabilities();
+        expect(result.get(diagramType)).toEqual({});
+    });
 });

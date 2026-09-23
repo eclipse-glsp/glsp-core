@@ -17,7 +17,7 @@ import { Action, MarkersReason, RequestMarkersAction, SetMarkersAction } from '@
 import { inject, injectable, optional } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { GLSPServerError } from '../../utils/glsp-server-error';
-import { ModelState } from '../model/model-state';
+import { ModelState } from '../../model/model-state';
 import { ModelValidator } from './model-validator';
 
 @injectable()

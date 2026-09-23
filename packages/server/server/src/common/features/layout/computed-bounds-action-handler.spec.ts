@@ -18,9 +18,9 @@ import { Action, ComputedBoundsAction, DirtyStateChangeReason, LayoutOperation }
 import { Container, ContainerModule } from 'inversify';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LogLevel, Logger } from '../../utils/logger';
-import { GModelIndex } from '../model/gmodel-index';
-import { ModelState } from '../model/model-state';
-import { ModelSubmissionHandler } from '../model/model-submission-handler';
+import { GModelIndex } from '../../model/gmodel-index';
+import { ModelState } from '../../model/model-state';
+import { ModelSubmissionHandler } from '../../model/model-submission-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 
 const NODE_ID = 'node0';
