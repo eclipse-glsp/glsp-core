@@ -16,4 +16,4 @@
 
 export * from '@eclipse-glsp/graph';
 export * from '@eclipse-glsp/protocol';
-export * from '@eclipse-glsp/protocol/lib/di';
+export * from '@eclipse-glsp/protocol/di';

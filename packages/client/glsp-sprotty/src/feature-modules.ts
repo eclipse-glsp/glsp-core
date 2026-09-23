@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureModule } from '@eclipse-glsp/protocol/lib/di';
+import { FeatureModule } from '@eclipse-glsp/protocol/di';
 import sprottyDefaultModule from 'sprotty/lib/base/di.config';
 import sprottyButtonModule from 'sprotty/lib/features/button/di.config';
 import sprottyEdgeIntersectionModule from 'sprotty/lib/features/edge-intersection/di.config';

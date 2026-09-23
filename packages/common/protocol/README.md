@@ -5,6 +5,12 @@ In addition, this package provides shared common code and utility libraries for 
 
 This project is built with `pnpm` and is available from npm via [@eclipse-glsp/protocol](https://www.npmjs.com/package/@eclipse-glsp/protocol).
 
+## Entry points
+
+- `@eclipse-glsp/protocol`: the protocol definition and shared utilities. Has no dependency on `inversify` or `reflect-metadata`.
+- `@eclipse-glsp/protocol/di`: the dependency injection utilities (`FeatureModule`, `BindingContext`, `LazyInjector`, ...).
+  Requires the optional peer dependencies `inversify` and `reflect-metadata`. Also reexported by `@eclipse-glsp/client` and `@eclipse-glsp/server`.
+
 ## More information
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).

@@ -37,6 +37,40 @@
   ],
   "main": "lib/index",
   "types": "lib/index",
+  "typesVersions": {
+    "*": {
+      "di": [
+        "lib/di/index.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./di": {
+      "types": "./lib/di/index.d.ts",
+      "default": "./lib/di/index.js"
+    },
+    "./lib": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lib/di": {
+      "types": "./lib/di/index.d.ts",
+      "default": "./lib/di/index.js"
+    },
+    "./lib/*.js": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    },
+    "./lib/*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    },
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public"
   },

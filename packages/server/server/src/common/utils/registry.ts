@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { remove } from '@eclipse-glsp/protocol/lib/utils/array-util';
+import { remove } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { Logger } from './logger';
 
