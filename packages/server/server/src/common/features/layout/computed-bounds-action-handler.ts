@@ -27,8 +27,8 @@ import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { applyAlignment, applyElementAndBounds, applyRoute } from '../../utils/layout-util';
 import { Logger } from '../../utils/logger';
-import { ModelState } from '../model/model-state';
-import { ModelSubmissionHandler } from '../model/model-submission-handler';
+import { ModelState } from '../../model/model-state';
+import { ModelSubmissionHandler } from '../../model/model-submission-handler';
 
 /**
  * Syncs the bounds computed by the client (i.e. the actual bounds after applying CSS styles) back to the `GModel`.

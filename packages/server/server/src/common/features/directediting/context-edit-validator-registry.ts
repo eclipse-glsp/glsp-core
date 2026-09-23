@@ -16,7 +16,7 @@
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { ContextEditValidators } from '../../di/service-identifiers';
 import { Registry } from '../../utils/registry';
-import { ModelState } from '../model/model-state';
+import { ModelState } from '../../model/model-state';
 import { ContextEditValidator, ValidateLabelEditAdapter } from './context-edit-validator';
 import { LabelEditValidator } from './label-edit-validator';
 

@@ -21,7 +21,7 @@ import { McpWorkerBridge } from '@eclipse-glsp/server-mcp/browser';
 import { Container } from 'inversify';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowMcpDiagramModule } from '../common/mcp/workflow-mcp-diagram-module';
-import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
+import { WorkflowServerModule, createWorkflowDiagramSetup } from '../common/workflow-diagram-module';
 import { WorkflowMockModelStorage } from './mock-model-storage';
 
 export async function launch(_argv?: string[]): Promise<void> {
@@ -38,10 +38,8 @@ export async function launch(_argv?: string[]): Promise<void> {
         isWebWorker: true
     });
 
-    const serverModule = new WorkflowServerModule().configureDiagramModule(
-        new WorkflowDiagramModule(() => WorkflowMockModelStorage),
-        elkLayoutModule,
-        new WorkflowMcpDiagramModule()
+    const serverModule = new WorkflowServerModule().configureDiagram(
+        createWorkflowDiagramSetup(() => WorkflowMockModelStorage, { add: [elkLayoutModule, new WorkflowMcpDiagramModule()] })
     );
 
     launcher.configure(serverModule, bridge.createServerModule());

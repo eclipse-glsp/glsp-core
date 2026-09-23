@@ -14,7 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
+    DiagramCapabilities,
     DisposeClientSessionParameters,
+    GLSPCapability,
     GLSPClientProxy,
     GLSPServerListener,
     InitializeClientSessionParameters,
@@ -24,6 +26,7 @@ import * as assert from 'assert';
 import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { GlobalActionProvider } from '../actions/global-action-provider';
+import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
@@ -37,6 +40,8 @@ describe('test DefaultGLSPServer', () => {
     const protocolVersion = '1.0.0';
     const actionKinds = new Map<string, string[]>();
     actionKinds.set(diagramType, ['A1', 'A2']);
+    const diagramCapabilities = new Map<string, DiagramCapabilities>();
+    diagramCapabilities.set(diagramType, { [GLSPCapability.Popup]: true, [GLSPCapability.LabelEdit]: { validation: true } });
     const sessionManager = new mock.StubClientSessionManager();
     let spy_sessionManager_getOrCreate: MockInstance;
     let spy_sessionManager_dispose: MockInstance;
@@ -52,7 +57,10 @@ describe('test DefaultGLSPServer', () => {
             bind(Logger).toConstantValue(new mock.StubLogger());
             bind(GLSPClientProxy).toConstantValue(new mock.StubGLSPClientProxy());
             bind(ClientSessionManager).toConstantValue(sessionManager);
-            bind(GlobalActionProvider).toConstantValue(<GlobalActionProvider>{ actionKinds });
+            bind(GlobalActionProvider).toConstantValue(<GlobalActionProvider>{
+                actionKinds,
+                getDiagramCapabilities: async () => diagramCapabilities
+            });
             bind(GLSPServerListener).toConstantValue(listener1);
         })
     );
@@ -110,7 +118,7 @@ describe('test DefaultGLSPServer', () => {
         const result = await glspServer.initialize(initializeParameters);
         expect(result.protocolVersion).toBe(protocolVersion);
         expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
-        expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
+        expect(result.capabilities?.diagramTypes?.[diagramType]).toEqual(diagramCapabilities.get(diagramType));
         expect(spy_listener1_initialize).toHaveBeenCalledWith(glspServer);
         expect(spy_listener2_initialize).not.toHaveBeenCalled();
     });
@@ -134,8 +142,26 @@ describe('test DefaultGLSPServer', () => {
             diagramType,
             clientActionKinds: []
         };
-        await glspServer.initializeClientSession(initializeClientSessionParameters);
+        const result = await glspServer.initializeClientSession(initializeClientSessionParameters);
         expect(spy_sessionManager_getOrCreate).toHaveBeenCalledWith(initializeClientSessionParameters);
+        // The stub session container does not provide a SessionCapabilityProvider
+        expect(result.capabilities).toBeUndefined();
+    });
+
+    it('initialize client session - returns session capabilities resolved with session args', async () => {
+        const sessionContainer = new Container();
+        const provider: SessionCapabilityProvider = {
+            getCapabilities: async args => ({ [GLSPCapability.Popup]: args?.readonly !== true })
+        };
+        sessionContainer.bind(SessionCapabilityProvider).toConstantValue(provider);
+        spy_sessionManager_getOrCreate.mockReturnValue(mock.createClientSession(clientSessionId, diagramType, sessionContainer));
+        const result = await glspServer.initializeClientSession({
+            clientSessionId,
+            diagramType,
+            clientActionKinds: [],
+            args: { readonly: true }
+        });
+        expect(result.capabilities).toEqual({ [GLSPCapability.Popup]: false });
     });
 
     it('dispose client session', async () => {

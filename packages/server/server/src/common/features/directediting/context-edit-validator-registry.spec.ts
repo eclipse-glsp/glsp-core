@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { describe, expect, it } from 'vitest';
 import { TestContextEditValidator, TestLabelEditValidator } from '../../test/mock-util';
-import { DefaultModelState } from '../model/model-state';
+import { DefaultModelState } from '../../model/model-state';
 import { ContextEditValidator } from './context-edit-validator';
 import { DefaultContextEditValidatorRegistry } from './context-edit-validator-registry';
 

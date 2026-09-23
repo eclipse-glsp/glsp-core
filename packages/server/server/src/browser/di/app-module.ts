@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ContainerModule } from 'inversify';
-import { ActionDispatchScope, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
+import { ActionDispatchScope, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common';
 import { BrowserActionDispatchScope } from './browser-action-dispatch-scope';
 
 export function createAppModule(options: LoggerConfigOptions = {}): ContainerModule {

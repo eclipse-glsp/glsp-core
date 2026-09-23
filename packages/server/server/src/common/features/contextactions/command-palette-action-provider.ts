@@ -16,7 +16,7 @@
 import { GModelElement } from '@eclipse-glsp/graph';
 import { Args, EditorContext, LabeledAction, Point } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ModelState } from '../model/model-state';
+import { ModelState } from '../../model/model-state';
 import { ContextActionsProvider } from './context-actions-provider';
 
 /**

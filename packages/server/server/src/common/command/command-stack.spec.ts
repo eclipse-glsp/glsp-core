@@ -16,7 +16,7 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { StubLogger } from '../test/mock-util';
-import { Command } from '../command/command';
+import { Command } from './command';
 import { Logger } from '../utils/logger';
 import { DefaultCommandStack } from './command-stack';
 

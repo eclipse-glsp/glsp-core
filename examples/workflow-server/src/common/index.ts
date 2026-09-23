@@ -14,6 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+export * from './features/context-actions/workflow-context-actions-module';
+export * from './features/element-creation/workflow-element-creation-module';
+export * from './features/label-edit/workflow-label-edit-module';
+export * from './features/navigation/workflow-navigation-module';
+export * from './features/popup/workflow-popup-module';
+export * from './features/task-edit/workflow-task-edit-module';
+export * from './features/type-hints/workflow-type-hints-module';
+export * from './features/validation/workflow-validation-module';
 export * from './graph-extension';
 export * from './handler/create-activity-node-handler';
 export * from './handler/create-automated-task-handler';
@@ -51,4 +59,5 @@ export * from './workflow-diagram-configuration';
 export * from './workflow-diagram-module';
 export * from './workflow-edge-creation-checker';
 export * from './workflow-glsp-server';
+export * from './workflow-model-module';
 export * from './workflow-popup-factory';

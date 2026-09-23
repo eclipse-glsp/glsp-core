@@ -21,7 +21,13 @@ import { distinctAdd, remove } from '../utils/array-util';
 import { Emitter, Event } from '../utils/event';
 import { ActionMessageHandler, ClientState, GLSPClient } from './glsp-client';
 import { GLSPClientProxy, GLSPServer } from './glsp-server';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from './types';
 
 export const GLOBAL_HANDLER_ID = '*';
 /**
@@ -145,7 +151,7 @@ export class BaseGLSPClient implements GLSPClient {
         return initializeDeferred.promise;
     }
 
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult> {
         return this.checkedServer.initializeClientSession(params);
     }
 

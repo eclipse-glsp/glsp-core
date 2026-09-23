@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args, CreateOperation, Operation } from '@eclipse-glsp/protocol';
-import { inject, injectable, optional } from 'inversify';
+import { Args, CreateOperation, MaybeArray, Operation, asArray } from '@eclipse-glsp/protocol';
+import { inject, injectable, multiInject, optional } from 'inversify';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { Registry } from '../utils/registry';
 import { CreateOperationHandler } from './create-operation-handler';
@@ -38,18 +38,32 @@ export class OperationHandlerRegistry extends Registry<string, OperationHandler>
 
 @injectable()
 export class OperationHandlerRegistryInitializer implements ClientSessionInitializer {
+    /**
+     * The operation handler registry has to be populated before any other initializer runs. In particular,
+     * the {@link ActionHandlerRegistryInitializer} instantiates the `OperationActionHandler` whose action kinds are
+     * derived from the registered operation handlers.
+     */
+    static readonly PRIORITY = 1000;
+
+    readonly priority = OperationHandlerRegistryInitializer.PRIORITY;
+
     @inject(OperationHandlerFactory)
     protected factory: OperationHandlerFactory;
 
-    @inject(OperationHandlerConstructor)
+    /**
+     * Each module contributes its own (array) binding for {@link OperationHandlerConstructor}
+     * (see {@link InstanceMultiBinding}), so the injected value is a list of contributions that is flattened on use.
+     */
+    @multiInject(OperationHandlerConstructor)
     @optional()
-    protected handlerConstructors: OperationHandlerConstructor[] = [];
+    protected handlerConstructors: MaybeArray<OperationHandlerConstructor>[] = [];
 
     @inject(OperationHandlerRegistry)
     protected registry: OperationHandlerRegistry;
 
     initialize(_args?: Args): void {
-        const handlers = this.handlerConstructors.map(constructor => this.factory(constructor));
+        const constructors = new Set(this.handlerConstructors.flatMap(contribution => asArray(contribution)));
+        const handlers = [...constructors].map(constructor => this.factory(constructor));
         handlers.forEach(handler => this.registry.registerHandler(handler));
     }
 }

@@ -58,7 +58,7 @@ export class McpDiagramResourceHandlerRegistryInitializer implements ClientSessi
             } catch (err: unknown) {
                 throw new Error(
                     `Failed to instantiate MCP diagram resource handler '${constructor.name}': ${(err as Error).message}. ` +
-                        'Check your DiagramModule bindings.'
+                        'Check your diagram setup bindings.'
                 );
             }
             if (!handler.canRegister()) {
