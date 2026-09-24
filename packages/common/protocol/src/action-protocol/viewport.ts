@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import * as sprotty from 'sprotty-protocol/lib/actions';
-import { hasArrayProp, hasBooleanProp } from '../utils/type-util';
+import { hasArrayProp, hasBooleanProp, hasNumberProp } from '../utils/type-util';
 import { Action } from './base-protocol';
 
 /**
@@ -48,7 +48,12 @@ export namespace CenterAction {
     export const KIND = 'center';
 
     export function is(object: unknown): object is CenterAction {
-        return Action.hasKind(object, KIND) && hasBooleanProp(object, 'animate') && hasBooleanProp(object, 'retainZoom');
+        return (
+            Action.hasKind(object, KIND) &&
+            hasArrayProp(object, 'elementIds') &&
+            hasBooleanProp(object, 'animate') &&
+            hasBooleanProp(object, 'retainZoom')
+        );
     }
 
     export function create(elementIds: string[], options: { animate?: boolean; retainZoom?: boolean } = {}): CenterAction {
@@ -163,8 +168,8 @@ export interface MoveViewportAction extends Action {
 export namespace MoveViewportAction {
     export const KIND = 'moveViewport';
 
-    export function is(object: any): object is MoveViewportAction {
-        return Action.hasKind(object, KIND);
+    export function is(object: unknown): object is MoveViewportAction {
+        return Action.hasKind(object, KIND) && hasNumberProp(object, 'moveX') && hasNumberProp(object, 'moveY');
     }
 
     export function create(options: { moveX: number; moveY: number }): MoveViewportAction {

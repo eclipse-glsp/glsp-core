@@ -153,7 +153,7 @@ export namespace LayoutOperation {
     export const KIND = 'layout';
 
     export function is(object: unknown): object is LayoutOperation {
-        return Action.hasKind(object, KIND);
+        return Operation.hasKind(object, KIND);
     }
 
     export function create(
