@@ -42,6 +42,7 @@ export const TYPES = {
     /** @deprecated Use {@link TYPES.IGModelRootListener} instead */
     ISModelRootListener: IGModelRootListener,
     IGModelRootListener: IGModelRootListener,
+    /** @deprecated Use {@link TYPES.IContextMenuItemProvider} for context menu item providers. */
     IContextMenuProvider: Symbol('IContextMenuProvider'),
     ICopyPasteHandler: Symbol('ICopyPasteHandler'),
     ITool: Symbol('ITool'),

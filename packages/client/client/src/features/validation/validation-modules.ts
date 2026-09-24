@@ -52,7 +52,7 @@ export const markerNavigatorModule = new FeatureModule(
  */
 export const standaloneMarkerNavigatorModule = new FeatureModule(
     bind => {
-        bindAsService(bind, TYPES.IContextMenuProvider, MarkerNavigatorContextMenuItemProvider);
+        bindAsService(bind, TYPES.IContextMenuItemProvider, MarkerNavigatorContextMenuItemProvider);
         bindAsService(bind, TYPES.KeyListener, MarkerNavigatorKeyListener);
     },
     { featureId: Symbol('standaloneMarkerNavigator'), requires: markerNavigatorModule }
