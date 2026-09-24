@@ -18,14 +18,9 @@ import { TaskEditor, isTaskNode } from '@eclipse-glsp-examples/workflow-glsp';
 import {
     ClientMenuItem,
     EditorContextService,
-    GIssueMarker,
-    GModelRoot,
-    GParentElement,
     IContextMenuItemProvider,
     LazyInjector,
     NavigateAction,
-    NavigateToMarkerAction,
-    Point,
     SetUIExtensionVisibilityAction
 } from '@eclipse-glsp/client';
 import { inject, injectable } from 'inversify';
@@ -38,39 +33,23 @@ export class WorkflowStandaloneContextMenuProvider implements IContextMenuItemPr
     protected get editorContext(): EditorContextService {
         return this.lazyInjector.get(EditorContextService);
     }
-    getItems(root: Readonly<GModelRoot>, lastMousePosition?: Point): Promise<ClientMenuItem[]> {
-        const goToChildren: ClientMenuItem[] = [
+    getItems(): Promise<ClientMenuItem[]> {
+        const goToItems: ClientMenuItem[] = [
             {
                 id: 'next node',
                 label: 'Next node',
+                parentId: 'navigate',
                 actions: [NavigateAction.create('next')],
                 isEnabled: () => this.editorContext.selectedElements.filter(isTaskNode).length === 1
             },
             {
                 id: 'previous node',
                 label: 'Previous node',
+                parentId: 'navigate',
                 actions: [NavigateAction.create('previous')],
                 isEnabled: () => this.editorContext.selectedElements.filter(isTaskNode).length === 1
-            },
-            {
-                id: 'next-marker',
-                label: 'Go to Next Marker',
-                actions: [NavigateToMarkerAction.create({ direction: 'next' })],
-                isEnabled: () => collectIssueMarkers(root).length > 0
-            },
-            {
-                id: 'previous-marker',
-                label: 'Go to Previous Marker',
-                actions: [NavigateToMarkerAction.create({ direction: 'previous' })],
-                isEnabled: () => collectIssueMarkers(root).length > 0
             }
         ];
-        const goTo: ClientMenuItem = {
-            id: 'go-to',
-            label: 'Go To',
-            actions: [],
-            children: goToChildren
-        };
 
         const selectedTasks = this.editorContext.selectedElements.filter(isTaskNode);
         const editTask: ClientMenuItem = {
@@ -90,17 +69,6 @@ export class WorkflowStandaloneContextMenuProvider implements IContextMenuItemPr
             isEnabled: () => !this.editorContext.isReadonly && selectedTasks.length === 1
         };
 
-        return Promise.resolve([editTask, goTo]);
+        return Promise.resolve([editTask, ...goToItems]);
     }
-}
-
-export function collectIssueMarkers(root: GParentElement): GIssueMarker[] {
-    const markers = [];
-    for (const child of root.children) {
-        if (child instanceof GIssueMarker) {
-            markers.push(child);
-        }
-        markers.push(...collectIssueMarkers(child));
-    }
-    return markers;
 }
