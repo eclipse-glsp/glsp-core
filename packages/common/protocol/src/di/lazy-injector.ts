@@ -22,7 +22,8 @@ import { BindingContext } from './inversify-util';
 /**
  * The lazy injector can be used to retrieve services from the container in deferred fashion.
  * Instead of directly injecting the service, the service provider can be injected and used to retrieve the service
- * at a later point when it is actually needed. Services are cached after the first retrieval.
+ * at a later point when it is actually needed. Successfully retrieved services are cached separately for single and
+ * multi-injection; unbound identifiers are checked again on subsequent calls.
  *
  * The lazy injector bound in transient scope. This means each injecting class gets its own instance.
  *
@@ -77,7 +78,9 @@ export const LazyInjector = Symbol('LazyInjector');
  */
 
 export class DefaultLazyInjector implements LazyInjector {
+    /** Cache for single-service resolutions. Multi-service resolutions are stored separately. */
     protected cache = new Map<interfaces.ServiceIdentifier<AnyObject>, MaybeArray<AnyObject> | undefined>();
+    protected multiCache = new Map<interfaces.ServiceIdentifier<AnyObject>, AnyObject[]>();
 
     constructor(protected readonly container: interfaces.Container) {}
 
@@ -91,20 +94,26 @@ export class DefaultLazyInjector implements LazyInjector {
 
     getOptional<T extends object>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T | undefined {
         if (this.cache.has(serviceIdentifier)) {
-            return this.cache.get(serviceIdentifier) as T | undefined;
+            return this.cache.get(serviceIdentifier) as T;
         }
 
-        const service = this.container.isBound(serviceIdentifier) ? this.container.get<T>(serviceIdentifier) : undefined;
+        if (!this.container.isBound(serviceIdentifier)) {
+            return undefined;
+        }
+        const service = this.container.get<T>(serviceIdentifier);
         this.cache.set(serviceIdentifier, service);
         return service;
     }
 
     getAll<T extends object>(serviceIdentifier: interfaces.ServiceIdentifier<T>): T[] {
-        if (this.cache.has(serviceIdentifier)) {
-            return this.cache.get(serviceIdentifier) as T[];
+        if (this.multiCache.has(serviceIdentifier)) {
+            return this.multiCache.get(serviceIdentifier) as T[];
         }
-        const services = this.container.isBound(serviceIdentifier) ? this.container.getAll<T>(serviceIdentifier) : [];
-        this.cache.set(serviceIdentifier, services);
+        if (!this.container.isBound(serviceIdentifier)) {
+            return [];
+        }
+        const services = this.container.getAll<T>(serviceIdentifier);
+        this.multiCache.set(serviceIdentifier, services);
         return services;
     }
 }
