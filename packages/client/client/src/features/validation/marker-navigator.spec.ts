@@ -13,7 +13,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { BoundsAware, GChildElement, GIssue, GModelElement, GModelRoot, GNode, GParentElement } from '@eclipse-glsp/sprotty';
+import {
+    BoundsAware,
+    GChildElement,
+    GIssue,
+    GModelElement,
+    GModelRoot,
+    GNode,
+    GParentElement,
+    IContextMenuItemProvider,
+    TYPES
+} from '@eclipse-glsp/sprotty';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Container } from 'inversify';
 import 'reflect-metadata';
@@ -21,8 +31,18 @@ import { defaultModule } from '../../base/default.module';
 import { GGraph } from '../../model';
 import { decorationModule } from '../decoration/decoration-module';
 import { GIssueMarker } from './issue-marker';
-import { MarkerNavigator } from './marker-navigator';
-import { markerNavigatorModule } from './validation-modules';
+import { MarkerNavigator, MarkerNavigatorContextMenuItemProvider } from './marker-navigator';
+import { markerNavigatorModule, standaloneMarkerNavigatorModule } from './validation-modules';
+
+describe('standaloneMarkerNavigatorModule', () => {
+    it('registers marker navigation items with the context menu registry', () => {
+        const container = new Container();
+        container.load(defaultModule, decorationModule, markerNavigatorModule, standaloneMarkerNavigatorModule);
+
+        const providers = container.getAll<IContextMenuItemProvider>(TYPES.IContextMenuItemProvider);
+        expect(providers.some(provider => provider instanceof MarkerNavigatorContextMenuItemProvider)).toBe(true);
+    });
+});
 
 describe('MarkerNavigator', () => {
     const container = new Container();
