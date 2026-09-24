@@ -36,8 +36,13 @@ describe('Model layout actions', () => {
             it('should return false for `undefined`', () => {
                 expect(RequestBoundsAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(RequestBoundsAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `newRoot` property', () => {
+                expect(RequestBoundsAction.is({ kind: 'requestBounds', requestId: '' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(RequestBoundsAction.is({ kind: 'notTheRightOne', requestId: '', newRoot: { id: 'root', type: 'graph' } })).toBe(
+                    false
+                );
             });
         });
 
@@ -76,8 +81,11 @@ describe('Model layout actions', () => {
             it('should return false for `undefined`', () => {
                 expect(ComputedBoundsAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(ComputedBoundsAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `bounds` property', () => {
+                expect(ComputedBoundsAction.is({ kind: 'computedBounds', responseId: '' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(ComputedBoundsAction.is({ kind: 'notTheRightOne', responseId: '', bounds: [] })).toBe(false);
             });
         });
 
@@ -145,8 +153,11 @@ describe('Model layout actions', () => {
             it('should return false for `undefined`', () => {
                 expect(LayoutOperation.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(LayoutOperation.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `isOperation` property', () => {
+                expect(LayoutOperation.is({ kind: 'layout' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(LayoutOperation.is({ kind: 'notTheRightOne', isOperation: true })).toBe(false);
             });
         });
 

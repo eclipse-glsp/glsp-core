@@ -119,7 +119,9 @@ export namespace RequestAction {
  * In case the responseId is empty, the action is handled as standalone, i.e. it was fired without a preceding request.
  * The action dispatcher of the GLSP server has a special handling for {@link RequestAction} handlers
  * and automatically sets the `responseId` of the corresponding responseAction. So on the server side its typically enough
- * to set the `responseId` to an empty string and rely on the `ActionDispatcher` for assigning the correct `responseId.
+ * to set the `responseId` to an empty string and rely on the `ActionDispatcher` for assigning the correct `responseId`.
+ * The type guards of concrete response actions (e.g. `SetModelAction.is`) deliberately do not check the `responseId`,
+ * as not every sender includes it.
  * Additional typeguard functions are provided via the corresponding namespace.
  */
 export interface ResponseAction extends Action, sprotty.ResponseAction {

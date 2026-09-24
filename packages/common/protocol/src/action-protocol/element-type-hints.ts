@@ -177,7 +177,7 @@ export namespace RequestCheckEdgeAction {
 
     export function is(object: unknown): object is RequestCheckEdgeAction {
         return (
-            Action.hasKind(object, KIND) &&
+            RequestAction.hasKind(object, KIND) &&
             hasStringProp(object, 'edgeType') &&
             hasStringProp(object, 'sourceElementId') &&
             hasStringProp(object, 'targetElementId', true)

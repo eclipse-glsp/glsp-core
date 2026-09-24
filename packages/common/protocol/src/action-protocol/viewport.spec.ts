@@ -32,8 +32,11 @@ describe('Viewport Actions', () => {
             it('should return false for `undefined`', () => {
                 expect(CenterAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(CenterAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `elementIds` property', () => {
+                expect(CenterAction.is({ kind: 'center', animate: true, retainZoom: true })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(CenterAction.is({ kind: 'notTheRightOne', elementIds: [], animate: true, retainZoom: true })).toBe(false);
             });
         });
 
@@ -74,8 +77,11 @@ describe('Viewport Actions', () => {
             it('should return false for `undefined`', () => {
                 expect(FitToScreenAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(FitToScreenAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `animate` property', () => {
+                expect(FitToScreenAction.is({ kind: 'fit', elementIds: [] })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(FitToScreenAction.is({ kind: 'notTheRightOne', elementIds: [], animate: true })).toBe(false);
             });
         });
 
@@ -116,8 +122,12 @@ describe('Viewport Actions', () => {
             it('should return false for `undefined`', () => {
                 expect(MoveViewportAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(MoveViewportAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `moveX` or `moveY` property', () => {
+                expect(MoveViewportAction.is({ kind: 'moveViewport', moveY: 0 })).toBe(false);
+                expect(MoveViewportAction.is({ kind: 'moveViewport', moveX: 0 })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(MoveViewportAction.is({ kind: 'notTheRightOne', moveX: 0, moveY: 0 })).toBe(false);
             });
         });
 
@@ -146,8 +156,11 @@ describe('Viewport Actions', () => {
             it('should return false for `undefined`', () => {
                 expect(OriginViewportAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(OriginViewportAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `animate` property', () => {
+                expect(OriginViewportAction.is({ kind: 'originViewport' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(OriginViewportAction.is({ kind: 'notTheRightOne', animate: true })).toBe(false);
             });
         });
 

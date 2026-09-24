@@ -33,8 +33,11 @@ describe('Element type hints actions', () => {
             it('should return false for `undefined`', () => {
                 expect(RequestTypeHintsAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(RequestTypeHintsAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `requestId` property', () => {
+                expect(RequestTypeHintsAction.is({ kind: 'requestTypeHints' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(RequestTypeHintsAction.is({ kind: 'notTheRightOne', requestId: '' })).toBe(false);
             });
         });
 
@@ -72,8 +75,11 @@ describe('Element type hints actions', () => {
             it('should return false for `undefined`', () => {
                 expect(SetTypeHintsAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(SetTypeHintsAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `edgeHints` property', () => {
+                expect(SetTypeHintsAction.is({ kind: 'setTypeHints', responseId: '', shapeHints: [] })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(SetTypeHintsAction.is({ kind: 'notTheRightOne', responseId: '', shapeHints: [], edgeHints: [] })).toBe(false);
             });
         });
 
@@ -160,8 +166,13 @@ describe('Element type hints actions', () => {
             it('should return false for `undefined`', () => {
                 expect(RequestCheckEdgeAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(RequestCheckEdgeAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `requestId` property', () => {
+                expect(RequestCheckEdgeAction.is({ kind: 'requestCheckEdge', edgeType: 'edge', sourceElementId: 'source' })).toBe(false);
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(
+                    RequestCheckEdgeAction.is({ kind: 'notTheRightOne', requestId: '', edgeType: 'edge', sourceElementId: 'source' })
+                ).toBe(false);
             });
         });
 
@@ -223,8 +234,21 @@ describe('Element type hints actions', () => {
             it('should return false for `undefined`', () => {
                 expect(CheckEdgeResultAction.is(undefined)).toBe(false);
             });
-            it('should return false for an object that does not have all required interface properties', () => {
-                expect(CheckEdgeResultAction.is({ kind: 'notTheRightOne' })).toBe(false);
+            it('should return false for an object that lacks the required `sourceElementId` property', () => {
+                expect(CheckEdgeResultAction.is({ kind: 'checkEdgeTargetResult', responseId: '', isValid: true, edgeType: 'edge' })).toBe(
+                    false
+                );
+            });
+            it('should return false for an object with a different kind', () => {
+                expect(
+                    CheckEdgeResultAction.is({
+                        kind: 'notTheRightOne',
+                        responseId: '',
+                        isValid: true,
+                        edgeType: 'edge',
+                        sourceElementId: 'source'
+                    })
+                ).toBe(false);
             });
         });
 
