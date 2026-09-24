@@ -38,7 +38,7 @@ const config: PlaywrightTestConfig<GLSPPlaywrightOptions> = {
         ? [...(baseConfig.reporter as ReporterDescription[]), ['@estruyf/github-actions-reporter']]
         : baseConfig.reporter,
     testDir: 'lib/tests',
-    webServer: buildWebServers(__dirname, activeProjects),
+    webServer: buildWebServers(activeProjects),
     projects: buildProjects(activeProjects)
 };
 
