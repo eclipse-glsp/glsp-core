@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
+import { BindingContext } from '@eclipse-glsp/protocol/di';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
 import { ActionDispatchScope, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
