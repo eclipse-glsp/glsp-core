@@ -73,7 +73,7 @@ describe('LazyInjector', () => {
         });
         it('should throw an error if multiple services are bound to the given id', () => {
             container.bind(ServiceA).toConstantValue('ServiceA');
-            expect(() => lazyInjector.get(ServiceA)).toThrow();
+            expect(() => lazyInjector.getOptional(ServiceA)).toThrow();
         });
         it('should return the same service instance for a bound id on subsequent calls', () => {
             const serviceA1 = lazyInjector.getOptional(ServiceA);
@@ -85,12 +85,14 @@ describe('LazyInjector', () => {
             expect(serviceB1).toBeDefined();
             expect(serviceB1).toBe(serviceB2);
         });
-        it('should return undefined if the service id was initially not bound but is bound on subsequent calls', () => {
+        it('should resolve a service bound after an initial miss', () => {
             const serviceC1 = lazyInjector.getOptional('ServiceC');
-            container.bind('ServiceC').toConstantValue('ServiceC');
+            const serviceC = new ServiceA();
+            container.bind('ServiceC').toConstantValue(serviceC);
             const serviceC2 = lazyInjector.getOptional('ServiceC');
             expect(serviceC1).toBeUndefined();
-            expect(serviceC2).toBeUndefined();
+            expect(serviceC2).toBe(serviceC);
+            expect(lazyInjector.get('ServiceC')).toBe(serviceC);
         });
     });
 
@@ -110,12 +112,41 @@ describe('LazyInjector', () => {
             const services = lazyInjector.getAll('UnboundService');
             expect(services).toHaveLength(0);
         });
-        it('should return an empty array if the service id was initially not bound but is bound on subsequent calls', () => {
+        it('should resolve services bound after an initial miss', () => {
             const services1 = lazyInjector.getAll('ServiceC');
-            container.bind('ServiceC').toConstantValue('ServiceC');
+            const serviceC = new ServiceA();
+            container.bind('ServiceC').toConstantValue(serviceC);
             const services2 = lazyInjector.getAll('ServiceC');
             expect(services1).toHaveLength(0);
-            expect(services2).toHaveLength(0);
+            expect(services2).toEqual([serviceC]);
+            expect(lazyInjector.getAll('ServiceC')).toBe(services2);
+        });
+    });
+
+    describe('mixed lookups', () => {
+        it('should return an array from getAll after get', () => {
+            const service = lazyInjector.get(ServiceB);
+            const services = lazyInjector.getAll(ServiceB);
+            expect(services).toHaveLength(1);
+            expect(services[0]).toBeInstanceOf(ServiceB);
+            expect(lazyInjector.get(ServiceB)).toBe(service);
+            expect(lazyInjector.getAll(ServiceB)).toBe(services);
+        });
+
+        it('should return a single service from getOptional after getAll', () => {
+            const services = lazyInjector.getAll(ServiceB);
+            const service = lazyInjector.getOptional(ServiceB);
+            expect(service).toBeInstanceOf(ServiceB);
+            expect(Array.isArray(service)).toBe(false);
+            // Separate injection modes resolve transient bindings independently, as eager injection does.
+            expect(service).not.toBe(services[0]);
+            expect(lazyInjector.getOptional(ServiceB)).toBe(service);
+            expect(lazyInjector.getAll(ServiceB)).toBe(services);
+        });
+
+        it('should not let a multi lookup hide an ambiguous single lookup', () => {
+            expect(lazyInjector.getAll(MultiService)).toHaveLength(2);
+            expect(() => lazyInjector.get(MultiService)).toThrow();
         });
     });
 });
