@@ -84,7 +84,7 @@ export default defineConfig({
             files: ['packages/common/protocol/src/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     ...restrictPackage(
                         'sprotty',
@@ -110,7 +110,7 @@ export default defineConfig({
             files: ['packages/client/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     {
                         name: 'sprotty',
@@ -131,7 +131,7 @@ export default defineConfig({
             files: ['packages/client/glsp-sprotty/src/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     { name: 'sprotty-protocol', message: 'Please use @eclipse-glsp/sprotty instead' },
                     { name: 'sprotty-protocol/*', message: "Please use '@eclipse-glsp/protocol' instead" },
@@ -144,7 +144,7 @@ export default defineConfig({
             files: ['packages/client/client/src/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     ...restrictPackage('sprotty', 'Please use @eclipse-glsp/sprotty instead'),
                     ...restrictPackage('sprotty-protocol', 'Please use @eclipse-glsp/sprotty instead'),
@@ -159,7 +159,7 @@ export default defineConfig({
             files: [...clientExampleGlobs],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     ...restrictPackage('sprotty', 'Please use @eclipse-glsp/client instead'),
                     ...restrictPackage('sprotty-protocol', 'Please use @eclipse-glsp/client instead'),
@@ -185,7 +185,7 @@ export default defineConfig({
             files: ['packages/server/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     ...restrictPackage(
                         'sprotty-protocol',
@@ -200,7 +200,7 @@ export default defineConfig({
             files: [...serverExampleGlobs, 'packages/server/layout-elk/src/**/*.{ts,tsx}', 'packages/server/server-mcp/src/**/*.{ts,tsx}'],
             rules: {
                 'no-restricted-imports': [
-                    'warn',
+                    'error',
                     ...restrictedBaseImports,
                     ...restrictPackage('sprotty-protocol', 'Please import from @eclipse-glsp/server instead'),
                     ...restrictPackage('@eclipse-glsp/protocol', 'Please import from @eclipse-glsp/server instead'),
