@@ -14,9 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { decorate, injectable } from 'inversify';
+import { METADATA_KEY, decorate, injectable } from 'inversify';
 import { JsonrpcClientProxy } from '../client-server-protocol/jsonrpc/base-jsonrpc-glsp-client';
 
-// Decorate `JsonrpcClientProxy` as injectable for anyone who imports the di functionality, such as the client package,
-// the Theia integration package and the server package.
-decorate(injectable(), JsonrpcClientProxy);
+// DI and protocol modules can be loaded through multiple paths while sharing the same proxy class.
+// Only decorate an undecorated class so a second load does not throw.
+if (!Reflect.hasOwnMetadata(METADATA_KEY.PARAM_TYPES, JsonrpcClientProxy)) {
+    decorate(injectable(), JsonrpcClientProxy);
+}
