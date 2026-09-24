@@ -53,10 +53,6 @@
       "types": "./lib/di/index.d.ts",
       "default": "./lib/di/index.js"
     },
-    "./lib": {
-      "types": "./lib/index.d.ts",
-      "default": "./lib/index.js"
-    },
     "./lib/di": {
       "types": "./lib/di/index.d.ts",
       "default": "./lib/di/index.js"
