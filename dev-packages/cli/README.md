@@ -202,7 +202,8 @@ Publishes the (public) workspace packages of a GLSP repository via `pnpm publish
 
 `next` publishing is _affected-only_ per package. Changes are detected from the last commit
 (`HEAD^..HEAD`, matching the previous per-repo publish workflows; override the baseline with
-`--since <ref>`). A package is published when files in its directory changed, or when a package it
+`--since <ref>`). The `glsp-core` publish workflow passes the commit of its last successful `next`
+publish as `--since`. A package is published when files in its directory changed, or when a package it
 (transitively) depends on via a `workspace:` range is published (e.g. a `protocol` change also
 publishes `sprotty`, `client`, `server` and the examples, so the newest nightlies always form a
 consistent set — while a `client`-only change publishes just `client` and its dependents).
