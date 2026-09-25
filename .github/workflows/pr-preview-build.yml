@@ -2,7 +2,7 @@ name: PR Preview Build
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, 3.0-prep]
     # Same filter as the CI workflow. A change that cannot affect the built demos gets no preview.
     paths-ignore:
       - '**/*.md'

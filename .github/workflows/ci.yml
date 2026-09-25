@@ -6,7 +6,7 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, 3.0-prep]
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'
@@ -14,7 +14,7 @@ on:
       - '.claude/**'
       - '.agents/**'
   pull_request:
-    branches: [main]
+    branches: [main, 3.0-prep]
     paths-ignore:
       - '**/*.md'
       - 'LICENSE'

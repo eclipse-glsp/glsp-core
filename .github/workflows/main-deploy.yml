@@ -5,7 +5,7 @@ name: Main Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, 3.0-prep]
     # Same filter as the CI workflow. A change that cannot affect the built demos is not deployed.
     paths-ignore:
       - '**/*.md'
@@ -18,23 +18,27 @@ on:
 permissions:
   contents: read
 
+# Each deployed branch (`main` and the parallel `3.0-prep` branch) owns its directory in the
+# preview repository, so their deployments neither cancel nor overwrite each other.
 concurrency:
-  group: main-deploy
+  group: main-deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
 env:
   DEPLOY_REPOSITORY: eclipse-glsp/glsp-previews
   DEPLOY_BRANCH: previews
-  DEPLOY_DIR: glsp-core/main
+  DEPLOY_DIR: glsp-core/${{ github.ref_name }}
 
 jobs:
   build-and-deploy:
     name: Build & Deploy
     timeout-minutes: 60
     runs-on: ubuntu-22.04
+    # A manual run from any other branch would deploy it to a directory nobody links to.
+    if: github.ref_name == 'main' || github.ref_name == '3.0-prep'
     environment:
-      name: main
-      url: https://eclipse-glsp.github.io/glsp-previews/glsp-core/main/diagram.html
+      name: ${{ github.ref_name }}
+      url: https://eclipse-glsp.github.io/glsp-previews/${{ env.DEPLOY_DIR }}/diagram.html
     steps:
       # `persist-credentials: false` keeps the `GITHUB_TOKEN` auth header out of the git config.
       # The deploy step authenticates through the remote URL instead, and the header would take
@@ -62,7 +66,7 @@ jobs:
           branch: ${{ env.DEPLOY_BRANCH }}
           folder: dist-site
           target-folder: ${{ env.DEPLOY_DIR }}
-          commit-message: Deploy glsp-core main (${{ github.sha }})
+          commit-message: Deploy glsp-core ${{ github.ref_name }} (${{ github.sha }})
           force: false
           git-config-name: github-actions[bot]
           git-config-email: github-actions[bot]@users.noreply.github.com

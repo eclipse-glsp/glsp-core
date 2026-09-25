@@ -41,7 +41,9 @@ jobs:
     name: Build & Publish
     timeout-minutes: 60
     runs-on: ubuntu-22.04
-    if: github.repository == 'eclipse-glsp/glsp-core'
+    # Publishing happens from `main` only. Manual runs on the parallel `3.0-prep` branch (or any other branch)
+    # are skipped, so its breaking changes never reach npm.
+    if: github.repository == 'eclipse-glsp/glsp-core' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       # read the run history for the publish baseline
