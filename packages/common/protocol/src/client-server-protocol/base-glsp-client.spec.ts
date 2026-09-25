@@ -20,14 +20,20 @@ import { Action, ActionMessage } from '../action-protocol/base-protocol';
 import { BaseGLSPClient, GLOBAL_HANDLER_ID } from './base-glsp-client';
 import { ClientState } from './glsp-client';
 import { GLSPServer, GLSPServerListener } from './glsp-server';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from './types';
 
 class StubGLSPServer implements GLSPServer {
     initialize(params: InitializeParameters): Promise<InitializeResult> {
         return Promise.resolve({ protocolVersion: '1.0.0', serverActions: {} });
     }
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {
-        return Promise.resolve();
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult> {
+        return Promise.resolve({});
     }
     disposeClientSession(params: DisposeClientSessionParameters): Promise<void> {
         return Promise.resolve();

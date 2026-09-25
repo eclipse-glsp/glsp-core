@@ -15,6 +15,8 @@
  ********************************************************************************/
 
 import { Args } from '../action-protocol/types';
+import { ServerCapabilities } from './capabilities/server-capabilities';
+import { ClientSessionCapabilities, SessionCapabilities } from './capabilities/session-capabilities';
 
 /**
  * A key-value pair structure to map a diagramType to its server-handled action kinds.
@@ -48,8 +50,15 @@ export interface InitializeResult {
 
     /**
      * The actions (grouped by diagramType) that the server can handle.
+     * This remains the sole mechanism for action routing, i.e. it is not affected by {@link InitializeResult.capabilities}.
      */
     serverActions: ServerActions;
+
+    /**
+     * The static capabilities of the server (per diagram type).
+     * If absent, the server predates the capability protocol and the client should assume that every feature is supported.
+     */
+    capabilities?: ServerCapabilities;
 }
 
 /**
@@ -76,6 +85,20 @@ export interface InitializeClientSessionParameters {
      * Additional custom arguments.
      */
     args?: Args;
+
+    /**
+     * The capabilities of the client for this session. Currently informational only.
+     */
+    capabilities?: ClientSessionCapabilities;
+}
+
+export interface InitializeClientSessionResult {
+    /**
+     * The effective capabilities of the new client session. Take precedence over the static
+     * {@link InitializeResult.capabilities} of the diagram type.
+     * If absent, the client should fall back to the static capabilities (or assume that every feature is supported).
+     */
+    capabilities?: SessionCapabilities;
 }
 
 export interface DisposeClientSessionParameters {

@@ -18,7 +18,13 @@ import { Disposable } from '../utils/disposable';
 import { Event } from '../utils/event';
 import { AnyObject, MaybePromise, hasStringProp } from '../utils/type-util';
 import { generateUuid } from '../utils/uuid';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from './types';
 
 export class ApplicationIdProvider {
     private static _applicationId?: string;
@@ -116,9 +122,10 @@ export interface GLSPClient {
      * a unique clientId.
      *
      * @param params InitializeClientSession parameters
-     * @returns A promise that resolves if the initialization was successful
+     * @returns A promise of the {@link InitializeClientSessionResult} that resolves if the initialization was successful.
+     *          Servers that predate the capability protocol resolve with `null`/`undefined` instead.
      */
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void>;
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult>;
 
     /**
      * Sends a `disposeClientSession` request to the server. This request has to be sent at the end of client session lifecycle

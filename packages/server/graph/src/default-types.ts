@@ -29,7 +29,7 @@ import { GPreRenderedElement } from './gpre-rendered-element';
 import { GShapedPreRenderedElement } from './gshaped-prerendered-element';
 
 export function getDefaultMapping(): Map<string, GModelElementConstructor> {
-    // The GModelSerializer (packages/server-node/src/features/model/gmodel-serializer.ts)
+    // The GModelSerializer (packages/server/server/src/common/model/gmodel-serializer.ts)
     // has a built-in subtype handling.
     // If the mapping for a subtype, e.g. for comp:header, is not found it will use the mapping for comp instead.
     const mapping = new Map<string, GModelElementConstructor>();

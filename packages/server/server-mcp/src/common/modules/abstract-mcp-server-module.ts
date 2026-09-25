@@ -106,7 +106,7 @@ export class McpHandlerMultiBinding<T> extends AbstractMultiBinding<interfaces.N
  * supply the launcher + request-context bindings via {@link bindMcpServerLauncher} and
  * {@link bindMcpRequestContext}. Adopters subclass the concrete module and override the `bind*`
  * hooks to swap single-instance services or the `configure*` hooks to add/replace handlers in
- * the multi-bindings. Mirrors the `DiagramModule` pattern from core
+ * the multi-bindings. Mirrors the `bindXxx()`/`configureXxx()` module pattern from core
  * (`bindGModelSerializer()`, `configureActionHandlers(binding)`, etc.).
  *
  * Adopter-provided default option values flow through the constructor — pass a

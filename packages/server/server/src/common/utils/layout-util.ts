@@ -16,7 +16,7 @@
 
 import { GAlignable, GBoundsAware, GEdge, GGraph, GModelElement, GModelRoot, isGAlignable, isGBoundsAware } from '@eclipse-glsp/graph';
 import { ElementAndAlignment, ElementAndBounds, ElementAndRoutingPoints, Point } from '@eclipse-glsp/protocol';
-import { GModelIndex } from '../features/model/gmodel-index';
+import { GModelIndex } from '../model/gmodel-index';
 import { ArgsUtil } from './args-util';
 import { GLSPServerError, getOrThrow } from './glsp-server-error';
 

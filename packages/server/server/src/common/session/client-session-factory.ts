@@ -20,7 +20,7 @@ import { createClientSessionModule } from '../di/client-session-module';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { ClientSession, DefaultClientSession } from './client-session';
-import { ClientSessionInitializer } from './client-session-initializer';
+import { runClientSessionInitializers } from './client-session-initializer';
 
 export const ClientSessionFactory = Symbol('ClientSessionFactory');
 
@@ -61,8 +61,7 @@ export class DefaultClientSessionFactory implements ClientSessionFactory {
         const sessionModule = createClientSessionModule({ clientId, glspClient: this.glspClient, clientActionKinds });
         const sessionContainer = this.serverContainer.createChild();
         sessionContainer.load(...diagramModules, sessionModule);
-        const initializers = sessionContainer.getAll<ClientSessionInitializer>(ClientSessionInitializer);
-        initializers.forEach(service => service.initialize(args));
+        runClientSessionInitializers(sessionContainer, args);
         const actionDispatcher = sessionContainer.get<ActionDispatcher>(ActionDispatcher);
         return new DefaultClientSession(clientId, diagramType, actionDispatcher, sessionContainer);
     }

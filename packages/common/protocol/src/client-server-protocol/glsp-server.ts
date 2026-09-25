@@ -16,7 +16,13 @@
 
 import { ActionMessage } from '../action-protocol/base-protocol';
 import { MaybePromise } from '../utils/type-util';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from './types';
 
 /**
  * Interface for implementations of a ts server component.
@@ -53,9 +59,10 @@ export interface GLSPServer {
      * corresponding client session is  already initialized.
      *
      * @param params the {@link InitializeClientSessionParameters}.
-     * @returns A promise that completes when the initialization was successful.
+     * @returns A promise of the {@link InitializeClientSessionResult} that completes when the initialization was successful.
+     *          Servers that predate the capability protocol resolve with `null`/`undefined` instead.
      */
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void>;
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult>;
 
     /**
      * The 'DisposeClientSession' request is sent to the server when a graphical representation (diagram) is no longer

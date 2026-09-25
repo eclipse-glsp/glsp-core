@@ -80,7 +80,11 @@ export class MultiBinding<T> extends AbstractMultiBinding<BindingTarget<T>> {
  * Implementation of {@link AbstractMultiBinding} for multi-injected values that should be bound to concrete instance using the
  * `bind(serviceIdentifier).toConstantValue(MyCustomBinding) syntax.
  *
- * * @typeparam T the type of the instances
+ * All values of one multi binding are bound as a single array constant. Several modules can contribute to the
+ * same service identifier (e.g. `ActionHandlerConstructor`, `OperationHandlerConstructor`), so consumers should use
+ * `@multiInject` and flatten the injected contributions.
+ *
+ * @typeparam T the type of the instances
  */
 export class InstanceMultiBinding<T> extends AbstractMultiBinding<T> {
     applyBindings(context: BindingContext): void {

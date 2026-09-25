@@ -17,7 +17,13 @@ import { MessageConnection, NotificationType, NotificationType0, RequestType } f
 import { ActionMessage } from '../../action-protocol/base-protocol';
 import { MaybePromise } from '../../utils/type-util';
 import { GLSPClient } from '../glsp-client';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from '../types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from '../types';
 
 export type ConnectionProvider = MessageConnection | (() => MaybePromise<MessageConnection>);
 
@@ -32,7 +38,9 @@ export namespace JsonrpcGLSPClient {
 
     export const ActionMessageNotification = new NotificationType<ActionMessage>('process');
     export const InitializeRequest = new RequestType<InitializeParameters, InitializeResult, void>('initialize');
-    export const InitializeClientSessionRequest = new RequestType<InitializeClientSessionParameters, void, void>('initializeClientSession');
+    export const InitializeClientSessionRequest = new RequestType<InitializeClientSessionParameters, InitializeClientSessionResult, void>(
+        'initializeClientSession'
+    );
     export const DisposeClientSessionRequest = new RequestType<DisposeClientSessionParameters, void, void>('disposeClientSession');
 
     export const ShutdownNotification = new NotificationType0('shutdown');

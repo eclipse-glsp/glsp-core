@@ -25,7 +25,7 @@ import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from './m
  * the handler are filled from the live `ClientSession.container` (alias service, model state,
  * action dispatcher, etc.).
  *
- * Mirrors core's {@link OperationHandlerFactory} pattern in `DiagramModule`.
+ * Mirrors core's {@link OperationHandlerFactory} pattern in `OperationsModule`.
  */
 export type McpDiagramToolHandlerFactory = (
     constructor: McpDiagramToolHandlerConstructor
@@ -82,7 +82,7 @@ export class McpDiagramToolHandlerRegistryInitializer implements ClientSessionIn
             } catch (err: unknown) {
                 throw new Error(
                     `Failed to instantiate MCP diagram tool handler '${constructor.name}': ${(err as Error).message}. ` +
-                        'Check your DiagramModule bindings.'
+                        'Check your diagram setup bindings.'
                 );
             }
             if (!handler.canRegister()) {

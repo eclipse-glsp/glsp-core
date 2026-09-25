@@ -18,8 +18,8 @@ import { inject, injectable, optional } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { GLSPServerError } from '../../utils/glsp-server-error';
 import { Logger } from '../../utils/logger';
-import { GModelSerializer } from '../model/gmodel-serializer';
-import { ModelState } from '../model/model-state';
+import { GModelSerializer } from '../../model/gmodel-serializer';
+import { ModelState } from '../../model/model-state';
 import { PopupModelFactory } from './popup-model-factory';
 
 @injectable()
