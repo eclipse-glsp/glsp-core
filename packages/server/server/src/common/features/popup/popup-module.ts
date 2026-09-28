@@ -16,7 +16,7 @@
 import { GLSPCapability } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
-import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
+import { BindingTarget, applyBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { PopupModelFactory } from './popup-model-factory';
@@ -26,11 +26,14 @@ import { SourceModelModule } from '../../model/source-model-module';
 /**
  * Feature module for hover popups. Reported as {@link GLSPCapability.Popup} capability.
  *
+ * Abstract because popups require a diagram-language-specific {@link PopupModelFactory}: to support popups,
+ * add a concrete subclass that implements {@link PopupModule.bindPopupModelFactory} to the diagram setup.
+ *
  * Provides:
  * - {@link RequestPopupModelActionHandler}
- * - {@link PopupModelFactory} as optional binding
+ * - {@link PopupModelFactory}
  */
-export class PopupModule extends CapabilityFeatureModule {
+export abstract class PopupModule extends CapabilityFeatureModule {
     static readonly KEY = GLSPCapability.Popup;
 
     override get featureKey(): GLSPCapability {
@@ -42,15 +45,13 @@ export class PopupModule extends CapabilityFeatureModule {
     }
 
     protected registerBindings(context: BindingContext): void {
-        applyOptionalBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory())?.inSingletonScope();
+        applyBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory()).inSingletonScope();
         this.configureMultiBinding(new InstanceMultiBinding<ActionHandlerConstructor>(ActionHandlerConstructor), binding =>
             this.configureActionHandlers(binding)
         );
     }
 
-    protected bindPopupModelFactory(): BindingTarget<PopupModelFactory> | undefined {
-        return undefined;
-    }
+    protected abstract bindPopupModelFactory(): BindingTarget<PopupModelFactory>;
 
     protected configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
         binding.add(RequestPopupModelActionHandler);

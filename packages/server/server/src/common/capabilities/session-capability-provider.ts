@@ -17,6 +17,7 @@ import { Args, CapabilitiesChangedAction, GLSPCapability, SessionCapabilities } 
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { ServerFeature, ServerFeatureDescription } from '../di/feature';
+import { ClientActionKinds } from '../di/service-identifiers';
 import { CapabilityContribution } from './capability-contribution';
 
 export const SessionCapabilityProvider = Symbol('SessionCapabilityProvider');
@@ -35,13 +36,14 @@ export interface SessionCapabilityProvider {
 
     /**
      * Updates the capabilities of the client session after its initialization (e.g. when switching the session to
-     * readonly mode) and notifies the client with a {@link CapabilitiesChangedAction}. Subsequent
-     * {@link SessionCapabilityProvider.getCapabilities} calls include the update.
+     * readonly mode). Subsequent {@link SessionCapabilityProvider.getCapabilities} calls include the update.
      *
-     * Note that the action is only forwarded if the client registered a handler for
-     * {@link CapabilitiesChangedAction.KIND} (i.e. it is part of the client action kinds of the session).
+     * The client is notified with a {@link CapabilitiesChangedAction} only if it supports dynamic capabilities, i.e. if
+     * {@link CapabilitiesChangedAction.KIND} is part of the client action kinds of the session. Otherwise the update is
+     * only applied on the server side.
      *
      * @param delta The changed capabilities: present keys replace the previous values, `false` disables a capability.
+     * @alpha
      */
     updateCapabilities(delta: SessionCapabilities): Promise<void>;
 }
@@ -68,6 +70,10 @@ export class DefaultSessionCapabilityProvider implements SessionCapabilityProvid
     @inject(ActionDispatcher)
     protected actionDispatcher: ActionDispatcher;
 
+    @inject(ClientActionKinds)
+    @optional()
+    protected clientActionKinds: Set<string> = new Set();
+
     /** The accumulated updates of {@link DefaultSessionCapabilityProvider.updateCapabilities}. */
     protected updates: SessionCapabilities = {};
 
@@ -86,6 +92,8 @@ export class DefaultSessionCapabilityProvider implements SessionCapabilityProvid
 
     async updateCapabilities(delta: SessionCapabilities): Promise<void> {
         this.updates = { ...this.updates, ...delta };
-        await this.actionDispatcher.dispatch(CapabilitiesChangedAction.create(delta));
+        if (this.clientActionKinds.has(CapabilitiesChangedAction.KIND)) {
+            await this.actionDispatcher.dispatch(CapabilitiesChangedAction.create(delta));
+        }
     }
 }

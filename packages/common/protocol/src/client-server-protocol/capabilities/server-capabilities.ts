@@ -26,6 +26,7 @@ export interface ServerCapabilities {
     /**
      * Indicates that the server may send `CapabilitiesChangedAction`s to update the session capabilities after the
      * initialization of a client session.
+     * @alpha
      */
     dynamicCapabilities?: Capability;
     [key: CapabilityKey]: unknown;

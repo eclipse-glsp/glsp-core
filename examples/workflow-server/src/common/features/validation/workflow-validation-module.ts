@@ -18,10 +18,10 @@ import { WorkflowModelValidator } from '../../marker/workflow-model-validator';
 
 /**
  * Validation feature with the {@link WorkflowModelValidator}.
- * Replaces the corresponding GLSP default module in the workflow diagram setup.
+ * Concrete implementation of the abstract GLSP module, added to the workflow diagram setup.
  */
 export class WorkflowValidationModule extends ValidationModule {
-    protected override bindModelValidator(): BindingTarget<ModelValidator> | undefined {
+    protected override bindModelValidator(): BindingTarget<ModelValidator> {
         return WorkflowModelValidator;
     }
 }

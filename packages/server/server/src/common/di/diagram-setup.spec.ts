@@ -31,7 +31,10 @@ import { ChangeBoundsModule } from '../features/change-bounds/change-bounds-modu
 import { BaseDiagramModule } from './base-diagram-module';
 import { LabelEditValidator } from '../features/label-edit/label-edit-validator';
 import { LayoutModule } from '../features/layout/layout-module';
+import { PopupModelFactory } from '../features/popup/popup-model-factory';
 import { PopupModule } from '../features/popup/popup-module';
+import { ModelValidator } from '../features/validation/model-validator';
+import { ValidationModule } from '../features/validation/validation-module';
 import { SourceModelStorage } from '../model/source-model-storage';
 import { NavigationModule } from '../features/navigation/navigation-module';
 import { GModelChangeBoundsOperationHandler } from '../gmodel/change-bounds/change-bounds-operation-handler';
@@ -84,6 +87,18 @@ class TestLabelEditModule extends GModelLabelEditModule {
     }
 }
 
+class TestValidationModule extends ValidationModule {
+    protected bindModelValidator(): BindingTarget<ModelValidator> {
+        return { constantValue: { validate: () => [] } };
+    }
+}
+
+class TestPopupModule extends PopupModule {
+    protected bindPopupModelFactory(): BindingTarget<PopupModelFactory> {
+        return { constantValue: { createPopupModel: () => undefined } };
+    }
+}
+
 function createServerContainer(): Container {
     const container = new Container();
     container.load(
@@ -116,10 +131,8 @@ describe('createDiagramSetup', () => {
             'TestModelModule',
             'OperationsModule',
             'UndoRedoModule',
-            'ValidationModule',
             'NavigationModule',
             'ContextActionsModule',
-            'PopupModule',
             'TypeHintsModule',
             'LayoutModule',
             'GModelChangeBoundsModule',
@@ -134,16 +147,21 @@ describe('createDiagramSetup', () => {
         const setup = createGModelDiagramSetup(new TestModelModule(), { replace: [new CustomNavigationModule()] });
         const names = moduleNames(setup.modules);
         expect(names).not.toContain('NavigationModule');
-        // Same position as the default NavigationModule (after Base, TestModel, Operations, UndoRedo, Validation)
-        expect(names.indexOf('CustomNavigationModule')).toBe(5);
+        // Same position as the default NavigationModule (after Base, TestModel, Operations, UndoRedo)
+        expect(names.indexOf('CustomNavigationModule')).toBe(4);
     });
 
     it('should remove feature modules by feature id', () => {
         // The configured module is a `GModelChangeBoundsModule`, removal is requested with the generic base module
-        const setup = createGModelDiagramSetup(new TestModelModule(), { remove: [new PopupModule(), new GModelChangeBoundsModule()] });
+        const setup = createGModelDiagramSetup(
+            new TestModelModule(),
+            { add: [new TestPopupModule()] },
+            { remove: [new NavigationModule(), new GModelChangeBoundsModule(), new TestPopupModule()] }
+        );
         const names = moduleNames(setup.modules);
-        expect(names).not.toContain('PopupModule');
+        expect(names).not.toContain('NavigationModule');
         expect(names).not.toContain('GModelChangeBoundsModule');
+        expect(names).not.toContain('TestPopupModule');
     });
 
     it('should fail if a module and its subclass are configured', () => {
@@ -155,7 +173,9 @@ describe('createDiagramSetup', () => {
 
 describe('loading a diagram setup', () => {
     it('should register the same handlers as the former GModelDiagramModule', () => {
-        const container = createSessionContainer(createGModelDiagramSetup(new TestModelModule()).modules);
+        const container = createSessionContainer(
+            createGModelDiagramSetup(new TestModelModule(), { add: [new TestValidationModule(), new TestPopupModule()] }).modules
+        );
         const actionKinds = container
             .get(ActionHandlerRegistry)
             .getAll()
@@ -200,7 +220,9 @@ describe('loading a diagram setup', () => {
     });
 
     it('should report all default features as capabilities', async () => {
-        const container = createSessionContainer(createGModelDiagramSetup(new TestModelModule()).modules);
+        const container = createSessionContainer(
+            createGModelDiagramSetup(new TestModelModule(), { add: [new TestValidationModule(), new TestPopupModule()] }).modules
+        );
         const capabilities = await container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities();
         expect(capabilities).toEqual({
             [GLSPCapability.ChangeBounds]: true,
@@ -218,17 +240,37 @@ describe('loading a diagram setup', () => {
         });
     });
 
+    it('should report validation and popups as disabled capabilities if no concrete module is configured', async () => {
+        const container = createSessionContainer(createGModelDiagramSetup(new TestModelModule()).modules);
+        const capabilities = await container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities();
+        expect(capabilities[GLSPCapability.Validation]).toBe(false);
+        expect(capabilities[GLSPCapability.Popup]).toBe(false);
+        expect(capabilities[GLSPCapability.Navigation]).toBe(true);
+        expect(container.get(ActionHandlerRegistry).hasKey('requestMarkers')).toBe(false);
+        expect(container.get(ActionHandlerRegistry).hasKey('requestPopupModel')).toBe(false);
+    });
+
+    it('should support validation and popups via subclasses of their abstract modules', async () => {
+        const setup = createGModelDiagramSetup(new TestModelModule(), { add: [new TestValidationModule(), new TestPopupModule()] });
+        const container = createSessionContainer(setup.modules);
+        const capabilities = await container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities();
+        expect(capabilities[GLSPCapability.Validation]).toBe(true);
+        expect(capabilities[GLSPCapability.Popup]).toBe(true);
+        expect(container.get(ActionHandlerRegistry).hasKey('requestMarkers')).toBe(true);
+        expect(container.get(ActionHandlerRegistry).hasKey('requestPopupModel')).toBe(true);
+    });
+
     it('should report removed features as disabled capabilities', async () => {
         const setup = createGModelDiagramSetup(new TestModelModule(), {
-            remove: [new PopupModule(), new GModelChangeBoundsModule()],
+            remove: [new NavigationModule(), new GModelChangeBoundsModule()],
             replace: [new TestLabelEditModule()]
         });
         const container = createSessionContainer(setup.modules);
         const capabilities = await container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities();
-        expect(capabilities[GLSPCapability.Popup]).toBe(false);
+        expect(capabilities[GLSPCapability.Navigation]).toBe(false);
         expect(capabilities[GLSPCapability.ChangeBounds]).toBe(false);
         expect(capabilities[GLSPCapability.LabelEdit]).toEqual({ validation: true });
-        expect(container.get(ActionHandlerRegistry).hasKey('requestPopupModel')).toBe(false);
+        expect(container.get(ActionHandlerRegistry).hasKey('requestNavigationTargets')).toBe(false);
         expect(container.get(OperationHandlerRegistry).hasKey('changeBounds')).toBe(false);
     });
 

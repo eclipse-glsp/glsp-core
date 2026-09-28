@@ -119,7 +119,6 @@ describe('test DefaultGLSPServer', () => {
         expect(result.protocolVersion).toBe(protocolVersion);
         expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
         expect(result.capabilities?.diagramTypes?.[diagramType]).toEqual(diagramCapabilities.get(diagramType));
-        expect(result.capabilities?.dynamicCapabilities).toBe(true);
         expect(spy_listener1_initialize).toHaveBeenCalledWith(glspServer);
         expect(spy_listener2_initialize).not.toHaveBeenCalled();
     });

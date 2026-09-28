@@ -26,7 +26,8 @@ import { WorkflowModelModule } from './workflow-model-module';
 
 /**
  * Creates the {@link DiagramSetup} of the workflow diagram: the GModel defaults with the workflow-specific
- * customizations substituted in (`replace`) and the workflow-specific features appended (`add`).
+ * customizations substituted in (`replace`) and the workflow-specific features appended (`add`). Validation and
+ * popups are not part of the defaults (their modules are abstract), so the workflow implementations are added.
  *
  * @param sourceModelStorage The source model storage of the environment (e.g. file-based or mock).
  * @param configuration Additional (environment-specific) module configurations, e.g. layout or MCP modules.
@@ -38,13 +39,16 @@ export function createWorkflowDiagramSetup(
     return createGModelDiagramSetup(
         new WorkflowModelModule(sourceModelStorage),
         {
-            add: [new WorkflowElementCreationModule(), new WorkflowTaskEditModule()],
+            add: [
+                new WorkflowValidationModule(),
+                new WorkflowPopupModule(),
+                new WorkflowElementCreationModule(),
+                new WorkflowTaskEditModule()
+            ],
             replace: [
                 new WorkflowLabelEditModule(),
-                new WorkflowValidationModule(),
                 new WorkflowNavigationModule(),
                 new WorkflowContextActionsModule(),
-                new WorkflowPopupModule(),
                 new WorkflowTypeHintsModule()
             ]
         },

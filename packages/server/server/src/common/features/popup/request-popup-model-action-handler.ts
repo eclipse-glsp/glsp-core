@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action, MaybePromise, RequestPopupModelAction, SetPopupModelAction } from '@eclipse-glsp/protocol';
-import { inject, injectable, optional } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { GLSPServerError } from '../../utils/glsp-server-error';
 import { Logger } from '../../utils/logger';
@@ -28,8 +28,7 @@ export class RequestPopupModelActionHandler implements ActionHandler {
     protected logger: Logger;
 
     @inject(PopupModelFactory)
-    @optional()
-    protected popupModelFactory?: PopupModelFactory;
+    protected popupModelFactory: PopupModelFactory;
 
     @inject(ModelState)
     protected modelState: ModelState;
@@ -40,20 +39,16 @@ export class RequestPopupModelActionHandler implements ActionHandler {
     actionKinds = [RequestPopupModelAction.KIND];
 
     execute(action: RequestPopupModelAction): MaybePromise<Action[]> {
-        if (this.popupModelFactory) {
-            const hoverElement = this.modelState.index.find(action.elementId);
-            if (hoverElement) {
-                const popupModel = this.popupModelFactory.createPopupModel(hoverElement, action);
-                if (popupModel) {
-                    const modelSchema = this.modelSerializer.createSchema(popupModel);
-                    return [SetPopupModelAction.create(modelSchema)];
-                }
-                return [];
+        const hoverElement = this.modelState.index.find(action.elementId);
+        if (hoverElement) {
+            const popupModel = this.popupModelFactory.createPopupModel(hoverElement, action);
+            if (popupModel) {
+                const modelSchema = this.modelSerializer.createSchema(popupModel);
+                return [SetPopupModelAction.create(modelSchema)];
             }
-            throw new GLSPServerError(`Could not process 'RequestPopupModelAction'. Hover element with id ${action.elementId} not found`);
+            return [];
         }
-        this.logger.warn('Could not process `RequestPopupModelAction`. No `PopupModelFactory` is bound');
-        return [];
+        throw new GLSPServerError(`Could not process 'RequestPopupModelAction'. Hover element with id ${action.elementId} not found`);
     }
 
     priority?: number | undefined;

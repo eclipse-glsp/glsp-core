@@ -19,10 +19,11 @@ import { Action } from './base-protocol';
 
 /**
  * Sent from the server to the client to update the capabilities of a client session after its initialization
- * (e.g. when a session is switched to readonly mode). Only sent by servers that announce support via
- * `ServerCapabilities.dynamicCapabilities`.
+ * (e.g. when a session is switched to readonly mode). Only sent to clients that registered the action kind as client
+ * action kind of the session (see `InitializeClientSessionParameters.clientActionKinds`).
  * The corresponding namespace declares the action kind as constant and offers helper functions for type guard checks
  * and creating new `CapabilitiesChangedAction`s.
+ * @alpha
  */
 export interface CapabilitiesChangedAction extends Action {
     kind: typeof CapabilitiesChangedAction.KIND;

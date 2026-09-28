@@ -21,9 +21,7 @@ import { ContextActionsModule } from '../features/context-actions/context-action
 import { LayoutModule } from '../features/layout/layout-module';
 import { SourceModelModule } from '../model/source-model-module';
 import { NavigationModule } from '../features/navigation/navigation-module';
-import { PopupModule } from '../features/popup/popup-module';
 import { TypeHintsModule } from '../features/type-hints/type-hints-module';
-import { ValidationModule } from '../features/validation/validation-module';
 import { OperationsModule } from '../operations/operations-module';
 import { ServerFeatureModule } from './server-feature-module';
 
@@ -37,21 +35,23 @@ export interface DiagramSetup {
 }
 
 /**
- * Creates the default feature modules that are independent of the source model. Features whose implementation
- * depends on the source model (change bounds, delete, label edit, clipboard, edge edit) are abstract and therefore
- * not part of this list: to support them, add concrete subclasses (e.g. `class MyChangeBoundsModule extends
- * ChangeBoundsModule`) to the diagram setup. For GModel-based diagram languages use `createGModelDiagramModules`
- * instead, which includes the GModel implementations of these features.
+ * Creates the default feature modules that are usable without diagram-language-specific code. Features that require
+ * such code are abstract and therefore not part of this list: to support them, add concrete subclasses (e.g.
+ * `class MyChangeBoundsModule extends ChangeBoundsModule`) to the diagram setup. This applies to
+ * - features whose implementation depends on the source model (change bounds, delete, label edit, clipboard,
+ *   edge edit). For GModel-based diagram languages use `createGModelDiagramModules` instead, which includes the GModel
+ *   implementations of these features.
+ * - features that require a diagram-language-specific service without default implementation, i.e. validation
+ *   (`ModelValidator`) and popups (`PopupModelFactory`).
+ *
  * Order matters: modules are loaded in array order and required modules have to be loaded first.
  */
 export function createDefaultDiagramModules(): ServerFeatureModule[] {
     return [
         new OperationsModule(),
         new UndoRedoModule(),
-        new ValidationModule(),
         new NavigationModule(),
         new ContextActionsModule(),
-        new PopupModule(),
         new TypeHintsModule(),
         new LayoutModule()
     ];
@@ -65,8 +65,8 @@ export function createDefaultDiagramModules(): ServerFeatureModule[] {
  * - `add`: appends modules,
  * - `replace`: substitutes the module with the same feature id in place (e.g. a subclass of a default module or
  *   of the {@link BaseDiagramModule} to customize core session bindings),
- * - `remove`: removes modules. Feature modules are removed by feature id, so `remove: [new PopupModule()]` also
- *   removes a configured subclass of `PopupModule`.
+ * - `remove`: removes modules. Feature modules are removed by feature id, so `remove: [new NavigationModule()]` also
+ *   removes a configured subclass of `NavigationModule`.
  *
  * @param sourceModel The source model module that defines the diagram language.
  * @param defaults The default feature modules, e.g. {@link createDefaultDiagramModules}.

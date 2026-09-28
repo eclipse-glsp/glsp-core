@@ -18,10 +18,10 @@ import { WorkflowPopupFactory } from '../../workflow-popup-factory';
 
 /**
  * Popup feature with the {@link WorkflowPopupFactory}.
- * Replaces the corresponding GLSP default module in the workflow diagram setup.
+ * Concrete implementation of the abstract GLSP module, added to the workflow diagram setup.
  */
 export class WorkflowPopupModule extends PopupModule {
-    protected override bindPopupModelFactory(): BindingTarget<PopupModelFactory> | undefined {
+    protected override bindPopupModelFactory(): BindingTarget<PopupModelFactory> {
         return WorkflowPopupFactory;
     }
 }

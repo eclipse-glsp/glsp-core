@@ -16,7 +16,7 @@
 import { GLSPCapability } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
-import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
+import { BindingTarget, applyBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { ModelValidator } from './model-validator';
@@ -26,11 +26,14 @@ import { SourceModelModule } from '../../model/source-model-module';
 /**
  * Feature module for model validation. Reported as {@link GLSPCapability.Validation} capability.
  *
+ * Abstract because validation requires a diagram-language-specific {@link ModelValidator}: to support validation,
+ * add a concrete subclass that implements {@link ValidationModule.bindModelValidator} to the diagram setup.
+ *
  * Provides:
  * - {@link RequestMarkersHandler}
- * - {@link ModelValidator} as optional binding
+ * - {@link ModelValidator}
  */
-export class ValidationModule extends CapabilityFeatureModule {
+export abstract class ValidationModule extends CapabilityFeatureModule {
     static readonly KEY = GLSPCapability.Validation;
 
     override get featureKey(): GLSPCapability {
@@ -42,15 +45,13 @@ export class ValidationModule extends CapabilityFeatureModule {
     }
 
     protected registerBindings(context: BindingContext): void {
-        applyOptionalBindingTarget(context, ModelValidator, this.bindModelValidator());
+        applyBindingTarget(context, ModelValidator, this.bindModelValidator());
         this.configureMultiBinding(new InstanceMultiBinding<ActionHandlerConstructor>(ActionHandlerConstructor), binding =>
             this.configureActionHandlers(binding)
         );
     }
 
-    protected bindModelValidator(): BindingTarget<ModelValidator> | undefined {
-        return undefined;
-    }
+    protected abstract bindModelValidator(): BindingTarget<ModelValidator>;
 
     protected configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
         binding.add(RequestMarkersHandler);
