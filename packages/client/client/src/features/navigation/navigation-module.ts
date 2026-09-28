@@ -13,18 +13,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, NavigateToExternalTargetAction, NavigateToTargetAction, configureActionHandler } from '@eclipse-glsp/sprotty';
+import {
+    FeatureDefinition,
+    FeatureModule,
+    NavigateToExternalTargetAction,
+    NavigateToTargetAction,
+    configureActionHandler
+} from '@eclipse-glsp/sprotty';
+import { navigationFeatureDef } from './navigation-feature';
 import { NavigateAction, NavigationActionHandler, ProcessNavigationArgumentsAction } from './navigation-action-handler';
 import { NavigationTargetResolver } from './navigation-target-resolver';
 
-export const navigationModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        bind(NavigationTargetResolver).toSelf().inSingletonScope();
-        bind(NavigationActionHandler).toSelf().inSingletonScope();
-        configureActionHandler({ bind, isBound }, NavigateAction.KIND, NavigationActionHandler);
-        configureActionHandler({ bind, isBound }, NavigateToTargetAction.KIND, NavigationActionHandler);
-        configureActionHandler({ bind, isBound }, ProcessNavigationArgumentsAction.KIND, NavigationActionHandler);
-        configureActionHandler({ bind, isBound }, NavigateToExternalTargetAction.KIND, NavigationActionHandler);
-    },
-    { featureId: Symbol('navigation') }
-);
+export const navigationModule = new FeatureModule((bind, _unbind, isBound) => {
+    bind(NavigationTargetResolver).toSelf().inSingletonScope();
+    bind(NavigationActionHandler).toSelf().inSingletonScope();
+    configureActionHandler({ bind, isBound }, NavigateAction.KIND, NavigationActionHandler);
+    configureActionHandler({ bind, isBound }, NavigateToTargetAction.KIND, NavigationActionHandler);
+    configureActionHandler({ bind, isBound }, ProcessNavigationArgumentsAction.KIND, NavigationActionHandler);
+    configureActionHandler({ bind, isBound }, NavigateToExternalTargetAction.KIND, NavigationActionHandler);
+}, FeatureDefinition.toModuleOptions(navigationFeatureDef));

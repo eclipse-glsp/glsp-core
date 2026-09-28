@@ -19,18 +19,18 @@ import {
     BoundsData,
     ConsoleLogger,
     Dimension,
-    LayoutRegistry,
-    Point,
     GCompartment,
     GLabel,
     GModelElement,
     GNode,
     GParentElement,
+    LayoutRegistry,
+    Point,
     TYPES,
     createFeatureSet,
     layoutableChildFeature
 } from '@eclipse-glsp/sprotty';
-import { initializeDiagramContainer } from '../../default-modules';
+import { initializeDiagramContainer } from '../../client-init';
 import { StatefulLayouterExt } from '../bounds/layouter';
 import { GGraph } from '../../model';
 
@@ -118,9 +118,9 @@ export function layout(
     layouter.layout();
 }
 
-export function setupLayoutRegistry(): LayoutRegistry {
+export async function setupLayoutRegistry(): Promise<LayoutRegistry> {
     // Generic Test setup
     // create client container that registers all default modules including the layoutModule
-    const layoutContainer = initializeDiagramContainer(new Container());
+    const layoutContainer = await initializeDiagramContainer(new Container());
     return layoutContainer.get<LayoutRegistry>(TYPES.LayoutRegistry);
 }

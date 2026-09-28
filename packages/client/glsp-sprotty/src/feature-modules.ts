@@ -14,30 +14,40 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { FeatureKey } from '@eclipse-glsp/protocol';
 import { FeatureModule } from '@eclipse-glsp/protocol/di';
+import { SprottyFeature } from './feature-keys';
 import sprottyDefaultModule from 'sprotty/lib/base/di.config';
-import sprottyButtonModule from 'sprotty/lib/features/button/di.config';
-import sprottyEdgeIntersectionModule from 'sprotty/lib/features/edge-intersection/di.config';
-import sprottyEdgeJunctionModule from 'sprotty/lib/features/edge-junction/di.config';
-import sprottyEdgeLayoutModule from 'sprotty/lib/features/edge-layout/di.config';
-import { edgeEditModule as sprottyEdgeEditModule } from 'sprotty/lib/features/edit/di.config';
-import sprottyExpandModule from 'sprotty/lib/features/expand/di.config';
-import sprottyFadeModule from 'sprotty/lib/features/fade/di.config';
-import sprottyMoveModule from 'sprotty/lib/features/move/di.config';
-import sprottyOpenModule from 'sprotty/lib/features/open/di.config';
-import sprottyUpdateModule from 'sprotty/lib/features/update/di.config';
-import sprottyModelSourceModule from 'sprotty/lib/model-source/di.config';
+import buttonDiConfig from 'sprotty/lib/features/button/di.config';
+import edgeIntersectionDiConfig from 'sprotty/lib/features/edge-intersection/di.config';
+import edgeJunctionDiConfig from 'sprotty/lib/features/edge-junction/di.config';
+import edgeLayoutDiConfig from 'sprotty/lib/features/edge-layout/di.config';
+import { edgeEditModule as edgeEditDiConfig } from 'sprotty/lib/features/edit/di.config';
+import expandDiConfig from 'sprotty/lib/features/expand/di.config';
+import fadeDiConfig from 'sprotty/lib/features/fade/di.config';
+import moveDiConfig from 'sprotty/lib/features/move/di.config';
+import openDiConfig from 'sprotty/lib/features/open/di.config';
+import updateDiConfig from 'sprotty/lib/features/update/di.config';
+import modelSourceDiConfig from 'sprotty/lib/model-source/di.config';
 
-export const buttonModule = new FeatureModule(sprottyButtonModule.registry, { featureId: Symbol('button') });
-export const edgeEditModule = new FeatureModule(sprottyEdgeEditModule.registry, { featureId: Symbol('edgeEdit') });
-export const edgeIntersectionModule = new FeatureModule(sprottyEdgeIntersectionModule.registry, { featureId: Symbol('edgeIntersection') });
-export const edgeLayoutModule = new FeatureModule(sprottyEdgeLayoutModule.registry, { featureId: Symbol('edgeLayout') });
-export const expandModule = new FeatureModule(sprottyExpandModule.registry, { featureId: Symbol('expand') });
-export const fadeModule = new FeatureModule(sprottyFadeModule.registry, { featureId: Symbol('fade') });
-export const modelSourceModule = new FeatureModule(sprottyModelSourceModule.registry, { featureId: Symbol('modelSource') });
-export const moveModule = new FeatureModule(sprottyMoveModule.registry, { featureId: Symbol('move') });
-export const openModule = new FeatureModule(sprottyOpenModule.registry, { featureId: Symbol('open') });
-export const updateModule = new FeatureModule(sprottyUpdateModule.registry, { featureId: Symbol('update') });
-export const edgeJunctionModule = new FeatureModule(sprottyEdgeJunctionModule.registry, { featureId: Symbol('edgeJunction') });
+export const sprottyButtonModule = new FeatureModule(buttonDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Button) });
+export const sprottyEdgeEditModule = new FeatureModule(edgeEditDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.EdgeEdit) });
+export const sprottyEdgeIntersectionModule = new FeatureModule(edgeIntersectionDiConfig.registry, {
+    featureId: FeatureKey.toId(SprottyFeature.EdgeIntersection)
+});
+export const sprottyEdgeLayoutModule = new FeatureModule(edgeLayoutDiConfig.registry, {
+    featureId: FeatureKey.toId(SprottyFeature.EdgeLayout)
+});
+export const sprottyExpandModule = new FeatureModule(expandDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Expand) });
+export const sprottyFadeModule = new FeatureModule(fadeDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Fade) });
+export const sprottyModelSourceModule = new FeatureModule(modelSourceDiConfig.registry, {
+    featureId: FeatureKey.toId(SprottyFeature.ModelSource)
+});
+export const sprottyMoveModule = new FeatureModule(moveDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Move) });
+export const sprottyOpenModule = new FeatureModule(openDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Open) });
+export const sprottyUpdateModule = new FeatureModule(updateDiConfig.registry, { featureId: FeatureKey.toId(SprottyFeature.Update) });
+export const sprottyEdgeJunctionModule = new FeatureModule(edgeJunctionDiConfig.registry, {
+    featureId: FeatureKey.toId(SprottyFeature.EdgeJunction)
+});
 
 export { sprottyDefaultModule };

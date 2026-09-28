@@ -38,7 +38,7 @@ import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
 import { SelectableBoundsAware, getElements, isSelectableAndBoundsAware } from '../../utils/gmodel-util';
 import { isValidMove } from '../../utils/layout-utils';
 import { outsideOfViewport } from '../../utils/viewpoint-util';
-import { IMovementRestrictor } from '../change-bounds/movement-restrictor';
+import { IMovementRestrictor } from './movement-restrictor';
 import { MoveElementRelativeAction } from './move-element-action';
 
 /**

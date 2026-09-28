@@ -13,16 +13,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TYPES, TriggerEdgeCreationAction, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
+import {
+    FeatureDefinition,
+    FeatureModule,
+    TYPES,
+    TriggerEdgeCreationAction,
+    bindAsService,
+    configureActionHandler
+} from '@eclipse-glsp/sprotty';
+import { edgeCreationToolFeatureDef } from './edge-creation-feature';
 import { configureDanglingFeedbackEdge } from './dangling-edge-feedback';
 import { EdgeCreationTool } from './edge-creation-tool';
 
-export const edgeCreationToolModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        bindAsService(context, TYPES.ITool, EdgeCreationTool);
-        configureActionHandler(context, TriggerEdgeCreationAction.KIND, EdgeCreationTool);
-        configureDanglingFeedbackEdge(context);
-    },
-    { featureId: Symbol('edgeCreationTool') }
-);
+export const edgeCreationToolModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    bindAsService(context, TYPES.ITool, EdgeCreationTool);
+    configureActionHandler(context, TriggerEdgeCreationAction.KIND, EdgeCreationTool);
+    configureDanglingFeedbackEdge(context);
+}, FeatureDefinition.toModuleOptions(edgeCreationToolFeatureDef));

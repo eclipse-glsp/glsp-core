@@ -13,11 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { asArray } from '@eclipse-glsp/protocol';
+import { FeatureKey, asArray } from '@eclipse-glsp/protocol';
 import { BindingContext, FeatureModule, FeatureModuleOptions } from '@eclipse-glsp/protocol/lib/di';
 import { interfaces } from 'inversify';
 import { GLSPServerError } from '../utils/glsp-server-error';
-import { ServerFeature, ServerFeatureDescription } from './feature';
+import { ServerFeatureDescription } from './feature';
 import { AbstractMultiBinding, configureMultiBinding } from './multi-binding';
 
 /**
@@ -28,7 +28,7 @@ import { AbstractMultiBinding, configureMultiBinding } from './multi-binding';
  * subclasses implement {@link ServerFeatureModule.registerBindings} and expose overridable hooks, adopters customize
  * a feature by subclassing its module and replacing the default module in the diagram setup.
  *
- * The feature id is derived from {@link ServerFeatureModule.featureKey} via `Symbol.for`. Subclasses therefore share
+ * The feature id is derived from {@link ServerFeatureModule.featureKey} via {@link FeatureKey.toId}. Subclasses therefore share
  * the feature id of their base module, which means
  * - `replace: [new MyChangeBoundsModule()]` substitutes the default `ChangeBoundsModule` in place, and
  * - loading a module and its subclass into the same container is detected as a duplicate feature.
@@ -55,32 +55,32 @@ export abstract class ServerFeatureModule extends FeatureModule {
     }
 
     /**
-     * The stable, globally unique key of this feature, e.g. `glsp.changeBounds` (see `GLSPCapability`).
-     * The `glsp.` prefix is reserved for GLSP; adopters must use their own namespace (e.g. `myCompany.simulation`)
-     * because the derived feature id is process-global.
+     * The stable, globally unique key of this feature, e.g. `glsp.changeBounds`. GLSP features are defined in the
+     * `GLSPServerFeature` registry. The `glsp.` prefix is reserved for GLSP; adopters must use their own namespace
+     * (e.g. `myCompany.simulation`) because the derived feature id is process-global.
      *
      * **Important:** The key is read during construction of the base class, i.e. before subclass fields are
      * initialized. It must therefore be a constant (typically a getter returning a static value) and must not
      * depend on constructor arguments or instance fields.
      */
-    abstract get featureKey(): string;
+    abstract get featureKey(): FeatureKey;
 
     /**
      * The feature keys of the modules that have to be loaded (i.e. positioned before this module in the composition)
      * for this module to load. Checked at load time, loading fails with an error if a required module is missing.
      */
-    get requiredFeatures(): string[] {
+    get requiredFeatures(): FeatureKey[] {
         return [];
     }
 
     protected override createFeatureId(): symbol {
         const featureKey = this.featureKey;
-        if (typeof featureKey !== 'string' || featureKey.length === 0) {
+        if (!FeatureKey.is(featureKey)) {
             throw new GLSPServerError(
-                `Could not create feature module '${this.constructor.name}': The 'featureKey' has to be a non-empty constant string.`
+                `Could not create feature module '${this.constructor.name}': The 'featureKey' has to be a constant, namespaced key (e.g. 'myCompany.simulation').`
             );
         }
-        return Symbol.for(featureKey);
+        return FeatureKey.toId(featureKey);
     }
 
     /**
@@ -91,7 +91,7 @@ export abstract class ServerFeatureModule extends FeatureModule {
 
     /** Publishes the {@link ServerFeatureDescription} of this feature. */
     protected registerFeature(context: BindingContext): void {
-        context.bind(ServerFeature).toConstantValue(this.createFeatureDescription());
+        context.bind(ServerFeatureDescription).toConstantValue(this.createFeatureDescription());
     }
 
     protected createFeatureDescription(): ServerFeatureDescription {
@@ -100,10 +100,11 @@ export abstract class ServerFeatureModule extends FeatureModule {
 
     protected override checkRequirements(isBound: interfaces.IsBound): boolean {
         const missing = [
-            ...this.requiredFeatures.filter(key => !isBound(Symbol.for(key))),
+            ...this.requiredFeatures.filter(key => !isBound(FeatureKey.toId(key))),
             ...asArray(this.requires ?? [])
-                .filter(module => !module.isLoaded({ isBound }))
-                .map(module => module.featureId.description ?? module.featureId.toString())
+                .map(required => (typeof required === 'string' ? FeatureKey.toId(required) : required.featureId))
+                .filter(featureId => !isBound(featureId))
+                .map(featureId => featureId.description ?? featureId.toString())
         ];
         if (missing.length > 0) {
             throw new GLSPServerError(

@@ -14,35 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureModule, TYPES, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
-import { DefaultResizeKeyListener, DefaultResizeKeyTool } from './resize-default-tool';
+import { FeatureDefinition, FeatureModule, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { resizeFeatureDef } from './resize-feature';
 import { ResizeElementAction, ResizeElementHandler } from './resize-handler';
-import { ResizeKeyListener, ResizeKeyTool } from './resize-tool';
 
 /**
  * Handles resize actions.
  */
-export const resizeModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        configureActionHandler(context, ResizeElementAction.KIND, ResizeElementHandler);
-    },
-    { featureId: Symbol('resize') }
-);
-
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const standaloneResizeModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-
-        bindAsService(context, TYPES.IDefaultTool, DefaultResizeKeyTool);
-        context.bind(DefaultResizeKeyListener).toSelf();
-        bindAsService(context, TYPES.ITool, ResizeKeyTool);
-        context.bind(ResizeKeyListener).toSelf();
-    },
-    { featureId: Symbol('standaloneResize'), requires: resizeModule }
-);
+export const resizeModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    configureActionHandler(context, ResizeElementAction.KIND, ResizeElementHandler);
+}, FeatureDefinition.toModuleOptions(resizeFeatureDef));

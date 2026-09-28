@@ -13,11 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { FeatureKey } from '../../features/feature-key';
+
 /**
- * The key of a capability. Every key is namespaced with a `.`: the `glsp.` prefix is reserved for GLSP
- * (see `GLSPCapability`), adopters use their own prefix (e.g. `myCompany.simulation`).
+ * The key of a capability. A capability is reported under the {@link FeatureKey} of the feature that provides it,
+ * i.e. the `glsp.` prefix is reserved for GLSP (see `GLSPCapability`), adopters use their own prefix (e.g. `myCompany.simulation`).
  */
-export type CapabilityKey = `${string}.${string}`;
+export type CapabilityKey = FeatureKey;
 
 /**
  * A capability that is either enabled/disabled (`boolean`) or enabled with additional options (`O`).

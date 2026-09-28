@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { BindingContext, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { BindingContext, FeatureKey, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { GLSPClientFeature } from '../../../client-feature-keys';
 import { FocusTrackerTool } from './focus-tracker-tool';
 
 /**
@@ -26,7 +27,7 @@ export const focusTrackerModule = new FeatureModule(
         const context = { bind, unbind, isBound, rebind };
         configureFocusTrackerTool(context);
     },
-    { featureId: Symbol('focusTracker') }
+    { featureId: FeatureKey.toId(GLSPClientFeature.FocusTracker) }
 );
 
 export function configureFocusTrackerTool(context: BindingContext): void {

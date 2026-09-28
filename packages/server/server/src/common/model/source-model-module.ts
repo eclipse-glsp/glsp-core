@@ -13,13 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { FeatureKey } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../actions/action-handler';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
 import { BindingTarget, applyBindingTarget } from '../di/binding-target';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerFeatureModule } from '../di/server-feature-module';
-import { BaseDiagramModule } from '../di/base-diagram-module';
 import { DiagramType } from '../di/service-identifiers';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { GModelFactory } from './gmodel-factory';
@@ -45,17 +46,15 @@ import { SourceModelStorage } from './source-model-storage';
  *   (see `DiagramConfiguration.needsClientLayout`), therefore not part of the removable `LayoutModule`.
  */
 export abstract class SourceModelModule extends ServerFeatureModule {
-    static readonly KEY = 'glsp.sourceModel';
-
     /** The diagram type of the diagram language (used to select the diagram setup when a client session is created). */
     abstract get diagramType(): string;
 
-    override get featureKey(): string {
-        return SourceModelModule.KEY;
+    override get featureKey(): FeatureKey {
+        return GLSPServerFeature.SourceModel;
     }
 
-    override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Base];
     }
 
     protected registerBindings(context: BindingContext): void {

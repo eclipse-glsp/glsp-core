@@ -22,6 +22,7 @@ import {
     DiamondAnchor,
     EdgeRouterRegistry,
     EllipseAnchor,
+    FeatureDefinition,
     FeatureModule,
     ManhattanDiamondAnchor,
     ManhattanEllipticAnchor,
@@ -31,37 +32,35 @@ import {
     bindAsService,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { routingFeatureDef } from './routing-feature';
 import { GLSPBezierEdgeRouter, GLSPManhattanEdgeRouter, GLSPPolylineEdgeRouter } from './edge-router';
 import { StickyManhattanDiamondAnchor, StickyManhattanEllipticAnchor, StickyManhattanRectangularAnchor } from './sticky-manhattan-anchors';
 import { GLSPStickyManhattanEdgeRouter } from './sticky-manhattan-edge-router';
 
-export const routingModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        bind(EdgeRouterRegistry).toSelf().inSingletonScope();
-        bind(AnchorComputerRegistry).toSelf().inSingletonScope();
+export const routingModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    bind(EdgeRouterRegistry).toSelf().inSingletonScope();
+    bind(AnchorComputerRegistry).toSelf().inSingletonScope();
 
-        bindAsService(context, TYPES.IEdgeRouter, GLSPManhattanEdgeRouter);
-        bindAsService(context, TYPES.IAnchorComputer, ManhattanEllipticAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, ManhattanRectangularAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, ManhattanDiamondAnchor);
+    bindAsService(context, TYPES.IEdgeRouter, GLSPManhattanEdgeRouter);
+    bindAsService(context, TYPES.IAnchorComputer, ManhattanEllipticAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, ManhattanRectangularAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, ManhattanDiamondAnchor);
 
-        bindAsService(context, TYPES.IEdgeRouter, GLSPPolylineEdgeRouter);
-        bindAsService(context, TYPES.IAnchorComputer, EllipseAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, RectangleAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, DiamondAnchor);
+    bindAsService(context, TYPES.IEdgeRouter, GLSPPolylineEdgeRouter);
+    bindAsService(context, TYPES.IAnchorComputer, EllipseAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, RectangleAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, DiamondAnchor);
 
-        bindAsService(context, TYPES.IEdgeRouter, GLSPBezierEdgeRouter);
-        bindAsService(context, TYPES.IAnchorComputer, BezierEllipseAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, BezierRectangleAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, BezierDiamondAnchor);
+    bindAsService(context, TYPES.IEdgeRouter, GLSPBezierEdgeRouter);
+    bindAsService(context, TYPES.IAnchorComputer, BezierEllipseAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, BezierRectangleAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, BezierDiamondAnchor);
 
-        bindAsService(context, TYPES.IEdgeRouter, GLSPStickyManhattanEdgeRouter);
-        bindAsService(context, TYPES.IAnchorComputer, StickyManhattanEllipticAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, StickyManhattanRectangularAnchor);
-        bindAsService(context, TYPES.IAnchorComputer, StickyManhattanDiamondAnchor);
+    bindAsService(context, TYPES.IEdgeRouter, GLSPStickyManhattanEdgeRouter);
+    bindAsService(context, TYPES.IAnchorComputer, StickyManhattanEllipticAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, StickyManhattanRectangularAnchor);
+    bindAsService(context, TYPES.IAnchorComputer, StickyManhattanDiamondAnchor);
 
-        configureCommand({ bind, isBound }, AddRemoveBezierSegmentCommand);
-    },
-    { featureId: Symbol('routing') }
-);
+    configureCommand({ bind, isBound }, AddRemoveBezierSegmentCommand);
+}, FeatureDefinition.toModuleOptions(routingFeatureDef));

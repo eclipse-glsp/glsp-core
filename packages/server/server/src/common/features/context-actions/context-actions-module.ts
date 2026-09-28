@@ -13,25 +13,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyBindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding, MultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { ContextActionsProviders } from '../../di/service-identifiers';
-import { OperationsModule } from '../../operations/operations-module';
 import { CommandPaletteActionProvider } from './command-palette-action-provider';
 import { ContextActionsProvider } from './context-actions-provider';
 import { ContextActionsProviderRegistry } from './context-actions-provider-registry';
 import { ContextMenuItemProvider } from './context-menu-item-provider';
 import { RequestContextActionsHandler } from './request-context-actions-handler';
 import { DefaultToolPaletteItemProvider, ToolPaletteItemProvider } from './tool-palette-item-provider';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for context actions (tool palette, command palette, context menu). Reported as {@link GLSPCapability.ContextActions}
- * capability. Requires the {@link OperationsModule} because the default tool palette is derived from the registered
+ * capability. Requires the {@link GLSPServerFeature.Operations} feature because the default tool palette is derived from the registered
  * create operation handlers.
  *
  * Provides:
@@ -41,14 +40,12 @@ import { SourceModelModule } from '../../model/source-model-module';
  * - {@link ContextActionsProviders} (empty), {@link ContextActionsProviderRegistry}
  */
 export class ContextActionsModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.ContextActions;
-
     override get featureKey(): GLSPCapability {
-        return ContextActionsModule.KEY;
+        return GLSPServerFeature.ContextActions;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY, SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations, GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability, LayoutCapabilityOptions, SessionCapabilities } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability, LayoutCapabilityOptions, SessionCapabilities } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { inject, injectable } from 'inversify';
 import { CapabilityContribution } from '../../capabilities/capability-contribution';
@@ -22,10 +23,8 @@ import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-targ
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
-import { OperationsModule } from '../../operations/operations-module';
 import { LayoutEngine } from './layout-engine';
 import { LayoutOperationHandler } from './layout-operation-handler';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Reports the {@link GLSPCapability.Layout} capability with the layout options of the {@link DiagramConfiguration}.
@@ -70,14 +69,12 @@ export class LayoutCapabilityContribution implements CapabilityContribution {
  * - {@link LayoutCapabilityContribution}
  */
 export class LayoutModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.Layout;
-
     override get featureKey(): GLSPCapability {
-        return LayoutModule.KEY;
+        return GLSPServerFeature.Layout;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY, SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations, GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

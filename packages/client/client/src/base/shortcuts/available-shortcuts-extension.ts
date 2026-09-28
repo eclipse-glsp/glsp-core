@@ -16,7 +16,7 @@
 
 import { GModelRoot, groupBy, matchesKeystroke, TYPES } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { GLSPAbstractUIExtension } from '../../base/ui-extension/ui-extension';
+import { GLSPAbstractUIExtension } from '../ui-extension/ui-extension';
 import { messages } from '../messages';
 import type { IShortcutManager, ShortcutRegistration } from './shortcuts-manager';
 

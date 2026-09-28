@@ -14,59 +14,33 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
-    bindAsService,
-    configureActionHandler,
-    configureCommand,
-    ExportResultAction,
-    ExportSvgAction,
     ExportSvgCommand,
     ExportSvgPostprocessor,
+    FeatureDefinition,
     FeatureModule,
-    TYPES
+    TYPES,
+    bindAsService,
+    configureCommand
 } from '@eclipse-glsp/sprotty';
+import { exportFeatureDef } from './export-features';
 import { DefaultPngDiagramExporter } from './default-png-diagram-exporter';
 import { DefaultSvgDiagramExporter } from './default-svg-diagram-exporter';
 import { DiagramExportPostprocessor } from './diagram-export-postprocessor';
-import { ExportResultActionHandler } from './export-result-action-handler';
-import { ExportSvgActionHandler } from './export-svg-action-handler';
 import { GLSPSvgExporter } from './glsp-svg-exporter';
 import { RequestExportCommand } from './request-export-command';
-import { RequestExportKeyListener } from './request-export-key-listener';
 
-export const exportModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        const context = { bind, isBound };
-        bindAsService(context, TYPES.SvgExporter, GLSPSvgExporter);
+export const exportModule = new FeatureModule((bind, _unbind, isBound) => {
+    const context = { bind, isBound };
+    bindAsService(context, TYPES.SvgExporter, GLSPSvgExporter);
 
-        // Unified export pipeline.
-        bindAsService(context, TYPES.HiddenVNodePostprocessor, DiagramExportPostprocessor);
-        configureCommand(context, RequestExportCommand);
-        bindAsService(context, TYPES.IDiagramExporter, DefaultSvgDiagramExporter);
-        bindAsService(context, TYPES.IDiagramExporter, DefaultPngDiagramExporter);
+    // Unified export pipeline.
+    bindAsService(context, TYPES.HiddenVNodePostprocessor, DiagramExportPostprocessor);
+    configureCommand(context, RequestExportCommand);
+    bindAsService(context, TYPES.IDiagramExporter, DefaultSvgDiagramExporter);
+    bindAsService(context, TYPES.IDiagramExporter, DefaultPngDiagramExporter);
 
-        // Legacy SVG-only pipeline kept functional for adopters still dispatching the
-        // deprecated `RequestExportSvgAction` / `ExportSvgAction`.
-        bindAsService(context, TYPES.HiddenVNodePostprocessor, ExportSvgPostprocessor);
-        configureCommand(context, ExportSvgCommand);
-    },
-    { featureId: Symbol('export') }
-);
-
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const standaloneExportModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        const context = { bind, isBound };
-        bindAsService(context, TYPES.KeyListener, RequestExportKeyListener);
-        bind(ExportResultActionHandler).toSelf().inSingletonScope();
-        configureActionHandler(context, ExportResultAction.KIND, ExportResultActionHandler);
-
-        // Legacy download path: bound so adopters dispatching `ExportSvgAction` still get a download.
-        bind(ExportSvgActionHandler).toSelf().inSingletonScope();
-        configureActionHandler(context, ExportSvgAction.KIND, ExportSvgActionHandler);
-    },
-    { featureId: Symbol('standaloneExport'), requires: exportModule }
-);
+    // Legacy SVG-only pipeline kept functional for adopters still dispatching the
+    // deprecated `RequestExportSvgAction` / `ExportSvgAction`.
+    bindAsService(context, TYPES.HiddenVNodePostprocessor, ExportSvgPostprocessor);
+    configureCommand(context, ExportSvgCommand);
+}, FeatureDefinition.toModuleOptions(exportFeatureDef));

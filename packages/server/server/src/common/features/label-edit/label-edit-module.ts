@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability, SessionCapabilities } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability, SessionCapabilities } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { inject, injectable, optional } from 'inversify';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
@@ -23,12 +24,10 @@ import { InstanceMultiBinding, MultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { ContextEditValidators } from '../../di/service-identifiers';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
-import { OperationsModule } from '../../operations/operations-module';
 import { ContextEditValidator } from './context-edit-validator';
 import { ContextEditValidatorRegistry, DefaultContextEditValidatorRegistry } from './context-edit-validator-registry';
 import { LabelEditValidator } from './label-edit-validator';
 import { RequestEditValidationHandler } from './request-edit-validation-handler';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Reports the {@link GLSPCapability.LabelEdit} capability with `validation: true` if a {@link LabelEditValidator} is bound.
@@ -58,14 +57,12 @@ export class LabelEditCapabilityContribution implements CapabilityContribution {
  * - {@link LabelEditCapabilityContribution}
  */
 export abstract class LabelEditModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.LabelEdit;
-
     override get featureKey(): GLSPCapability {
-        return LabelEditModule.KEY;
+        return GLSPServerFeature.LabelEdit;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY, SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations, GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

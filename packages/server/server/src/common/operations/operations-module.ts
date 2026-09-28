@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { distinctAdd } from '@eclipse-glsp/protocol';
+import { FeatureKey, distinctAdd } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../actions/action-handler';
 import { BindingTarget, applyBindingTarget } from '../di/binding-target';
@@ -26,7 +27,6 @@ import { CompoundOperationHandler } from './compound-operation-handler';
 import { OperationActionHandler } from './operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from './operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from './operation-handler-registry';
-import { SourceModelModule } from '../model/source-model-module';
 
 /**
  * Provides the operation infrastructure. Required by all features that contribute operation handlers.
@@ -37,14 +37,12 @@ import { SourceModelModule } from '../model/source-model-module';
  * - {@link Operations}, {@link OperationActionHandler}
  */
 export class OperationsModule extends ServerFeatureModule {
-    static readonly KEY = 'glsp.operations';
-
-    override get featureKey(): string {
-        return OperationsModule.KEY;
+    override get featureKey(): FeatureKey {
+        return GLSPServerFeature.Operations;
     }
 
-    override get requiredFeatures(): string[] {
-        return [SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

@@ -13,15 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
-import { OperationsModule } from '../../operations/operations-module';
 import { RequestClipboardDataActionHandler } from './request-clipboard-data-action-handler';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for cut, copy & paste. Reported as {@link GLSPCapability.Clipboard} capability.
@@ -33,14 +32,12 @@ import { SourceModelModule } from '../../model/source-model-module';
  * - {@link RequestClipboardDataActionHandler}
  */
 export abstract class ClipboardModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.Clipboard;
-
     override get featureKey(): GLSPCapability {
-        return ClipboardModule.KEY;
+        return GLSPServerFeature.Clipboard;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY, SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations, GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

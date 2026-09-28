@@ -35,6 +35,10 @@
     "!**/*.spec.*",
     "!**/test/**"
   ],
+  "sideEffects": [
+    "./lib/di/re-decorate.js",
+    "./src/di/re-decorate.ts"
+  ],
   "main": "lib/index",
   "types": "lib/index",
   "typesVersions": {

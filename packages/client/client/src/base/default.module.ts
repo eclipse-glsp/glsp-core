@@ -15,6 +15,7 @@
  ********************************************************************************/
 import {
     ActionHandlerRegistry,
+    FeatureDefinition,
     FeatureModule,
     GetEditorContextAction,
     GetSelectionAction,
@@ -40,6 +41,7 @@ import { GLSPActionDispatcher } from './action-dispatcher';
 import { GLSPActionHandlerRegistry } from './action-handler-registry';
 import { DefaultAutocompleteSuggestionRegistry } from './auto-complete/autocomplete-suggestion-provider';
 import { GLSPCommandStack } from './command-stack';
+import { defaultFeatureDef } from './default-feature';
 import { EditorContextService } from './editor-context-service';
 import { ModifyCssFeedbackCommand } from './feedback/css-feedback';
 import { FeedbackActionDispatcher } from './feedback/feedback-action-dispatcher';
@@ -67,97 +69,90 @@ import { GViewRegistry } from './view/view-registry';
  * The default module provides all of GLSP's base functionality and services.
  * It builds on top of sprotty's default module {@link `sprottyDefaultModule`}.
  */
-export const defaultModule = new FeatureModule(
-    (bind, unbind, isBound, rebind, ...rest) => {
-        // load bindings from sprotty's default module to avoid code duplication
-        sprottyDefaultModule.registry(bind, unbind, isBound, rebind, ...rest);
-        const context = { bind, unbind, isBound, rebind };
+export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, ...rest) => {
+    // load bindings from sprotty's default module to avoid code duplication
+    sprottyDefaultModule.registry(bind, unbind, isBound, rebind, ...rest);
+    const context = { bind, unbind, isBound, rebind };
 
-        bindLazyInjector(context);
+    bindLazyInjector(context);
 
-        bind(EditorContextService).toSelf().inSingletonScope();
-        bind(TYPES.IDiagramStartup).toService(EditorContextService);
-        bind(TYPES.IEditorContextServiceProvider).toProvider<EditorContextService>(
-            ctx => async () => ctx.container.get(EditorContextService)
-        );
-        bind(TYPES.IModelChangeService).to(ModelChangeService).inSingletonScope();
+    bind(EditorContextService).toSelf().inSingletonScope();
+    bind(TYPES.IDiagramStartup).toService(EditorContextService);
+    bind(TYPES.IEditorContextServiceProvider).toProvider<EditorContextService>(ctx => async () => ctx.container.get(EditorContextService));
+    bind(TYPES.IModelChangeService).to(ModelChangeService).inSingletonScope();
 
-        configureActionHandler(context, SetEditModeAction.KIND, EditorContextService);
-        configureActionHandler(context, SetDirtyStateAction.KIND, EditorContextService);
-        configureActionHandler(context, GetEditorContextAction.KIND, EditorContextService);
+    configureActionHandler(context, SetEditModeAction.KIND, EditorContextService);
+    configureActionHandler(context, SetDirtyStateAction.KIND, EditorContextService);
+    configureActionHandler(context, GetEditorContextAction.KIND, EditorContextService);
 
-        bind(FocusTracker).toSelf().inSingletonScope();
-        bind(TYPES.IDiagramStartup).toService(FocusTracker);
-        configureActionHandler(context, FocusStateChangedAction.KIND, FocusTracker);
+    bind(FocusTracker).toSelf().inSingletonScope();
+    bind(TYPES.IDiagramStartup).toService(FocusTracker);
+    configureActionHandler(context, FocusStateChangedAction.KIND, FocusTracker);
 
-        // Model update initialization ------------------------------------
-        bind(TYPES.IFeedbackActionDispatcher).to(FeedbackActionDispatcher).inSingletonScope();
-        configureCommand(context, FeedbackAwareUpdateModelCommand);
-        rebind(SetModelCommand).to(FeedbackAwareSetModelCommand);
+    // Model update initialization ------------------------------------
+    bind(TYPES.IFeedbackActionDispatcher).to(FeedbackActionDispatcher).inSingletonScope();
+    configureCommand(context, FeedbackAwareUpdateModelCommand);
+    rebind(SetModelCommand).to(FeedbackAwareSetModelCommand);
 
-        bind(GLSPMouseTool).toSelf().inSingletonScope();
-        bindOrRebind(context, MouseTool).toService(GLSPMouseTool);
-        bind(TYPES.IDiagramStartup).toService(GLSPMouseTool);
-        bind(GLSPMousePositionTracker).toSelf().inSingletonScope();
-        bindOrRebind(context, MousePositionTracker).toService(GLSPMousePositionTracker);
-        bind(GLSPKeyTool).toSelf().inSingletonScope();
-        bindOrRebind(context, KeyTool).toService(GLSPKeyTool);
-        bind(TYPES.IDiagramStartup).toService(GLSPKeyTool);
+    bind(GLSPMouseTool).toSelf().inSingletonScope();
+    bindOrRebind(context, MouseTool).toService(GLSPMouseTool);
+    bind(TYPES.IDiagramStartup).toService(GLSPMouseTool);
+    bind(GLSPMousePositionTracker).toSelf().inSingletonScope();
+    bindOrRebind(context, MousePositionTracker).toService(GLSPMousePositionTracker);
+    bind(GLSPKeyTool).toSelf().inSingletonScope();
+    bindOrRebind(context, KeyTool).toService(GLSPKeyTool);
+    bind(TYPES.IDiagramStartup).toService(GLSPKeyTool);
 
-        bindAsService(context, TYPES.MouseListener, SelectionClearingMouseListener);
-        bindOrRebind(context, TYPES.ICommandStack).to(GLSPCommandStack).inSingletonScope();
-        bind(GLSPActionDispatcher).toSelf().inSingletonScope();
-        bind(TYPES.IGModelRootListener).toService(GLSPActionDispatcher);
-        bindOrRebind(context, TYPES.IActionDispatcher).toService(GLSPActionDispatcher);
+    bindAsService(context, TYPES.MouseListener, SelectionClearingMouseListener);
+    bindOrRebind(context, TYPES.ICommandStack).to(GLSPCommandStack).inSingletonScope();
+    bind(GLSPActionDispatcher).toSelf().inSingletonScope();
+    bind(TYPES.IGModelRootListener).toService(GLSPActionDispatcher);
+    bindOrRebind(context, TYPES.IActionDispatcher).toService(GLSPActionDispatcher);
 
-        bindOrRebind(context, ActionHandlerRegistry).to(GLSPActionHandlerRegistry).inSingletonScope();
+    bindOrRebind(context, ActionHandlerRegistry).to(GLSPActionHandlerRegistry).inSingletonScope();
 
-        bindAsService(context, TYPES.ModelSource, GLSPModelSource);
-        bind(DiagramLoader).toSelf().inSingletonScope();
-        bind(ModelInitializationConstraint).to(DefaultModelInitializationConstraint).inSingletonScope();
+    bindAsService(context, TYPES.ModelSource, GLSPModelSource);
+    bind(DiagramLoader).toSelf().inSingletonScope();
+    bind(ModelInitializationConstraint).to(DefaultModelInitializationConstraint).inSingletonScope();
 
-        // support re-registration of model elements and views
-        bindOrRebind(context, TYPES.SModelRegistry).to(GModelRegistry).inSingletonScope();
-        bindOrRebind(context, TYPES.ViewRegistry).to(GViewRegistry).inSingletonScope();
+    // support re-registration of model elements and views
+    bindOrRebind(context, TYPES.SModelRegistry).to(GModelRegistry).inSingletonScope();
+    bindOrRebind(context, TYPES.ViewRegistry).to(GViewRegistry).inSingletonScope();
 
-        bind(SelectionService).toSelf().inSingletonScope();
-        bind(TYPES.IGModelRootListener).toService(SelectionService);
-        bind(TYPES.IDiagramStartup).toService(SelectionService);
-        configureActionHandler(context, GetSelectionAction.KIND, SelectionService);
+    bind(SelectionService).toSelf().inSingletonScope();
+    bind(TYPES.IGModelRootListener).toService(SelectionService);
+    bind(TYPES.IDiagramStartup).toService(SelectionService);
+    configureActionHandler(context, GetSelectionAction.KIND, SelectionService);
 
-        // Feedback Support ------------------------------------
-        // Generic re-usable feedback modifying css classes
-        configureCommand(context, ModifyCssFeedbackCommand);
-        // We support using sprotty's MoveCommand as client-side visual feedback
-        configureCommand(context, MoveCommand);
+    // Feedback Support ------------------------------------
+    // Generic re-usable feedback modifying css classes
+    configureCommand(context, ModifyCssFeedbackCommand);
+    // We support using sprotty's MoveCommand as client-side visual feedback
+    configureCommand(context, MoveCommand);
 
-        bindAsService(context, TYPES.IVNodePostprocessor, LocationPostprocessor);
-        bind(TYPES.HiddenVNodePostprocessor).toService(LocationPostprocessor);
+    bindAsService(context, TYPES.IVNodePostprocessor, LocationPostprocessor);
+    bind(TYPES.HiddenVNodePostprocessor).toService(LocationPostprocessor);
 
-        // Tool manager initialization ------------------------------------
-        bind(TYPES.IToolManager).to(ToolManager).inSingletonScope();
-        bind(TYPES.IDiagramStartup).toService(TYPES.IToolManager);
-        bind(TYPES.IEditModeListener).toService(TYPES.IToolManager);
-        bind(DefaultToolsEnablingKeyListener).toSelf().inSingletonScope();
-        bind(TYPES.KeyListener).toService(DefaultToolsEnablingKeyListener);
-        bind(ToolManagerActionHandler).toSelf().inSingletonScope();
-        configureActionHandler(context, EnableDefaultToolsAction.KIND, ToolManagerActionHandler);
-        configureActionHandler(context, EnableToolsAction.KIND, ToolManagerActionHandler);
+    // Tool manager initialization ------------------------------------
+    bind(TYPES.IToolManager).to(ToolManager).inSingletonScope();
+    bind(TYPES.IDiagramStartup).toService(TYPES.IToolManager);
+    bind(TYPES.IEditModeListener).toService(TYPES.IToolManager);
+    bind(DefaultToolsEnablingKeyListener).toSelf().inSingletonScope();
+    bind(TYPES.KeyListener).toService(DefaultToolsEnablingKeyListener);
+    bind(ToolManagerActionHandler).toSelf().inSingletonScope();
+    configureActionHandler(context, EnableDefaultToolsAction.KIND, ToolManagerActionHandler);
+    configureActionHandler(context, EnableToolsAction.KIND, ToolManagerActionHandler);
 
-        bind(GLSPUIExtensionRegistry).toSelf().inSingletonScope();
-        bindOrRebind(context, TYPES.UIExtensionRegistry).toService(GLSPUIExtensionRegistry);
-        bind(TYPES.IDiagramStartup).toService(GLSPUIExtensionRegistry);
+    bind(GLSPUIExtensionRegistry).toSelf().inSingletonScope();
+    bindOrRebind(context, TYPES.UIExtensionRegistry).toService(GLSPUIExtensionRegistry);
+    bind(TYPES.IDiagramStartup).toService(GLSPUIExtensionRegistry);
 
-        bind(TYPES.EmptyArray).toDynamicValue(() => []);
+    bind(TYPES.EmptyArray).toDynamicValue(() => []);
 
-        // Shortcut manager initialization ------------------------------------
-        bindAsService(context, TYPES.IShortcutManager, ShortcutManager);
+    // Shortcut manager initialization ------------------------------------
+    bindAsService(context, TYPES.IShortcutManager, ShortcutManager);
 
-        // Autocomplete suggestion provider initialization ------------------------------------
-        bind(TYPES.IAutocompleteSuggestionProviderRegistry).to(DefaultAutocompleteSuggestionRegistry).inSingletonScope();
-        bind(TYPES.IDiagramStartup).toService(TYPES.IAutocompleteSuggestionProviderRegistry);
-    },
-    {
-        featureId: Symbol('default')
-    }
-);
+    // Autocomplete suggestion provider initialization ------------------------------------
+    bind(TYPES.IAutocompleteSuggestionProviderRegistry).to(DefaultAutocompleteSuggestionRegistry).inSingletonScope();
+    bind(TYPES.IDiagramStartup).toService(TYPES.IAutocompleteSuggestionProviderRegistry);
+}, FeatureDefinition.toModuleOptions(defaultFeatureDef));

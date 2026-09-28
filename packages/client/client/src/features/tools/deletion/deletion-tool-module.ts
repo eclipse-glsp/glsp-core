@@ -13,14 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { deletionToolFeatureDef } from './deletion-tool-feature';
 import { DelKeyDeleteTool, MouseDeleteTool } from './delete-tool';
 
-export const deletionToolModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        bindAsService(context, TYPES.IDefaultTool, DelKeyDeleteTool);
-        bindAsService(context, TYPES.ITool, MouseDeleteTool);
-    },
-    { featureId: Symbol('deletionTool') }
-);
+export const deletionToolModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    bindAsService(context, TYPES.IDefaultTool, DelKeyDeleteTool);
+    bindAsService(context, TYPES.ITool, MouseDeleteTool);
+}, FeatureDefinition.toModuleOptions(deletionToolFeatureDef));

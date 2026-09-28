@@ -15,6 +15,7 @@
  ********************************************************************************/
 import {
     BindingContext,
+    FeatureKey,
     FeatureModule,
     TYPES,
     TriggerEdgeCreationAction,
@@ -22,6 +23,7 @@ import {
     bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
+import { GLSPClientFeature } from '../../../client-feature-keys';
 import { SetEdgeTargetSelectionAction } from '../edge-autocomplete/action';
 import { EdgeAutocompletePalette, SetEdgeTargetGridSuggestionProvider } from '../edge-autocomplete/edge-autocomplete-palette';
 import { EdgeAutocompletePaletteTool } from '../edge-autocomplete/edge-autocomplete-tool';
@@ -45,7 +47,7 @@ export const keyboardControlModule = new FeatureModule(
         const context = { bind, unbind, isBound, rebind };
         configureKeyboardControlTools(context);
     },
-    { featureId: Symbol('keyboardControl') }
+    { featureId: FeatureKey.toId(GLSPClientFeature.KeyboardControl) }
 );
 
 export function configureKeyboardControlTools(context: BindingContext): void {

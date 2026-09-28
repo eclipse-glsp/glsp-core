@@ -36,6 +36,9 @@
     "!**/*.spec.*",
     "!**/test/**"
   ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "lib/index",
   "types": "lib/index",
   "publishConfig": {
@@ -57,7 +60,8 @@
     "vscode-jsonrpc": "8.2.0"
   },
   "devDependencies": {
-    "@types/file-saver": "^2.0.5"
+    "@types/file-saver": "^2.0.5",
+    "esbuild": "^0.28.1"
   },
   "peerDependencies": {
     "inversify": "^6.1.3",

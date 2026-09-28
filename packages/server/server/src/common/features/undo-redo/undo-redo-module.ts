@@ -13,13 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { UndoRedoActionHandler } from './undo-redo-action-handler';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for undo & redo. Reported as {@link GLSPCapability.UndoRedo} capability.
@@ -28,14 +28,12 @@ import { SourceModelModule } from '../../model/source-model-module';
  * - {@link UndoRedoActionHandler}
  */
 export class UndoRedoModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.UndoRedo;
-
     override get featureKey(): GLSPCapability {
-        return UndoRedoModule.KEY;
+        return GLSPServerFeature.UndoRedo;
     }
 
-    override get requiredFeatures(): string[] {
-        return [SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TYPES, bindAsService, configureCommand, configureView } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureCommand, configureView } from '@eclipse-glsp/sprotty';
+import { changeBoundsToolFeatureDef } from './change-bounds-tool-feature';
 import '../../../../css/change-bounds.css';
 import { GResizeHandle } from '../../change-bounds/model';
 import { ChangeBoundsManager } from './change-bounds-manager';
@@ -21,14 +22,11 @@ import { ChangeBoundsTool } from './change-bounds-tool';
 import { HideChangeBoundsToolResizeFeedbackCommand, ShowChangeBoundsToolResizeFeedbackCommand } from './change-bounds-tool-feedback';
 import { GResizeHandleView } from './view';
 
-export const changeBoundsToolModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        bindAsService(context, TYPES.IChangeBoundsManager, ChangeBoundsManager);
-        bindAsService(context, TYPES.IDefaultTool, ChangeBoundsTool);
-        configureCommand(context, ShowChangeBoundsToolResizeFeedbackCommand);
-        configureCommand(context, HideChangeBoundsToolResizeFeedbackCommand);
-        configureView(context, GResizeHandle.TYPE, GResizeHandleView);
-    },
-    { featureId: Symbol('changeBoundsTool') }
-);
+export const changeBoundsToolModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    bindAsService(context, TYPES.IChangeBoundsManager, ChangeBoundsManager);
+    bindAsService(context, TYPES.IDefaultTool, ChangeBoundsTool);
+    configureCommand(context, ShowChangeBoundsToolResizeFeedbackCommand);
+    configureCommand(context, HideChangeBoundsToolResizeFeedbackCommand);
+    configureView(context, GResizeHandle.TYPE, GResizeHandleView);
+}, FeatureDefinition.toModuleOptions(changeBoundsToolFeatureDef));

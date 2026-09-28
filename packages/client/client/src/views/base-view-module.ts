@@ -21,6 +21,7 @@ import {
     DiamondNode,
     DiamondNodeView,
     ExpandButtonView,
+    FeatureKey,
     FeatureModule,
     ForeignObjectView,
     GButton,
@@ -45,6 +46,7 @@ import {
     moveFeature,
     selectFeature
 } from '@eclipse-glsp/sprotty';
+import { GLSPClientFeature } from '../client-feature-keys';
 import { GIssueMarker } from '../features/validation/issue-marker';
 import { GEdge, GGraph } from '../model';
 import { GEdgeView } from './gedge-view';
@@ -58,7 +60,7 @@ export const baseViewModule = new FeatureModule(
         const context = { bind, unbind, isBound, rebind };
         configureDefaultModelElements(context);
     },
-    { featureId: Symbol('baseView') }
+    { featureId: FeatureKey.toId(GLSPClientFeature.BaseView) }
 );
 
 export function configureDefaultModelElements(context: Pick<BindingContext, 'bind' | 'isBound'>): void {

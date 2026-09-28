@@ -48,7 +48,7 @@ wsProvider.listen({ onConnection: initialize, onReconnect: reconnect, logger: co
 
 async function initialize(connectionProvider: MessageConnection, isReconnecting = false): Promise<void> {
     glspClient = new BaseJsonrpcGLSPClient({ id, connectionProvider });
-    container = createContainer({ clientId, diagramType, glspClientProvider: async () => glspClient, sourceUri: examplePath });
+    container = await createContainer({ clientId, diagramType, glspClientProvider: async () => glspClient, sourceUri: examplePath });
     const actionDispatcher = container.get(GLSPActionDispatcher);
     const diagramLoader = container.get(DiagramLoader);
     const mcpEnabled = hasParameter('mcp');

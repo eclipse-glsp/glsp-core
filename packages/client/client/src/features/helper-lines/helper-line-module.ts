@@ -15,6 +15,7 @@
  ********************************************************************************/
 
 import {
+    FeatureDefinition,
     FeatureModule,
     MoveAction,
     SetBoundsAction,
@@ -24,6 +25,8 @@ import {
     configureCommand,
     configureModelElement
 } from '@eclipse-glsp/sprotty';
+import '../../../css/helper-lines.css';
+import { helperLineFeatureDef } from './helper-line-feature';
 import { SetBoundsFeedbackAction } from '../bounds/set-bounds-feedback-command';
 import { MoveFinishedEventAction, MoveInitializedEventAction } from '../tools/change-bounds/change-bounds-tool-feedback';
 import { DrawHelperLinesFeedbackCommand, RemoveHelperLinesFeedbackCommand } from './helper-line-feedback';
@@ -31,20 +34,17 @@ import { HelperLineManager } from './helper-line-manager';
 import { HELPER_LINE, HelperLine, SELECTION_BOUNDS, SelectionBounds } from './model';
 import { HelperLineView, SelectionBoundsView } from './view';
 
-export const helperLineModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        configureModelElement(context, HELPER_LINE, HelperLine, HelperLineView);
-        configureModelElement(context, SELECTION_BOUNDS, SelectionBounds, SelectionBoundsView);
-        configureCommand(context, DrawHelperLinesFeedbackCommand);
-        configureCommand(context, RemoveHelperLinesFeedbackCommand);
+export const helperLineModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    configureModelElement(context, HELPER_LINE, HelperLine, HelperLineView);
+    configureModelElement(context, SELECTION_BOUNDS, SelectionBounds, SelectionBoundsView);
+    configureCommand(context, DrawHelperLinesFeedbackCommand);
+    configureCommand(context, RemoveHelperLinesFeedbackCommand);
 
-        bindAsService(bind, TYPES.IHelperLineManager, HelperLineManager);
-        configureActionHandler(context, SetBoundsAction.KIND, TYPES.IHelperLineManager);
-        configureActionHandler(context, SetBoundsFeedbackAction.KIND, TYPES.IHelperLineManager);
-        configureActionHandler(context, MoveAction.KIND, TYPES.IHelperLineManager);
-        configureActionHandler(context, MoveInitializedEventAction.KIND, TYPES.IHelperLineManager);
-        configureActionHandler(context, MoveFinishedEventAction.KIND, TYPES.IHelperLineManager);
-    },
-    { featureId: Symbol('helperLine') }
-);
+    bindAsService(bind, TYPES.IHelperLineManager, HelperLineManager);
+    configureActionHandler(context, SetBoundsAction.KIND, TYPES.IHelperLineManager);
+    configureActionHandler(context, SetBoundsFeedbackAction.KIND, TYPES.IHelperLineManager);
+    configureActionHandler(context, MoveAction.KIND, TYPES.IHelperLineManager);
+    configureActionHandler(context, MoveInitializedEventAction.KIND, TYPES.IHelperLineManager);
+    configureActionHandler(context, MoveFinishedEventAction.KIND, TYPES.IHelperLineManager);
+}, FeatureDefinition.toModuleOptions(helperLineFeatureDef));

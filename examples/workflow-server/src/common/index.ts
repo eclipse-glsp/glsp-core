@@ -58,6 +58,7 @@ export * from './util/model-types';
 export * from './workflow-diagram-configuration';
 export * from './workflow-diagram-setup';
 export * from './workflow-edge-creation-checker';
+export * from './workflow-feature-keys';
 export * from './workflow-glsp-server';
 export * from './workflow-model-module';
 export * from './workflow-popup-factory';

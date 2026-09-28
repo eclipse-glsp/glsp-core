@@ -34,7 +34,6 @@ import {
     partition
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import '../../../css/helper-lines.css';
 import { EditorContextService } from '../../base/editor-context-service';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
 import {

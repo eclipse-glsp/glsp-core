@@ -117,6 +117,7 @@ export * from './progress/progress-service';
 export * from './protocol/client-action';
 export * from './protocol/glsp-server';
 export * from './reexport';
+export * from './server-feature-keys';
 export * from './session/client-session';
 export * from './session/client-session-factory';
 export * from './session/client-session-initializer';
