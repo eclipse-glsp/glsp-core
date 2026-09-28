@@ -38,9 +38,11 @@ export namespace JsonrpcGLSPClient {
 
     export const ActionMessageNotification = new NotificationType<ActionMessage>('process');
     export const InitializeRequest = new RequestType<InitializeParameters, InitializeResult, void>('initialize');
-    export const InitializeClientSessionRequest = new RequestType<InitializeClientSessionParameters, InitializeClientSessionResult, void>(
-        'initializeClientSession'
-    );
+    export const InitializeClientSessionRequest = new RequestType<
+        InitializeClientSessionParameters,
+        InitializeClientSessionResult | null,
+        void
+    >('initializeClientSession');
     export const DisposeClientSessionRequest = new RequestType<DisposeClientSessionParameters, void, void>('disposeClientSession');
 
     export const ShutdownNotification = new NotificationType0('shutdown');

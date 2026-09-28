@@ -19,10 +19,10 @@ import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
-import { BaseDiagramModule } from '../../di/base-diagram-module';
 import { EdgeCreationChecker } from './edge-creation-checker';
 import { RequestCheckEdgeActionHandler } from './request-check-edge-action-handler';
 import { RequestTypeHintsActionHandler } from './request-type-hints-action-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for type hints and edge creation checks. Reported as {@link GLSPCapability.TypeHints} capability.
@@ -39,7 +39,7 @@ export class TypeHintsModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+        return [SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

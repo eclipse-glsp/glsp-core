@@ -123,9 +123,9 @@ export interface GLSPClient {
      *
      * @param params InitializeClientSession parameters
      * @returns A promise of the {@link InitializeClientSessionResult} that resolves if the initialization was successful.
-     *          Servers that predate the capability protocol resolve with `null`/`undefined` instead.
+     *          Servers that predate the capability protocol resolve with `undefined` instead.
      */
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult>;
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult | undefined>;
 
     /**
      * Sends a `disposeClientSession` request to the server. This request has to be sent at the end of client session lifecycle

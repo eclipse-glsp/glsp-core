@@ -21,7 +21,8 @@ import { McpWorkerBridge } from '@eclipse-glsp/server-mcp/browser';
 import { Container } from 'inversify';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowMcpDiagramModule } from '../common/mcp/workflow-mcp-diagram-module';
-import { WorkflowServerModule, createWorkflowDiagramSetup } from '../common/workflow-diagram-module';
+import { createWorkflowDiagramSetup } from '../common/workflow-diagram-setup';
+import { WorkflowServerModule } from '../common/workflow-server-module';
 import { WorkflowMockModelStorage } from './mock-model-storage';
 
 export async function launch(_argv?: string[]): Promise<void> {

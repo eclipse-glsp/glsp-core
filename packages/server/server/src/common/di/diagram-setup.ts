@@ -13,12 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { asArray, hasFunctionProp } from '@eclipse-glsp/protocol';
-import { ContainerConfiguration, FeatureModule, ModuleConfiguration, resolveContainerConfiguration } from '@eclipse-glsp/protocol/lib/di';
+import { ContainerConfiguration, resolveContainerConfiguration } from '@eclipse-glsp/protocol/lib/di';
 import { ContainerModule } from 'inversify';
 import { UndoRedoModule } from '../features/undo-redo/undo-redo-module';
 import { BaseDiagramModule } from './base-diagram-module';
-import { ContextActionsModule } from '../features/contextactions/context-actions-module';
+import { ContextActionsModule } from '../features/context-actions/context-actions-module';
 import { LayoutModule } from '../features/layout/layout-module';
 import { SourceModelModule } from '../model/source-model-module';
 import { NavigationModule } from '../features/navigation/navigation-module';
@@ -64,9 +63,10 @@ export function createDefaultDiagramModules(): ServerFeatureModule[] {
  * The resolved module list always starts with the {@link BaseDiagramModule} and the given source model module,
  * followed by the default modules and the given configuration (see `resolveContainerConfiguration`):
  * - `add`: appends modules,
- * - `replace`: substitutes the module with the same feature id in place (e.g. a subclass of a default module),
- * - `remove`: removes modules. In contrast to `resolveContainerConfiguration`, feature modules are removed by
- *   feature id, so `remove: [new PopupModule()]` also removes a configured subclass of `PopupModule`.
+ * - `replace`: substitutes the module with the same feature id in place (e.g. a subclass of a default module or
+ *   of the {@link BaseDiagramModule} to customize core session bindings),
+ * - `remove`: removes modules. Feature modules are removed by feature id, so `remove: [new PopupModule()]` also
+ *   removes a configured subclass of `PopupModule`.
  *
  * @param sourceModel The source model module that defines the diagram language.
  * @param defaults The default feature modules, e.g. {@link createDefaultDiagramModules}.
@@ -77,24 +77,6 @@ export function createDiagramSetup(
     defaults: ContainerModule[],
     ...configuration: ContainerConfiguration
 ): DiagramSetup {
-    const diagramType = sourceModel.diagramType;
-    let modules = resolveContainerConfiguration(new BaseDiagramModule(diagramType), sourceModel, ...defaults);
-    configuration.forEach(config => {
-        modules = resolveContainerConfiguration(...modules, resolveRemovals(modules, config));
-    });
-    return { diagramType, modules };
-}
-
-/** Maps the feature modules to remove to the currently configured modules with the same feature id. */
-function resolveRemovals(modules: ContainerModule[], config: ContainerModule | ModuleConfiguration): ContainerModule | ModuleConfiguration {
-    const toRemove = hasFunctionProp(config, 'registry') ? undefined : (config as ModuleConfiguration).remove;
-    if (!toRemove) {
-        return config;
-    }
-    const remove = asArray(toRemove).map(candidate =>
-        candidate instanceof FeatureModule
-            ? (modules.find(module => module instanceof FeatureModule && module.featureId === candidate.featureId) ?? candidate)
-            : candidate
-    );
-    return { ...(config as ModuleConfiguration), remove };
+    const modules = resolveContainerConfiguration(new BaseDiagramModule(), sourceModel, ...defaults, ...configuration);
+    return { diagramType: sourceModel.diagramType, modules };
 }

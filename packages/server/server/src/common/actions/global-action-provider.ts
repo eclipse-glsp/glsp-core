@@ -19,6 +19,7 @@ import { SessionCapabilityProvider } from '../capabilities/session-capability-pr
 import { TEMPORARY_CLIENT_ID, createClientSessionModule } from '../di/client-session-module';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { runClientSessionInitializers } from '../session/client-session-initializer';
+import { Logger } from '../utils/logger';
 import { ActionHandlerRegistry } from './action-handler-registry';
 
 export const GlobalActionProvider = Symbol('GlobalActionProvider');
@@ -46,6 +47,9 @@ export class DefaultGlobalActionProvider implements GlobalActionProvider {
     public readonly actionKinds: Map<string, string[]>;
     protected readonly diagramCapabilities: Map<string, Promise<DiagramCapabilities>>;
 
+    @inject(Logger)
+    protected logger: Logger;
+
     constructor(
         @inject(InjectionContainer) serverContainer: Container,
         @inject(DiagramModules) diagramModules: Map<string, ContainerModule[]>
@@ -56,9 +60,9 @@ export class DefaultGlobalActionProvider implements GlobalActionProvider {
             const container = this.createDiagramContainer(serverContainer, modules);
             runClientSessionInitializers(container);
             this.loadActionKinds(diagramType, container);
-            const capabilities = this.loadCapabilities(container).finally(() => container.unbindAll());
-            // Prevent an unhandled rejection, the error is propagated by getDiagramCapabilities().
-            capabilities.catch(() => {});
+            const capabilities = this.loadCapabilities(container)
+                .catch(error => this.handleCapabilitiesError(diagramType, error))
+                .finally(() => container.unbindAll());
             this.diagramCapabilities.set(diagramType, capabilities);
         });
     }
@@ -87,6 +91,16 @@ export class DefaultGlobalActionProvider implements GlobalActionProvider {
         const diagramServerActions = this.actionKinds.get(diagramType) ?? [];
         handlerRegistry.getAll().forEach(handler => distinctAdd(diagramServerActions, ...handler.actionKinds));
         this.actionKinds.set(diagramType, diagramServerActions);
+    }
+
+    /**
+     * Handles a failed capability resolution of a diagram type (e.g. a rejecting `CapabilityContribution`).
+     * The error is logged and the diagram type reports no capabilities, so that one broken contribution does not fail
+     * the server initialization for all diagram types.
+     */
+    protected handleCapabilitiesError(diagramType: string, error: unknown): DiagramCapabilities {
+        this.logger.error(`Could not resolve the capabilities of diagram type '${diagramType}':`, error);
+        return {};
     }
 
     /** Resolves the static capabilities (i.e. without session args) of the diagram type. */

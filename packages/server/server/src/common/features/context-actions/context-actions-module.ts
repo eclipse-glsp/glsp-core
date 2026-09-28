@@ -27,6 +27,7 @@ import { ContextActionsProviderRegistry } from './context-actions-provider-regis
 import { ContextMenuItemProvider } from './context-menu-item-provider';
 import { RequestContextActionsHandler } from './request-context-actions-handler';
 import { DefaultToolPaletteItemProvider, ToolPaletteItemProvider } from './tool-palette-item-provider';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for context actions (tool palette, command palette, context menu). Reported as {@link GLSPCapability.ContextActions}
@@ -47,7 +48,7 @@ export class ContextActionsModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+        return [OperationsModule.KEY, SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

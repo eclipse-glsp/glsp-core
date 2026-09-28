@@ -258,9 +258,17 @@ describe('Base JSON-RPC GLSP Client', () => {
         it('should invoke the corresponding server method', async () => {
             await resetClient();
             const params = { clientSessionId: '', diagramType: '', clientActionKinds: [] };
+            const expectedResult = { capabilities: {} };
+            vi.mocked(connection.sendRequest).mockResolvedValue(expectedResult);
             const result = await client.initializeClientSession(params);
-            expect(result).toBeUndefined();
+            expect(result).toEqual(expectedResult);
             expect(connection.sendRequest).toHaveBeenCalledExactlyOnceWith(JsonrpcGLSPClient.InitializeClientSessionRequest, params);
+        });
+        it('should resolve with `undefined` if the server sends no result', async () => {
+            await resetClient();
+            vi.mocked(connection.sendRequest).mockResolvedValue(null);
+            const result = await client.initializeClientSession({ clientSessionId: '', diagramType: '', clientActionKinds: [] });
+            expect(result).toBeUndefined();
         });
     });
 

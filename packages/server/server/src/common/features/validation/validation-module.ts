@@ -19,9 +19,9 @@ import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
-import { BaseDiagramModule } from '../../di/base-diagram-module';
 import { ModelValidator } from './model-validator';
 import { RequestMarkersHandler } from './request-markers-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for model validation. Reported as {@link GLSPCapability.Validation} capability.
@@ -38,7 +38,7 @@ export class ValidationModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+        return [SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

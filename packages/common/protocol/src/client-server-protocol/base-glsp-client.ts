@@ -151,7 +151,7 @@ export class BaseGLSPClient implements GLSPClient {
         return initializeDeferred.promise;
     }
 
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult> {
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult | undefined> {
         return this.checkedServer.initializeClientSession(params);
     }
 

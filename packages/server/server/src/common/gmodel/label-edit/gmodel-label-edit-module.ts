@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LabelEditModule } from '../../features/directediting/label-edit-module';
+import { LabelEditModule } from '../../features/label-edit/label-edit-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
 import { GModelApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 

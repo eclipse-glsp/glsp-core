@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2026 EclipseSource and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,8 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-/** Options of the `GLSPCapability.Validation` capability. */
-export interface ValidationCapabilityOptions {
-    /** `true` if the server validates the model on every model update without an explicit request. */
-    live?: boolean;
+import { GLSPServerInitializer, MultiBinding, ServerModule } from '@eclipse-glsp/server';
+import { injectable } from 'inversify';
+import { CustomArgsInitContribution } from './workflow-glsp-server';
+
+@injectable()
+export class WorkflowServerModule extends ServerModule {
+    protected override configureGLSPServerInitializers(binding: MultiBinding<GLSPServerInitializer>): void {
+        binding.add(CustomArgsInitContribution);
+    }
 }

@@ -22,6 +22,9 @@ import { OperationHandler, OperationHandlerConstructor, OperationHandlerFactory 
 
 @injectable()
 export class OperationHandlerRegistry extends Registry<string, OperationHandler> {
+    /** `true` once the registry has been populated by the {@link OperationHandlerRegistryInitializer}. */
+    initialized = false;
+
     registerHandler(handler: OperationHandler): boolean {
         if (CreateOperationHandler.is(handler)) {
             handler.elementTypeIds.forEach(typeId => this.register(`${handler.operationType}_${typeId}`, handler));
@@ -65,5 +68,6 @@ export class OperationHandlerRegistryInitializer implements ClientSessionInitial
         const constructors = new Set(this.handlerConstructors.flatMap(contribution => asArray(contribution)));
         const handlers = [...constructors].map(constructor => this.factory(constructor));
         handlers.forEach(handler => this.registry.registerHandler(handler));
+        this.registry.initialized = true;
     }
 }

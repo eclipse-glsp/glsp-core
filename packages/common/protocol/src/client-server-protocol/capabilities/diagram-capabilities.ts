@@ -17,14 +17,12 @@ import { Capability, CapabilityKey } from './capability';
 import { GLSPCapability } from './glsp-capability';
 import { LabelEditCapabilityOptions } from './label-edit-capability';
 import { LayoutCapabilityOptions } from './layout-capability';
-import { ValidationCapabilityOptions } from './validation-capability';
 
 /**
  * The option types of the {@link GLSPCapability}s that support options. All other GLSP capabilities are plain booleans.
  */
 export interface GLSPCapabilityOptions {
     [GLSPCapability.LabelEdit]: LabelEditCapabilityOptions;
-    [GLSPCapability.Validation]: ValidationCapabilityOptions;
     [GLSPCapability.Layout]: LayoutCapabilityOptions;
 }
 

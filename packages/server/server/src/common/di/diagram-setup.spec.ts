@@ -13,16 +13,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability, GLSPClientProxy, RequestModelAction, SaveModelAction } from '@eclipse-glsp/protocol';
+import {
+    ComputedBoundsAction,
+    GLSPCapability,
+    GLSPClientProxy,
+    LayoutOperation,
+    RequestModelAction,
+    SaveModelAction
+} from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
-import { ActionDispatchScope } from '../actions/action-dispatcher';
+import { ActionDispatchScope, ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandlerRegistry } from '../actions/action-handler-registry';
 import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
 import { ChangeBoundsModule } from '../features/change-bounds/change-bounds-module';
 import { BaseDiagramModule } from './base-diagram-module';
-import { LabelEditValidator } from '../features/directediting/label-edit-validator';
+import { LabelEditValidator } from '../features/label-edit/label-edit-validator';
+import { LayoutModule } from '../features/layout/layout-module';
 import { PopupModule } from '../features/popup/popup-module';
 import { SourceModelStorage } from '../model/source-model-storage';
 import { NavigationModule } from '../features/navigation/navigation-module';
@@ -40,7 +48,7 @@ import { BindingTarget } from './binding-target';
 import { createClientSessionModule } from './client-session-module';
 import { createGModelDiagramSetup } from '../gmodel/gmodel-diagram-setup';
 import { createDefaultDiagramModules, createDiagramSetup } from './diagram-setup';
-import { Operations } from './service-identifiers';
+import { DiagramType, Operations } from './service-identifiers';
 
 @injectable()
 class StubSourceModelStorage implements SourceModelStorage {
@@ -245,11 +253,42 @@ describe('loading a diagram setup', () => {
         expect(container.get(OperationHandlerRegistry).hasKey('changeBounds')).toBe(true);
     });
 
+    it('should keep the client-side layout round trip if the layout feature is removed', () => {
+        const container = createSessionContainer(createGModelDiagramSetup(new TestModelModule(), { remove: [new LayoutModule()] }).modules);
+        const actionKinds = container
+            .get(ActionHandlerRegistry)
+            .getAll()
+            .flatMap(handler => handler.actionKinds);
+        expect(actionKinds).toContain(ComputedBoundsAction.KIND);
+        expect(container.get<string[]>(Operations)).not.toContain(LayoutOperation.KIND);
+    });
+
+    it('should fail to resolve the operation kinds before the operation handler registry is initialized', () => {
+        const container = createServerContainer().createChild();
+        container.load(
+            ...createGModelDiagramSetup(new TestModelModule()).modules,
+            createClientSessionModule({ clientId: 'client', glspClient: {} as GLSPClientProxy, clientActionKinds: [] })
+        );
+        expect(() => container.get(Operations)).toThrow(/operation handler registry has not been initialized/);
+    });
+
+    it('should customize core session bindings by replacing the base module', () => {
+        class CustomActionDispatcher extends DefaultActionDispatcher {}
+        class CustomBaseDiagramModule extends BaseDiagramModule {
+            protected override bindActionDispatcher(): BindingTarget<ActionDispatcher> {
+                return CustomActionDispatcher;
+            }
+        }
+        const setup = createGModelDiagramSetup(new TestModelModule(), { replace: [new CustomBaseDiagramModule()] });
+        expect(setup.modules[0]).toBeInstanceOf(CustomBaseDiagramModule);
+        const container = createSessionContainer(setup.modules);
+        expect(container.get(ActionDispatcher)).toBeInstanceOf(CustomActionDispatcher);
+        expect(container.get(DiagramType)).toBe('test-diagram');
+    });
+
     it('should fail loading if a required module is missing', () => {
         const setup = createGModelDiagramSetup(new TestModelModule(), { remove: [new OperationsModule()] });
-        expect(() => createSessionContainer(setup.modules)).toThrow(
-            "Could not load feature module 'glsp.undoRedo'. Required modules are not loaded: glsp.operations"
-        );
+        expect(() => createSessionContainer(setup.modules)).toThrow(/Required modules are not loaded: glsp\.operations/);
     });
 
     it('should fail loading if the base module is missing', () => {

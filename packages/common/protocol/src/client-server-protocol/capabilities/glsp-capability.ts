@@ -34,7 +34,7 @@ export const GLSPCapability = {
     UndoRedo: 'glsp.undoRedo',
     /** Navigation to/from model elements (`RequestNavigationTargetsAction`, `ResolveNavigationTargetAction`). */
     Navigation: 'glsp.navigation',
-    /** Model validation (`RequestMarkersAction`). Options: `ValidationCapabilityOptions`. */
+    /** Model validation (`RequestMarkersAction`). */
     Validation: 'glsp.validation',
     /** Layouting (`LayoutOperation`, `ComputedBoundsAction`). Options: `LayoutCapabilityOptions`. */
     Layout: 'glsp.layout',

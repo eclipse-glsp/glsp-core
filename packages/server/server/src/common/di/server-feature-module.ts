@@ -18,7 +18,7 @@ import { BindingContext, FeatureModule, FeatureModuleOptions } from '@eclipse-gl
 import { interfaces } from 'inversify';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { ServerFeature, ServerFeatureDescription } from './feature';
-import { AbstractMultiBinding } from './multi-binding';
+import { AbstractMultiBinding, configureMultiBinding } from './multi-binding';
 
 /**
  * Base class for composable, individually removable server features.
@@ -118,7 +118,6 @@ export abstract class ServerFeatureModule extends FeatureModule {
      * module, which gives subclasses the chance to customize the binding before it is applied.
      */
     protected configureMultiBinding<T>(binding: AbstractMultiBinding<T>, configurator: (binding: AbstractMultiBinding<T>) => void): void {
-        configurator(binding);
-        binding.applyBindings(this.context);
+        configureMultiBinding(this.context, binding, configurator);
     }
 }

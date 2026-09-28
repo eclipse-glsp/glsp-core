@@ -13,17 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    BindingTarget,
-    ContainerConfiguration,
-    DiagramSetup,
-    GLSPServerInitializer,
-    MultiBinding,
-    ServerModule,
-    SourceModelStorage,
-    createGModelDiagramSetup
-} from '@eclipse-glsp/server';
-import { injectable } from 'inversify';
+import { BindingTarget, ContainerConfiguration, DiagramSetup, SourceModelStorage, createGModelDiagramSetup } from '@eclipse-glsp/server';
 import { WorkflowContextActionsModule } from './features/context-actions/workflow-context-actions-module';
 import { WorkflowElementCreationModule } from './features/element-creation/workflow-element-creation-module';
 import { WorkflowLabelEditModule } from './features/label-edit/workflow-label-edit-module';
@@ -32,15 +22,7 @@ import { WorkflowPopupModule } from './features/popup/workflow-popup-module';
 import { WorkflowTaskEditModule } from './features/task-edit/workflow-task-edit-module';
 import { WorkflowTypeHintsModule } from './features/type-hints/workflow-type-hints-module';
 import { WorkflowValidationModule } from './features/validation/workflow-validation-module';
-import { CustomArgsInitContribution } from './workflow-glsp-server';
 import { WorkflowModelModule } from './workflow-model-module';
-
-@injectable()
-export class WorkflowServerModule extends ServerModule {
-    protected override configureGLSPServerInitializers(binding: MultiBinding<GLSPServerInitializer>): void {
-        binding.add(CustomArgsInitContribution);
-    }
-}
 
 /**
  * Creates the {@link DiagramSetup} of the workflow diagram: the GModel defaults with the workflow-specific

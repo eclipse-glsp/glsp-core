@@ -17,10 +17,10 @@ import { GGraph, GNode } from '@eclipse-glsp/graph';
 import { Action, ComputedBoundsAction, DirtyStateChangeReason, LayoutOperation } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule } from 'inversify';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LogLevel, Logger } from '../../utils/logger';
-import { GModelIndex } from '../../model/gmodel-index';
-import { ModelState } from '../../model/model-state';
-import { ModelSubmissionHandler } from '../../model/model-submission-handler';
+import { LogLevel, Logger } from '../utils/logger';
+import { GModelIndex } from './gmodel-index';
+import { ModelState } from './model-state';
+import { ModelSubmissionHandler } from './model-submission-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 
 const NODE_ID = 'node0';

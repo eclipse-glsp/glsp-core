@@ -33,18 +33,27 @@ export namespace Capability {
      * An absent (`undefined`) capability resolves to `legacyDefault`. The default is `true` because a peer that does
      * not report capabilities at all (i.e. a server that predates the capability protocol) supports every feature.
      *
+     * Accepts `unknown` so that custom capabilities, which are typed as `unknown` via the index signature of
+     * `DiagramCapabilities`, can be checked without a cast.
+     *
      * @param capability The capability value as received from the peer.
      * @param legacyDefault The value to use if the capability is absent.
      */
-    export function isEnabled(capability: Capability<object> | undefined, legacyDefault = true): boolean {
+    export function isEnabled(capability: unknown, legacyDefault = true): boolean {
         return capability === undefined ? legacyDefault : capability !== false;
     }
 
     /**
      * Returns the options of the given capability, or `undefined` if the capability is absent, disabled, or
      * enabled without options (i.e. `true`).
+     *
+     * For GLSP capabilities the options type is inferred. Custom capabilities are typed as `unknown` via the index
+     * signature of `DiagramCapabilities` and can be passed without a cast, the caller then specifies the options type:
+     * `Capability.options<SimulationOptions>(capabilities['acme.simulation'])`.
      */
-    export function options<O extends object>(capability: Capability<O> | undefined): O | undefined {
-        return typeof capability === 'object' && capability !== null ? capability : undefined;
+    export function options<O extends object>(capability: Capability<O> | undefined): O | undefined;
+    export function options<O extends object = object>(capability: unknown): O | undefined;
+    export function options<O extends object>(capability: unknown): O | undefined {
+        return typeof capability === 'object' && capability !== null ? (capability as O) : undefined;
     }
 }

@@ -119,6 +119,7 @@ describe('test DefaultGLSPServer', () => {
         expect(result.protocolVersion).toBe(protocolVersion);
         expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
         expect(result.capabilities?.diagramTypes?.[diagramType]).toEqual(diagramCapabilities.get(diagramType));
+        expect(result.capabilities?.dynamicCapabilities).toBe(true);
         expect(spy_listener1_initialize).toHaveBeenCalledWith(glspServer);
         expect(spy_listener2_initialize).not.toHaveBeenCalled();
     });
@@ -151,7 +152,8 @@ describe('test DefaultGLSPServer', () => {
     it('initialize client session - returns session capabilities resolved with session args', async () => {
         const sessionContainer = new Container();
         const provider: SessionCapabilityProvider = {
-            getCapabilities: async args => ({ [GLSPCapability.Popup]: args?.readonly !== true })
+            getCapabilities: async args => ({ [GLSPCapability.Popup]: args?.readonly !== true }),
+            updateCapabilities: async () => {}
         };
         sessionContainer.bind(SessionCapabilityProvider).toConstantValue(provider);
         spy_sessionManager_getOrCreate.mockReturnValue(mock.createClientSession(clientSessionId, diagramType, sessionContainer));

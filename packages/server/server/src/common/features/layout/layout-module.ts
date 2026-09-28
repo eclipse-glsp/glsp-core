@@ -16,7 +16,6 @@
 import { GLSPCapability, LayoutCapabilityOptions, SessionCapabilities } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { inject, injectable } from 'inversify';
-import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { CapabilityContribution } from '../../capabilities/capability-contribution';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
@@ -24,9 +23,9 @@ import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
 import { OperationsModule } from '../../operations/operations-module';
-import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { LayoutEngine } from './layout-engine';
 import { LayoutOperationHandler } from './layout-operation-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Reports the {@link GLSPCapability.Layout} capability with the layout options of the {@link DiagramConfiguration}.
@@ -62,8 +61,11 @@ export class LayoutCapabilityContribution implements CapabilityContribution {
  * Feature module for layouting. Reported as {@link GLSPCapability.Layout} capability (with {@link LayoutCapabilityOptions}).
  * A layout engine (e.g. `ElkLayoutModule`) can be contributed by any module.
  *
+ * The client-side layout round trip (`RequestBoundsAction`/`ComputedBoundsAction`) is part of the model loading and
+ * therefore provided by the `SourceModelModule`, i.e. removing this module only disables (server-side) layout operations.
+ *
  * Provides:
- * - {@link LayoutOperationHandler}, {@link ComputedBoundsActionHandler}
+ * - {@link LayoutOperationHandler}
  * - {@link LayoutEngine} as optional binding
  * - {@link LayoutCapabilityContribution}
  */
@@ -75,14 +77,11 @@ export class LayoutModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+        return [OperationsModule.KEY, SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {
         applyOptionalBindingTarget(context, LayoutEngine, this.bindLayoutEngine())?.inSingletonScope();
-        this.configureMultiBinding(new InstanceMultiBinding<ActionHandlerConstructor>(ActionHandlerConstructor), binding =>
-            this.configureActionHandlers(binding)
-        );
         this.configureMultiBinding(new InstanceMultiBinding<OperationHandlerConstructor>(OperationHandlerConstructor), binding =>
             this.configureOperationHandlers(binding)
         );
@@ -91,10 +90,6 @@ export class LayoutModule extends CapabilityFeatureModule {
 
     protected bindLayoutEngine(): BindingTarget<LayoutEngine> | undefined {
         return undefined;
-    }
-
-    protected configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
-        binding.add(ComputedBoundsActionHandler);
     }
 
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

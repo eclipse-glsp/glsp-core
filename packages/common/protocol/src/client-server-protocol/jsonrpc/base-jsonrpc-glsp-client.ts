@@ -111,8 +111,11 @@ export class BaseJsonrpcGLSPClient implements GLSPClient {
         return initializeDeferred.promise;
     }
 
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult> {
-        return this.checkedConnection.sendRequest(JsonrpcGLSPClient.InitializeClientSessionRequest, params);
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult | undefined> {
+        // Servers that predate the capability protocol send no result, which is received as `null` via JSON-RPC.
+        return this.checkedConnection
+            .sendRequest(JsonrpcGLSPClient.InitializeClientSessionRequest, params)
+            .then(result => result ?? undefined);
     }
 
     disposeClientSession(params: DisposeClientSessionParameters): Promise<void> {

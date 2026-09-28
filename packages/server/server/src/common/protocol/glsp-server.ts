@@ -124,13 +124,15 @@ export class DefaultGLSPServer implements GLSPServer {
 
     /**
      * Resolves the static (connection-scoped) capabilities of all configured diagram types.
+     * Session capabilities can be updated after the session initialization (see
+     * `SessionCapabilityProvider.updateCapabilities`), which is announced via `dynamicCapabilities`.
      */
     protected async getServerCapabilities(): Promise<ServerCapabilities> {
         const diagramTypes: Required<ServerCapabilities>['diagramTypes'] = {};
         (await this.actionProvider.getDiagramCapabilities()).forEach(
             (capabilities, diagramType) => (diagramTypes[diagramType] = capabilities)
         );
-        return { diagramTypes };
+        return { diagramTypes, dynamicCapabilities: true };
     }
 
     protected async initializeServer(params: InitializeParameters, result: InitializeResult): Promise<InitializeResult> {

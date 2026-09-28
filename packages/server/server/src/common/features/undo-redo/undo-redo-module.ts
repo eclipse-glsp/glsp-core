@@ -18,8 +18,8 @@ import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
-import { OperationsModule } from '../../operations/operations-module';
 import { UndoRedoActionHandler } from './undo-redo-action-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for undo & redo. Reported as {@link GLSPCapability.UndoRedo} capability.
@@ -35,7 +35,7 @@ export class UndoRedoModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+        return [SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

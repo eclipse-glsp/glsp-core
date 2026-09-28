@@ -60,9 +60,9 @@ export interface GLSPServer {
      *
      * @param params the {@link InitializeClientSessionParameters}.
      * @returns A promise of the {@link InitializeClientSessionResult} that completes when the initialization was successful.
-     *          Servers that predate the capability protocol resolve with `null`/`undefined` instead.
+     *          Servers that predate the capability protocol resolve with `undefined` instead.
      */
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult>;
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult | undefined>;
 
     /**
      * The 'DisposeClientSession' request is sent to the server when a graphical representation (diagram) is no longer

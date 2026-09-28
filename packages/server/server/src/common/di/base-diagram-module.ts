@@ -24,15 +24,17 @@ import { CommandStack, DefaultCommandStack } from '../command/command-stack';
 import { BindingTarget, applyBindingTarget } from './binding-target';
 import { InstanceMultiBinding, MultiBinding } from './multi-binding';
 import { ServerFeatureModule } from './server-feature-module';
-import { ClientId, DiagramType } from './service-identifiers';
+import { ClientId } from './service-identifiers';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { DefaultProgressService, ProgressService } from '../progress/progress-service';
 
 /**
  * Core module of every client session container. Always loaded first (see `createDiagramSetup`).
  *
- * Provides the session infrastructure that is independent of the diagram language:
- * - {@link DiagramType}, {@link ClientId} (fallback)
+ * Provides the session infrastructure that is independent of the diagram language (the {@link DiagramType} is provided
+ * by the `SourceModelModule`), so adopters can replace it with a subclass (`replace: [new MyBaseDiagramModule()]`)
+ * without repeating the diagram type:
+ * - {@link ClientId} (fallback)
  * - {@link ClientActionForwarder}, {@link ActionDispatcher}
  * - {@link ActionHandlerConstructor} contributions (empty), {@link ActionHandlerFactory}, {@link ActionHandlerRegistry}
  * - {@link ClientSessionInitializer}s ({@link ActionHandlerRegistryInitializer})
@@ -43,16 +45,11 @@ export class BaseDiagramModule extends ServerFeatureModule {
     static readonly KEY = 'glsp.base';
     static readonly FALLBACK_CLIENT_ID = 'FallbackClientId';
 
-    constructor(readonly diagramType: string) {
-        super();
-    }
-
     override get featureKey(): string {
         return BaseDiagramModule.KEY;
     }
 
     protected registerBindings(context: BindingContext): void {
-        applyBindingTarget(context, DiagramType, this.bindDiagramType());
         applyBindingTarget(context, ClientId, this.bindClientId());
         applyBindingTarget(context, ClientActionForwarder, this.bindClientActionForwarder()).inSingletonScope();
 
@@ -73,10 +70,6 @@ export class BaseDiagramModule extends ServerFeatureModule {
         this.configureMultiBinding(new MultiBinding<CapabilityContribution>(CapabilityContribution), binding =>
             this.configureCapabilityContributions(binding)
         );
-    }
-
-    protected bindDiagramType(): BindingTarget<string> {
-        return { constantValue: this.diagramType };
     }
 
     protected bindClientId(): BindingTarget<string> {

@@ -28,6 +28,7 @@ import { ContextEditValidator } from './context-edit-validator';
 import { ContextEditValidatorRegistry, DefaultContextEditValidatorRegistry } from './context-edit-validator-registry';
 import { LabelEditValidator } from './label-edit-validator';
 import { RequestEditValidationHandler } from './request-edit-validation-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Reports the {@link GLSPCapability.LabelEdit} capability with `validation: true` if a {@link LabelEditValidator} is bound.
@@ -64,7 +65,7 @@ export abstract class LabelEditModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+        return [OperationsModule.KEY, SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

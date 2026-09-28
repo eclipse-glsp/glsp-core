@@ -19,9 +19,9 @@ import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
-import { BaseDiagramModule } from '../../di/base-diagram-module';
 import { PopupModelFactory } from './popup-model-factory';
 import { RequestPopupModelActionHandler } from './request-popup-model-action-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for hover popups. Reported as {@link GLSPCapability.Popup} capability.
@@ -38,7 +38,7 @@ export class PopupModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+        return [SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

@@ -20,12 +20,13 @@ import { BindingTarget, applyBindingTarget } from '../di/binding-target';
 import { InstanceMultiBinding, MultiBinding } from '../di/multi-binding';
 import { ServerFeatureModule } from '../di/server-feature-module';
 import { Operations } from '../di/service-identifiers';
-import { BaseDiagramModule } from '../di/base-diagram-module';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
+import { GLSPServerError } from '../utils/glsp-server-error';
 import { CompoundOperationHandler } from './compound-operation-handler';
 import { OperationActionHandler } from './operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from './operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from './operation-handler-registry';
+import { SourceModelModule } from '../model/source-model-module';
 
 /**
  * Provides the operation infrastructure. Required by all features that contribute operation handlers.
@@ -43,7 +44,7 @@ export class OperationsModule extends ServerFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+        return [SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {
@@ -77,15 +78,23 @@ export class OperationsModule extends ServerFeatureModule {
      * The operation kinds handled by the {@link OperationActionHandler}. Derived from the initialized
      * {@link OperationHandlerRegistry}, which is populated by the {@link OperationHandlerRegistryInitializer}
      * before any other client session initializer runs.
+     *
+     * The value is cached (singleton scope), so resolving it before the registry is initialized would silently yield an
+     * incomplete list. Such a premature resolution is therefore reported as error.
      */
     protected bindOperations(): BindingTarget<string[]> {
         return {
             dynamicValue: ctx => {
+                const registry = ctx.container.get<OperationHandlerRegistry>(OperationHandlerRegistry);
+                if (!registry.initialized) {
+                    throw new GLSPServerError(
+                        'Could not resolve the operation kinds: The operation handler registry has not been initialized yet. ' +
+                            `'Operations' must not be resolved before the '${OperationHandlerRegistryInitializer.name}' has run ` +
+                            '(e.g. in a ClientSessionInitializer with a higher priority or in a constructor).'
+                    );
+                }
                 const operationKinds: string[] = [];
-                ctx.container
-                    .get<OperationHandlerRegistry>(OperationHandlerRegistry)
-                    .getAll()
-                    .forEach(handler => distinctAdd(operationKinds, handler.operationType));
+                registry.getAll().forEach(handler => distinctAdd(operationKinds, handler.operationType));
                 return operationKinds;
             }
         };

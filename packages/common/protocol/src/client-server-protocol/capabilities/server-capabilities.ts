@@ -24,9 +24,8 @@ export interface ServerCapabilities {
     /** The (static) capabilities of each diagram type that is supported by the server. */
     diagramTypes?: { [diagramType: string]: DiagramCapabilities };
     /**
-     * Reserved for future use: indicates that the server may push `CapabilitiesChangedAction`s
-     * to update session capabilities after initialization.
-     * @alpha
+     * Indicates that the server may send `CapabilitiesChangedAction`s to update the session capabilities after the
+     * initialization of a client session.
      */
     dynamicCapabilities?: Capability;
     [key: CapabilityKey]: unknown;

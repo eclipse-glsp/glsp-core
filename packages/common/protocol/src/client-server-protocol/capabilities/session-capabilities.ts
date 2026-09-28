@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { CapabilityKey } from './capability';
 import { DiagramCapabilities } from './diagram-capabilities';
 
 /**
@@ -27,5 +28,5 @@ export type SessionCapabilities = DiagramCapabilities;
  * Currently informational only, reserved for future client-to-server capability negotiation.
  */
 export interface ClientSessionCapabilities {
-    [custom: string]: unknown;
+    [custom: CapabilityKey]: unknown;
 }

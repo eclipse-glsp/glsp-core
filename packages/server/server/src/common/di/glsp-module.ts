@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { BindingContext } from '@eclipse-glsp/protocol/di';
 import { ContainerModule, injectable, interfaces } from 'inversify';
-import { AbstractMultiBinding } from './multi-binding';
+import { AbstractMultiBinding, configureMultiBinding } from './multi-binding';
 
 /**
  * A wrapper interface to get access to the binding related functions
@@ -62,7 +62,6 @@ export abstract class GLSPModule extends ContainerModule {
      * @param configurator The consumer that should be used to configure the given {@link MultiBinding}
      */
     protected configureMultiBinding<T>(binding: AbstractMultiBinding<T>, configurator: (binding: AbstractMultiBinding<T>) => void): void {
-        configurator(binding);
-        binding.applyBindings(this.context);
+        configureMultiBinding(this.context, binding, configurator);
     }
 }

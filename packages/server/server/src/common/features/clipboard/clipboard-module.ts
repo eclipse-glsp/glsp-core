@@ -21,6 +21,7 @@ import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
 import { OperationsModule } from '../../operations/operations-module';
 import { RequestClipboardDataActionHandler } from './request-clipboard-data-action-handler';
+import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for cut, copy & paste. Reported as {@link GLSPCapability.Clipboard} capability.
@@ -39,7 +40,7 @@ export abstract class ClipboardModule extends CapabilityFeatureModule {
     }
 
     override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+        return [OperationsModule.KEY, SourceModelModule.KEY];
     }
 
     protected registerBindings(context: BindingContext): void {

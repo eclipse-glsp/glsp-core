@@ -20,6 +20,8 @@ import { BindingTarget, applyBindingTarget } from '../di/binding-target';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerFeatureModule } from '../di/server-feature-module';
 import { BaseDiagramModule } from '../di/base-diagram-module';
+import { DiagramType } from '../di/service-identifiers';
+import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { GModelFactory } from './gmodel-factory';
 import { GModelIndex } from './gmodel-index';
 import { DefaultGModelSerializer, GModelSerializer } from './gmodel-serializer';
@@ -35,10 +37,12 @@ import { SourceModelStorage } from './source-model-storage';
  * source model module (see `createDiagramSetup`), adopters implement the abstract bindings in a subclass.
  *
  * Provides:
- * - {@link DiagramConfiguration}
+ * - {@link DiagramType}, {@link DiagramConfiguration}
  * - {@link GModelSerializer}, {@link ModelState}, {@link GModelIndex}, {@link SourceModelStorage}, {@link GModelFactory}
  * - {@link ModelSubmissionHandler}
  * - {@link RequestModelActionHandler}, {@link SaveModelActionHandler}, {@link SetEditModeActionHandler}
+ * - {@link ComputedBoundsActionHandler}: part of the model loading round trip if the diagram uses client-side layout
+ *   (see `DiagramConfiguration.needsClientLayout`), therefore not part of the removable `LayoutModule`.
  */
 export abstract class SourceModelModule extends ServerFeatureModule {
     static readonly KEY = 'glsp.sourceModel';
@@ -55,6 +59,7 @@ export abstract class SourceModelModule extends ServerFeatureModule {
     }
 
     protected registerBindings(context: BindingContext): void {
+        applyBindingTarget(context, DiagramType, this.bindDiagramType());
         applyBindingTarget(context, DiagramConfiguration, this.bindDiagramConfiguration()).inSingletonScope();
         applyBindingTarget(context, GModelSerializer, this.bindGModelSerializer()).inSingletonScope();
         applyBindingTarget(context, ModelState, this.bindModelState()).inSingletonScope();
@@ -71,6 +76,11 @@ export abstract class SourceModelModule extends ServerFeatureModule {
         binding.add(RequestModelActionHandler);
         binding.add(SaveModelActionHandler);
         binding.add(SetEditModeActionHandler);
+        binding.add(ComputedBoundsActionHandler);
+    }
+
+    protected bindDiagramType(): BindingTarget<string> {
+        return { constantValue: this.diagramType };
     }
 
     protected bindGModelSerializer(): BindingTarget<GModelSerializer> {
