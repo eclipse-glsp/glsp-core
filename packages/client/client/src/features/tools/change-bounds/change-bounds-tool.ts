@@ -35,14 +35,14 @@ import {
     MouseListener,
     Operation,
     Point,
-    TYPES,
     findParentByFeature
 } from '@eclipse-glsp/sprotty';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
 import { messages, repeatOnMessagesUpdated } from '../../../base/messages';
-import { ISelectionListener, SelectionService } from '../../../base/selection-service';
+import { ISelectionListener, ISelectionService } from '../../../base/selection-service';
 import type { IShortcutManager } from '../../../base/shortcuts/shortcuts-manager';
+import { TYPES } from '../../../types';
 import {
     BoundsAwareModelElement,
     ResizableModelElement,
@@ -91,7 +91,7 @@ export class ChangeBoundsTool extends BaseEditTool {
     static ID = 'glsp.change-bounds-tool';
     static TOKEN = Symbol.for(ChangeBoundsTool.ID);
 
-    @inject(SelectionService) protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) protected selectionService: ISelectionService;
     @inject(EdgeRouterRegistry) @optional() readonly edgeRouterRegistry?: EdgeRouterRegistry;
     @inject(TYPES.IMovementRestrictor) @optional() readonly movementRestrictor?: IMovementRestrictor;
     @inject(TYPES.IChangeBoundsManager) readonly changeBoundsManager: IChangeBoundsManager;

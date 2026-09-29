@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { BindingContext, FeatureKey, FeatureModule, TYPES, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { BindingContext, FeatureKey, FeatureModule, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
 import '../../../../css/toast.css';
 import { GLSPClientFeature } from '../../../client-feature-keys';
+import { TYPES } from '../../../types';
 import { HideToastAction, ShowToastMessageAction } from './toast-handler';
 import { Toast } from './toast-tool';
 

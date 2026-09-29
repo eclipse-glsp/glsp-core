@@ -24,7 +24,6 @@ import {
     GNode,
     SetTypeHintsAction,
     ShapeTypeHint,
-    TYPES,
     Writable,
     bindOrRebind,
     createFeatureSet,
@@ -38,6 +37,7 @@ import { GLSPActionDispatcher } from '../../base/action-dispatcher';
 import { FeedbackActionDispatcher } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
 import { GEdge } from '../../model';
+import { TYPES } from '../../types';
 import { isResizable } from '../change-bounds/model';
 import { isReconnectable } from '../reconnect/model';
 import { Containable, isContainable, isReparentable } from './model';

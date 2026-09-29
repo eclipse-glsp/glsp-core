@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureCommand } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, bindAsService, configureCommand } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { selectFeatureDef } from './select-feature';
 import { SelectAllCommand, SelectCommand } from '../../base/selection-service';
 import { SelectFeedbackCommand } from './select-feedback-command';

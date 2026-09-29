@@ -14,17 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, CenterAction, GModelElement, KeyListener, matchesKeystroke, MoveViewportAction, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, CenterAction, GModelElement, KeyListener, matchesKeystroke, MoveViewportAction } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
-import { SelectionService } from '../../base/selection-service';
+import { ISelectionService } from '../../base/selection-service';
+import { TYPES } from '../../types';
 import { Grid } from '../grid/grid';
 import { IChangeBoundsManager } from '../tools/change-bounds/change-bounds-manager';
 import { ZoomAction, ZoomFactors } from './zoom-viewport-action';
 
 @injectable()
 export class MoveViewportKeyListener extends KeyListener {
-    @inject(SelectionService)
-    protected readonly selectionService: SelectionService;
+    @inject(TYPES.ISelectionService)
+    protected readonly selectionService: ISelectionService;
     @inject(TYPES.IChangeBoundsManager)
     protected readonly changeBoundsManager: IChangeBoundsManager;
     @inject(TYPES.Grid)
@@ -70,8 +71,8 @@ export class MoveViewportKeyListener extends KeyListener {
 
 @injectable()
 export class ZoomKeyListener extends KeyListener {
-    @inject(SelectionService)
-    protected readonly selectionService: SelectionService;
+    @inject(TYPES.ISelectionService)
+    protected readonly selectionService: ISelectionService;
 
     override keyDown(element: GModelElement, event: KeyboardEvent): Action[] {
         const selectedElementIds = this.selectionService.getSelectedElementIDs();

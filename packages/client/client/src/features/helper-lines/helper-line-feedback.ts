@@ -25,7 +25,6 @@ import {
     GModelRoot,
     ILogger,
     Point,
-    TYPES,
     Viewport,
     equalUpTo,
     isBoundsAware,
@@ -34,8 +33,9 @@ import {
     partition
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
+import { TYPES } from '../../types';
 import {
     BoundsAwareModelElement,
     findTopLevelElementByFeature,
@@ -95,7 +95,7 @@ export namespace DrawHelperLinesFeedbackAction {
 export class DrawHelperLinesFeedbackCommand extends FeedbackCommand {
     static readonly KIND = DrawHelperLinesFeedbackAction.KIND;
 
-    @inject(EditorContextService) protected readonly editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected readonly editorContext: IEditorContextService;
 
     protected elementIds: string[];
     protected elementLines: HelperLineType[];

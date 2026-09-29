@@ -27,22 +27,22 @@ import {
     RejectAction,
     RequestAction,
     ResponseAction,
-    SetModelAction,
-    TYPES
+    SetModelAction
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../types';
 import { GLSPActionHandlerRegistry } from './action-handler-registry';
 import { IGModelRootListener } from './editor-context-service';
 import { OptionalAction } from './model/glsp-model-source';
-import { ModelInitializationConstraint } from './model/model-initialization-constraint';
+import { IModelInitializationConstraint } from './model/model-initialization-constraint';
 
 @injectable()
 export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRootListener, IActionDispatcher {
     protected readonly timeouts: Map<string, NodeJS.Timeout> = new Map();
     protected initializedConstraint = false;
 
-    @inject(ModelInitializationConstraint)
-    protected initializationConstraint: ModelInitializationConstraint;
+    @inject(TYPES.IModelInitializationConstraint)
+    protected initializationConstraint: IModelInitializationConstraint;
 
     @inject(ActionHandlerRegistry)
     protected override actionHandlerRegistry: ActionHandlerRegistry;

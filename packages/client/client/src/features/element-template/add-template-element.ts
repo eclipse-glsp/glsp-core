@@ -23,13 +23,13 @@ import {
     GModelElementSchema,
     GParentElement,
     IActionDispatcher,
-    TYPES,
     distinctAdd,
     remove
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { feedbackFeature } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
+import { TYPES } from '../../types';
 import { enableFeatures, isNotUndefined } from '../../utils/gmodel-util';
 import { LocalRequestBoundsAction } from '../bounds/local-bounds';
 

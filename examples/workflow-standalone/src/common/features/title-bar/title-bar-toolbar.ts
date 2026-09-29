@@ -14,17 +14,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { EditorContextService, GLSPActionDispatcher, IContextMenuServiceProvider, IDiagramStartup, TYPES } from '@eclipse-glsp/client';
+import { IActionDispatcher, IContextMenuServiceProvider, IDiagramStartup, IEditorContextService, TYPES } from '@eclipse-glsp/client';
 import { inject, injectable } from 'inversify';
 import { createDiagramMenu } from './diagram-menu';
 
 @injectable()
 export class TitleBarToolbar implements IDiagramStartup {
     @inject(TYPES.IActionDispatcher)
-    protected actionDispatcher: GLSPActionDispatcher;
+    protected actionDispatcher: IActionDispatcher;
 
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     @inject(TYPES.IContextMenuServiceProvider)
     protected contextMenuServiceProvider: IContextMenuServiceProvider;

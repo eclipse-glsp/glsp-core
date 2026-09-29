@@ -14,15 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import {
-    LayoutContainer,
-    LayoutRegistry,
-    SprottyBringToFrontCommand,
-    TYPES,
-    ZOrderElement,
-    isLayoutContainer
-} from '@eclipse-glsp/sprotty';
+import { LayoutContainer, LayoutRegistry, SprottyBringToFrontCommand, ZOrderElement, isLayoutContainer } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 
 @injectable()
 export class BringToFrontCommand extends SprottyBringToFrontCommand {

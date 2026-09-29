@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CommandPaletteActionProviderRegistry, FeatureDefinition, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { CommandPaletteActionProviderRegistry, FeatureDefinition, FeatureModule, bindAsService } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { commandPaletteFeatureDef } from './command-palette-feature';
 import '../../../css/command-palette.css';
 import { GlspCommandPalette } from './command-palette';

@@ -14,9 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 /** @jsx svg */
-import { IView, RenderingContext, TYPES, setClass, svg } from '@eclipse-glsp/sprotty';
+import { IView, RenderingContext, setClass, svg } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { VNode } from 'snabbdom';
+import { TYPES } from '../../../types';
 import { GArgument } from '../../../utils/argument-utils';
 import { Grid } from '../../grid/grid';
 import { ARG_LENGTH, InsertIndicator } from './insert-indicator';

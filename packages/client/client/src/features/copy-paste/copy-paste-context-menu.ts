@@ -23,13 +23,13 @@ import {
     MessageAction,
     Point,
     StatusAction,
-    TYPES,
     hasStringProp,
     isSelected
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { messages } from '../../base/messages';
+import { TYPES } from '../../types';
 
 /**
  * An `InvokeCopyPasteAction` is dispatched by the client to initiate a cut, copy or paste operation.
@@ -90,8 +90,8 @@ export class InvokeCopyPasteActionHandler implements IActionHandler {
 
 @injectable()
 export class CopyPasteContextMenuItemProvider implements IContextMenuItemProvider {
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     async getItems(root: Readonly<GModelRoot>, _lastMousePosition?: Point): Promise<ClientMenuItem[]> {
         if (this.editorContext.isReadonly) {

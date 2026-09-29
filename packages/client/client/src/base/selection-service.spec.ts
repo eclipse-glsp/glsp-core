@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Command, CommandExecutionContext, Disposable, GModelRoot, GNode, TYPES, initializeContainer } from '@eclipse-glsp/sprotty';
+import { Action, Command, CommandExecutionContext, Disposable, GModelRoot, GNode, initializeContainer } from '@eclipse-glsp/sprotty';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { Container, injectable } from 'inversify';
+import { TYPES } from '../types';
 import { defaultModule } from './default.module';
 import { IFeedbackActionDispatcher, IFeedbackEmitter } from './feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from './feedback/feedback-emitter';
@@ -45,6 +46,10 @@ class MockFeedbackActionDispatcher implements IFeedbackActionDispatcher {
         return actions.length === 1 ? (actions[0] as SelectFeedbackAction) : undefined;
     }
 
+    getRegisteredFeedbackEmitters(action: Action): IFeedbackEmitter[] {
+        return [...this.feedbackEmitters.entries()].filter(([, actions]) => actions.includes(action)).map(([emitter]) => emitter);
+    }
+
     getFeedbackCommands(): Command[] {
         return [];
     }
@@ -54,6 +59,10 @@ class MockFeedbackActionDispatcher implements IFeedbackActionDispatcher {
     }
 
     async applyFeedbackCommands(context: CommandExecutionContext): Promise<void> {}
+
+    dispose(): void {
+        this.feedbackEmitters.clear();
+    }
 }
 
 class MockSelectionListener implements ISelectionListener {

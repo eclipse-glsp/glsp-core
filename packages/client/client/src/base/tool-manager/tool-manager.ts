@@ -23,13 +23,13 @@ import {
     KeyListener,
     LazyInjector,
     MaybePromise,
-    TYPES,
     distinctAdd,
     matchesKeystroke,
     pluck
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService, IEditModeListener } from '../editor-context-service';
+import { TYPES } from '../../types';
+import { IEditModeListener, IEditorContextService } from '../editor-context-service';
 import { IDiagramStartup } from '../model/diagram-loader';
 import { Ranked } from '../ranked';
 import { EnableDefaultToolsAction, EnableToolsAction, Tool } from './tool';
@@ -40,9 +40,12 @@ import { EnableDefaultToolsAction, EnableToolsAction, Tool } from './tool';
  * this editor. A tool can be active or not. A tool manager ensures that activating a set of tools
  * will disable all other tools, allowing them to invoke behavior when they become enabled or disabled.
  */
-export interface IToolManager {
+export interface IToolManager extends IDiagramStartup, IEditModeListener {
     /** All tools managed by this tool manager. */
     readonly managedTools: Tool[];
+
+    /** The registered (non-default) tools. */
+    readonly tools: Tool[];
 
     /** The tools that are enabled by default, whenever no other tool is enabled. */
     readonly defaultTools: Tool[];
@@ -66,12 +69,24 @@ export interface IToolManager {
     enable(toolIds: string[]): void;
 
     /**
-     * Enables all default tools. If the default tools are already enabled, this is a no-op.
+     * Enables all default tools. If the default tools are already enabled, this is a no-op
+     * unless `force` is set.
+     * @param force Re-enable the default tools even if they are already enabled.
      */
-    enableDefaultTools(): void;
+    enableDefaultTools(force?: boolean): void;
 
     /** Disables all currently active tools. After this call, no tool will be active anymore. */
     disableActiveTools(): void;
+
+    /** Disables all currently active tools and enables the default tools that are not edit tools. */
+    disableEditTools(): void;
+
+    /**
+     * Retrieves the managed tool with the given id.
+     * @param toolId The id of the tool.
+     * @returns The tool or `undefined` if this manager does not manage a tool with the given id.
+     */
+    tool(toolId: string): Tool | undefined;
 
     registerDefaultTools(...tools: Tool[]): void;
 
@@ -83,9 +98,9 @@ export interface IToolManager {
  * registration of tools via Dependency Injection.
  */
 @injectable()
-export class ToolManager implements IToolManager, IDiagramStartup, IEditModeListener {
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+export class ToolManager implements IToolManager {
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     @inject(LazyInjector)
     protected readonly lazyInjector: LazyInjector;

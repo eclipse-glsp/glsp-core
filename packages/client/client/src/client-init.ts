@@ -26,13 +26,13 @@ import {
     isFeatureModule,
     loadFeatures,
     resolveFeatures,
-    TYPES,
     ViewerOptions
 } from '@eclipse-glsp/sprotty';
 import { Container } from 'inversify';
 import { IDiagramOptions } from './base/model/diagram-loader';
 import { DEFAULT_FEATURES } from './client-feature-definitions';
 import { GLSPClientFeature } from './client-feature-keys';
+import { TYPES } from './types';
 
 /**
  * Wraps the {@link configureDiagramOptions} utility function in a module. Adopters can either include this

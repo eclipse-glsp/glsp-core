@@ -23,16 +23,17 @@ import {
     GLSPClient,
     GModelRootSchema,
     IActionDispatcher,
+    IActionHandler,
     ILogger,
     InitializeClientSessionParameters,
     InitializeResult,
     ModelSource,
     RejectAction,
     RequestAction,
-    ResponseAction,
-    TYPES
+    ResponseAction
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, preDestroy } from 'inversify';
+import { TYPES } from '../../types';
 import { GLSPActionHandlerRegistry } from '../action-handler-registry';
 import type { IDiagramOptions } from './diagram-loader';
 
@@ -82,6 +83,47 @@ export namespace OptionalAction {
 
 /**
  * Central component for enabling the client-server action flow with the help of an underlying {@link GLSPClient}.
+ * The default implementation is {@link GLSPModelSource}.
+ *
+ * Unlike the other GLSP services, it has no dedicated `TYPES` symbol. Sprotty's {@link TYPES.ModelSource} is its service
+ * identifier, so sprotty and GLSP code resolve the same instance. Inject it via {@link TYPES.ModelSource} and type the
+ * field as {@link IGLSPModelSource}.
+ */
+export interface IGLSPModelSource extends IActionHandler, Disposable {
+    /** The id of the client session this model source belongs to. */
+    readonly clientId: string;
+    /** The diagram type of the diagram. */
+    readonly diagramType: string;
+    /** The source URI of the diagram, if any. */
+    readonly sourceUri: string | undefined;
+    /** The current (local) model root. */
+    readonly model: GModelRootSchema;
+
+    /**
+     * Configure forwarding of server-handled actions to the given {@link GLSPClient} and
+     * handling of action received from the `GLSPClient` (i.e. server). It is expected that the
+     * given GLSP client has already been initialized.
+     * @param glspClient The GLSP client to use.
+     */
+    configure(glspClient: GLSPClient): Promise<void>;
+
+    /**
+     * Initializes the model source with the given action handler registry.
+     * @param registry The action handler registry.
+     */
+    initialize(registry: GLSPActionHandlerRegistry): void;
+
+    /**
+     * Commits the given local model root. In GLSP the model update flow is server-driven,
+     * so this does not forward any changes to the server.
+     * @param newRoot The new model root.
+     */
+    commitModel(newRoot: GModelRootSchema): GModelRootSchema;
+}
+
+/**
+ * The default {@link IGLSPModelSource} implementation.
+ * Central component for enabling the client-server action flow with the help of an underlying {@link GLSPClient}.
  * Handles & forwards actions that are intended for the GLSP server. In addition, it handles {@link ActionMessage}s received
  * from the server and dispatches the corresponding actions locally.
  *
@@ -91,7 +133,7 @@ export namespace OptionalAction {
  * on the server side and then an update is sent to the client.
  */
 @injectable()
-export class GLSPModelSource extends ModelSource implements Disposable {
+export class GLSPModelSource extends ModelSource implements IGLSPModelSource {
     @inject(TYPES.ILogger)
     protected logger: ILogger;
 

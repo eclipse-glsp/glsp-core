@@ -33,13 +33,13 @@ import {
     SetResolvedNavigationTargetAction,
     SeverityLevel,
     StatusAction,
-    TYPES,
     hasObjectProp,
     hasStringProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService, EditorContextServiceProvider } from '../../base/editor-context-service';
-import { NavigationTargetResolver } from './navigation-target-resolver';
+import { EditorContextServiceProvider, IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
+import { INavigationTargetResolver } from './navigation-target-resolver';
 
 /**
  * Action for triggering a navigation of a certain target type.
@@ -142,11 +142,11 @@ export class NavigationActionHandler implements IActionHandler {
     @inject(TYPES.IActionDispatcher) protected dispatcher: IActionDispatcher;
     /** @deprecated No longer in used. The {@link ActionHandlerRegistry} is now directly injected */
     @inject(TYPES.ActionHandlerRegistryProvider) protected actionHandlerRegistryProvider: () => Promise<ActionHandlerRegistry>;
-    /** @deprecated No longer in used. The {@link EditorContextService} is now directly injected */
+    /** @deprecated No longer in used. The {@link IEditorContextService} is now directly injected */
     @inject(TYPES.IEditorContextServiceProvider) protected editorContextService: EditorContextServiceProvider;
     @inject(ActionHandlerRegistry) protected actionHandlerRegistry: ActionHandlerRegistry;
-    @inject(NavigationTargetResolver) protected resolver: NavigationTargetResolver;
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.INavigationTargetResolver) protected resolver: INavigationTargetResolver;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     handle(action: Action): ICommand | Action | void {
         if (NavigateAction.is(action)) {

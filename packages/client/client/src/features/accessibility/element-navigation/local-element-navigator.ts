@@ -13,10 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { EdgeRouterRegistry, GConnectableElement, GModelElement, GModelRoot, IActionDispatcher, TYPES } from '@eclipse-glsp/sprotty';
+import { EdgeRouterRegistry, GConnectableElement, GModelElement, GModelRoot, IActionDispatcher } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { applyCssClasses, deleteCssClasses } from '../../../base/feedback/css-feedback';
 import { GEdge } from '../../../model';
+import { TYPES } from '../../../types';
 import { BoundsAwareModelElement, SelectableBoundsAware } from '../../../utils/gmodel-util';
 import { ElementNavigator } from './element-navigator';
 

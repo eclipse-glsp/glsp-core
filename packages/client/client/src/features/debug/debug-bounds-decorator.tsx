@@ -15,10 +15,11 @@
  ********************************************************************************/
 
 /** @jsx svg */
-import { Bounds, GModelElement, IVNodePostprocessor, Point, TYPES, isDecoration, isSizeable, setClass, svg } from '@eclipse-glsp/sprotty';
+import { Bounds, GModelElement, IVNodePostprocessor, Point, isDecoration, isSizeable, setClass, svg } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { VNode } from 'snabbdom';
 import { GGraph } from '../../model';
+import { TYPES } from '../../types';
 import { BoundsAwareModelElement } from '../../utils/gmodel-util';
 import { IDebugManager } from './debug-manager';
 

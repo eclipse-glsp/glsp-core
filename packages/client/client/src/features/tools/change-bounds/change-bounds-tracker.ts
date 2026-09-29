@@ -34,7 +34,7 @@ import {
 import { BoundsAwareModelElement, MoveableElement, ResizableModelElement, getElements } from '../../../utils/gmodel-util';
 import { GResizeHandle, ResizeHandleLocation } from '../../change-bounds/model';
 import { DiagramMovementCalculator } from '../../change-bounds/tracker';
-import { ChangeBoundsManager } from './change-bounds-manager';
+import type { IChangeBoundsManager } from './change-bounds-manager';
 
 export interface ElementTrackingOptions {
     /** Snap position. Default: true. */
@@ -169,7 +169,7 @@ export interface TrackedResize extends Movement {
 export class ChangeBoundsTracker {
     protected diagramMovement: DiagramMovementCalculator;
 
-    constructor(readonly manager: ChangeBoundsManager) {
+    constructor(readonly manager: IChangeBoundsManager) {
         this.diagramMovement = new DiagramMovementCalculator(manager.positionTracker);
     }
 

@@ -14,16 +14,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { IActionHandler, PropertiesOfType, TYPES } from '@eclipse-glsp/sprotty';
+import { IActionHandler, PropertiesOfType } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct } from 'inversify';
 import { IFeedbackActionDispatcher } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
+import { TYPES } from '../../types';
 import { Grid } from './grid';
 import { ShowGridAction } from './grid-model';
 
 export type GridStyle = Record<string, string> & Partial<PropertiesOfType<CSSStyleDeclaration, string>>;
 
-export interface IGridManager {
+export interface IGridManager extends IActionHandler {
     /** The grid to manage. */
     readonly grid: Grid;
     /** Flag to indicate whether the grid is visible. */
@@ -39,7 +40,7 @@ export interface IGridManager {
  * This class manages the visibility and behavior of a grid in the application.
  */
 @injectable()
-export class GridManager implements IActionHandler, IGridManager {
+export class GridManager implements IGridManager {
     protected _gridVisible: boolean = false;
     protected gridFeedback: FeedbackEmitter;
 

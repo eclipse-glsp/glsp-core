@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { CenterGridSnapper, GModelElement, ISnapper, Point, TYPES } from '@eclipse-glsp/sprotty';
+import { CenterGridSnapper, GModelElement, ISnapper, Point } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
+import { TYPES } from '../../types';
 import { Grid } from './grid';
 
 /**

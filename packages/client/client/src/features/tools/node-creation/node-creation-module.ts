@@ -16,13 +16,13 @@
 import {
     FeatureDefinition,
     FeatureModule,
-    TYPES,
     TriggerNodeCreationAction,
     bindAsService,
     configureActionHandler,
     configureModelElement
 } from '@eclipse-glsp/sprotty';
 import '../../../../css/ghost-element.css';
+import { TYPES } from '../../../types';
 import { nodeCreationToolFeatureDef } from './node-creation-feature';
 import { ContainerManager } from './container-manager';
 import { InsertIndicator } from './insert-indicator';

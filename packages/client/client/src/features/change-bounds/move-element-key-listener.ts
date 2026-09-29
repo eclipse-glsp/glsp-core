@@ -15,14 +15,14 @@
  ********************************************************************************/
 
 import { isMoveable, KeyListener, matchesKeystroke, type Action, type GModelElement } from '@eclipse-glsp/sprotty';
-import type { SelectionService } from '../../base/selection-service';
+import type { ISelectionService } from '../../base/selection-service';
 import { Grid } from '../grid/grid';
 import type { IChangeBoundsManager } from '../tools/change-bounds/change-bounds-manager';
 import { MoveElementRelativeAction } from './move-element-action';
 
 export class MoveElementKeyListener extends KeyListener {
     constructor(
-        protected readonly selectionService: SelectionService,
+        protected readonly selectionService: ISelectionService,
         protected readonly changeBoundsManager: IChangeBoundsManager,
         protected readonly grid: Grid = Grid.DEFAULT
     ) {

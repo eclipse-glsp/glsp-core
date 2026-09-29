@@ -15,8 +15,9 @@
  ********************************************************************************/
 import { Action, GModelElement, KeyListener } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { SelectionService } from '../../../base/selection-service';
+import { ISelectionService } from '../../../base/selection-service';
 import { EnableToolsAction } from '../../../base/tool-manager/tool';
+import { TYPES } from '../../../types';
 import { BaseEditTool } from '../base-tools';
 import { MarqueeMouseTool } from './marquee-mouse-tool';
 
@@ -24,7 +25,7 @@ import { MarqueeMouseTool } from './marquee-mouse-tool';
 export class MarqueeTool extends BaseEditTool {
     static ID = 'glsp.marquee-tool';
 
-    @inject(SelectionService) protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) protected selectionService: ISelectionService;
 
     protected marqueeKeyListener: MarqueeKeyListener;
 
@@ -42,7 +43,7 @@ export class MarqueeTool extends BaseEditTool {
 
 @injectable()
 export class MarqueeKeyListener extends KeyListener {
-    constructor(protected selectionService: SelectionService) {
+    constructor(protected selectionService: ISelectionService) {
         super();
     }
 

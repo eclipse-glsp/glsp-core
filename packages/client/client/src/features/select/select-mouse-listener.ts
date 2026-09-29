@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, BringToFrontAction, GModelElement, SelectAction, SelectMouseListener, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, BringToFrontAction, GModelElement, SelectAction, SelectMouseListener } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { Ranked } from '../../base/ranked';
+import { TYPES } from '../../types';
 import { SelectableElement } from '../../utils/gmodel-util';
 import { GResizeHandle } from '../change-bounds/model';
 import { IChangeBoundsManager } from '../tools/change-bounds/change-bounds-manager';

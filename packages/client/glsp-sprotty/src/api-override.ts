@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Event, LabeledAction, MenuItem, Point, RequestAction, ResponseAction } from '@eclipse-glsp/protocol';
+import { Action, Disposable, Event, LabeledAction, MenuItem, Point, RequestAction, ResponseAction } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import {
@@ -188,6 +188,11 @@ export interface IActionDispatcher extends SIActionDispatcher {
      * the `EditorContextService.onModelRootChanged` event is triggered.
      */
     dispatchAfterNextUpdate(...actions: Action[]): void;
+
+    /**
+     * Checks whether at least one action handler is registered for the given action.
+     */
+    hasHandler(action: Action): boolean;
 }
 
 export type IActionDispatcherProvider = () => Promise<IActionDispatcher>;
@@ -202,7 +207,7 @@ export interface CommandExecutionData {
     newRoot: GModelRoot;
 }
 
-export interface ICommandStack extends SICommandStack {
+export interface ICommandStack extends SICommandStack, Disposable {
     /**
      * Executes the given command on the current model and returns a
      * Promise for the new result.

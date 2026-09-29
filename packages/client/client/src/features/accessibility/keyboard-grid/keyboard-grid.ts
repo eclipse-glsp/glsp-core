@@ -24,11 +24,11 @@ import {
     KeyCode,
     matchesKeystroke,
     Point,
-    SetUIExtensionVisibilityAction,
-    TYPES
+    SetUIExtensionVisibilityAction
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { GLSPAbstractUIExtension } from '../../../base/ui-extension/ui-extension';
+import { TYPES } from '../../../types';
 import { EnableKeyboardGridAction, KeyboardGridCellSelectedAction, KeyboardGridKeyboardEventAction } from './action';
 import { KeyboardGridMetadata } from './constants';
 

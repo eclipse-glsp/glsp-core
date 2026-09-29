@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureCommand, configureModelElement } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, bindAsService, configureCommand, configureModelElement } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../../types';
 import { marqueeSelectionToolFeatureDef } from './marquee-selection-feature';
 import { MarqueeUtil } from './marquee-behavior';
 import { MarqueeMouseTool } from './marquee-mouse-tool';
@@ -24,7 +25,7 @@ import { MarqueeView } from './view';
 
 export const marqueeSelectionToolModule = new FeatureModule((bind, unbind, isBound, rebind) => {
     const context = { bind, unbind, isBound, rebind };
-    context.bind(MarqueeUtil).toSelf().inSingletonScope();
+    bindAsService(context, TYPES.IMarqueeUtil, MarqueeUtil);
     bindAsService(context, TYPES.IDefaultTool, MarqueeTool);
     bindAsService(context, TYPES.ITool, MarqueeMouseTool);
 

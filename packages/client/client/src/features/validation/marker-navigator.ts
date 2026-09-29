@@ -26,7 +26,6 @@ import {
     KeyListener,
     Point,
     SelectAction,
-    TYPES,
     findParentByFeature,
     hasArrayProp,
     hasStringProp,
@@ -36,7 +35,8 @@ import {
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { messages } from '../../base/messages';
-import { SelectionService } from '../../base/selection-service';
+import { ISelectionService } from '../../base/selection-service';
+import { TYPES } from '../../types';
 import { BoundsAwareModelElement, SelectableElement, getElements, isSelectableAndBoundsAware } from '../../utils/gmodel-util';
 import { MarkerPredicates, collectIssueMarkers } from '../../utils/marker';
 import { GIssueMarker } from './issue-marker';
@@ -71,7 +71,23 @@ export namespace NavigateToMarkerAction {
         };
     }
 }
-export class GModelElementComparator {
+/**
+ * Specifies the order of two model elements. Used by the {@link IMarkerNavigator} to determine the order of markers.
+ * Consumers should inject it via {@link TYPES.IGModelElementComparator}.
+ */
+export interface IGModelElementComparator {
+    /**
+     * Compares the given elements.
+     * @returns A negative number if `one` comes before `other`, a positive number if `one` comes after `other`, `0` otherwise.
+     */
+    compare(one: GModelElement, other: GModelElement): number;
+}
+
+/**
+ * The base {@link IGModelElementComparator} that considers all elements equal. By default, it is rebound to
+ * {@link LeftToRightTopToBottomComparator}.
+ */
+export class GModelElementComparator implements IGModelElementComparator {
     compare(_one: GModelElement, _other: GModelElement): number {
         return 0;
     }
@@ -79,7 +95,7 @@ export class GModelElementComparator {
 
 /** Specifies the order of two selectable and bounds-aware elements left-to-right and top-to-bottom. */
 @injectable()
-export class LeftToRightTopToBottomComparator {
+export class LeftToRightTopToBottomComparator implements IGModelElementComparator {
     compare(one: GModelElement, other: GModelElement): number {
         const boundsOne = findParentByFeature(one, isSelectableAndBoundsAware);
         const boundsOther = findParentByFeature(other, isSelectableAndBoundsAware);
@@ -97,15 +113,44 @@ export class LeftToRightTopToBottomComparator {
 
 /**
  * Specifies the next/previous marker in a graph model.
- *
- * This navigator uses a `MarkerComparator` to determine the order of markers. It can also return next/previous
+ * Consumers should inject it via {@link TYPES.IMarkerNavigator}. The default implementation is {@link MarkerNavigator}.
+ */
+export interface IMarkerNavigator {
+    /**
+     * Returns the marker that follows the given element.
+     * @param root The model root.
+     * @param current The current element. If `undefined`, the first marker is returned.
+     * @param predicate Filters the markers that should be considered.
+     */
+    next(
+        root: Readonly<GModelRoot>,
+        current?: BoundsAwareModelElement,
+        predicate?: (marker: GIssueMarker) => boolean
+    ): GIssueMarker | undefined;
+
+    /**
+     * Returns the marker that precedes the given element.
+     * @param root The model root.
+     * @param current The current element. If `undefined`, the first marker is returned.
+     * @param predicate Filters the markers that should be considered.
+     */
+    previous(
+        root: Readonly<GModelRoot>,
+        current?: BoundsAwareModelElement,
+        predicate?: (marker: GIssueMarker) => boolean
+    ): GIssueMarker | undefined;
+}
+
+/**
+ * The default {@link IMarkerNavigator} implementation.
+ * This navigator uses an {@link IGModelElementComparator} to determine the order of markers.
  */
 @injectable()
-export class MarkerNavigator {
+export class MarkerNavigator implements IMarkerNavigator {
     static readonly ALL_SEVERITIES: GIssueSeverity[] = ['error', 'warning', 'info'];
 
-    @inject(GModelElementComparator)
-    protected markerComparator: GModelElementComparator;
+    @inject(TYPES.IGModelElementComparator)
+    protected markerComparator: IGModelElementComparator;
 
     next(
         root: Readonly<GModelRoot>,
@@ -133,7 +178,7 @@ export class MarkerNavigator {
 
     protected getMarkers(root: Readonly<GModelRoot>, predicate: (marker: GIssueMarker) => boolean): GIssueMarker[] {
         const markers = collectIssueMarkers(root);
-        return markers.filter(predicate).sort(this.markerComparator.compare);
+        return markers.filter(predicate).sort((a, b) => this.markerComparator.compare(a, b));
     }
 
     protected getNextIndex(current: BoundsAwareModelElement, markers: GIssueMarker[]): number {
@@ -157,14 +202,14 @@ export class MarkerNavigator {
 
 @injectable()
 export class NavigateToMarkerActionHandler implements IActionHandler {
-    @inject(GModelElementComparator)
-    protected markerComparator: GModelElementComparator;
+    @inject(TYPES.IGModelElementComparator)
+    protected markerComparator: IGModelElementComparator;
 
-    @inject(MarkerNavigator)
-    protected markerNavigator: MarkerNavigator;
+    @inject(TYPES.IMarkerNavigator)
+    protected markerNavigator: IMarkerNavigator;
 
-    @inject(SelectionService)
-    protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService)
+    protected selectionService: ISelectionService;
 
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
@@ -205,7 +250,7 @@ export class NavigateToMarkerActionHandler implements IActionHandler {
 
 @injectable()
 export class MarkerNavigatorContextMenuItemProvider implements IContextMenuItemProvider {
-    @inject(SelectionService) protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) protected selectionService: ISelectionService;
 
     async getItems(root: Readonly<GModelRoot>, lastMousePosition?: Point): Promise<ClientMenuItem[]> {
         const selectedElementIds = Array.from(this.selectionService.getSelectedElementIDs());

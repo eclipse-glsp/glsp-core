@@ -20,13 +20,13 @@ import {
     FeatureKey,
     FeatureModule,
     SetModelAction,
-    TYPES,
     UpdateModelAction,
     bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
 import { GLSPClientFeature } from '../../../client-feature-keys';
+import { TYPES } from '../../../types';
 import { EnableToolPaletteAction } from '../../tool-palette/tool-palette';
 import { FocusDomAction } from '../actions';
 import { KeyboardToolPalette } from './keyboard-tool-palette';

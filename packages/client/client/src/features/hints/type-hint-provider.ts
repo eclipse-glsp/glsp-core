@@ -28,7 +28,6 @@ import {
     RequestTypeHintsAction,
     SetTypeHintsAction,
     ShapeTypeHint,
-    TYPES,
     TypeHint,
     connectableFeature,
     deletableFeature,
@@ -43,6 +42,7 @@ import { FeedbackCommand } from '../../base/feedback/feedback-command';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
 import { IDiagramStartup } from '../../base/model/diagram-loader';
 import { GEdge } from '../../model';
+import { TYPES } from '../../types';
 import { getElementTypeId } from '../../utils/gmodel-util';
 import { resizeFeature } from '../change-bounds/model';
 import { reconnectFeature } from '../reconnect/model';
@@ -180,7 +180,7 @@ function addOrRemove(features: Set<symbol>, feature: symbol, add: boolean): void
  * a type hint registered for `node:task:manual`. If not it checks wether there is one registered
  * for `node:task` and finally it checks wether there is a type hint for `node`.
  */
-export interface ITypeHintProvider {
+export interface ITypeHintProvider extends IActionHandler, IDiagramStartup {
     /**
      * Retrieve the most applicable {@link ShapeTypeHint} for the given model element.
      *
@@ -198,7 +198,7 @@ export interface ITypeHintProvider {
 }
 
 @injectable()
-export class TypeHintProvider implements IActionHandler, ITypeHintProvider, IDiagramStartup {
+export class TypeHintProvider implements ITypeHintProvider {
     @inject(TYPES.IFeedbackActionDispatcher)
     protected feedbackActionDispatcher: IFeedbackActionDispatcher;
 

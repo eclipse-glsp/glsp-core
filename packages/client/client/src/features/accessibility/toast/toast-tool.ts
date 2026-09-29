@@ -14,11 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, IActionDispatcher, IActionHandler, ICommand, SetUIExtensionVisibilityAction, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, IActionDispatcher, IActionHandler, ICommand, SetUIExtensionVisibilityAction } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../../base/editor-context-service';
+import { IEditorContextService } from '../../../base/editor-context-service';
 import { IDiagramStartup } from '../../../base/model/diagram-loader';
 import { GLSPAbstractUIExtension } from '../../../base/ui-extension/ui-extension';
+import { TYPES } from '../../../types';
 import { HideToastAction, ShowToastMessageAction, ToastOptions } from './toast-handler';
 
 /**
@@ -30,8 +31,8 @@ export class Toast extends GLSPAbstractUIExtension implements IActionHandler, ID
     protected messages: { [key: symbol]: ToastOptions } = {};
 
     @inject(TYPES.IActionDispatcher) protected readonly actionDispatcher: IActionDispatcher;
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     id(): string {
         return Toast.ID;

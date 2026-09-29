@@ -24,7 +24,6 @@ import {
     GRoutableElement,
     GRoutingHandle,
     ReconnectEdgeOperation,
-    TYPES,
     canEditRouting,
     findParentByFeature,
     isConnectable,
@@ -34,7 +33,8 @@ import { inject, injectable, optional } from 'inversify';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
-import { ISelectionListener, SelectionService } from '../../../base/selection-service';
+import { ISelectionListener, ISelectionService } from '../../../base/selection-service';
+import { TYPES } from '../../../types';
 import { calcElementAndRoutingPoints, isRoutable, isRoutingHandle } from '../../../utils/gmodel-util';
 import { GReconnectHandle, isReconnectHandle, isReconnectable, isSourceRoutingHandle, isTargetRoutingHandle } from '../../reconnect/model';
 import { BaseEditTool } from '../base-tools';
@@ -54,7 +54,7 @@ import {
 export class EdgeEditTool extends BaseEditTool {
     static ID = 'glsp.edge-edit-tool';
 
-    @inject(SelectionService) protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) protected selectionService: ISelectionService;
     @inject(AnchorComputerRegistry) protected anchorRegistry: AnchorComputerRegistry;
     @inject(EdgeRouterRegistry) @optional() readonly edgeRouterRegistry?: EdgeRouterRegistry;
     @inject(TYPES.IChangeBoundsManager) readonly changeBoundsManager: IChangeBoundsManager;

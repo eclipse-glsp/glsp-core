@@ -21,9 +21,9 @@ import {
     MessageAction,
     SourceModelChangedAction,
     StatusAction,
-    TYPES,
     ViewerOptions
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 
 /**
  * An external handler of the source model change event.

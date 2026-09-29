@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GLSPActionDispatcher, IDiagramStartup, InitializeCanvasBoundsAction, TYPES } from '@eclipse-glsp/client';
+import { IActionDispatcher, IDiagramStartup, InitializeCanvasBoundsAction, TYPES } from '@eclipse-glsp/client';
 import { inject, injectable } from 'inversify';
 
 /** Smallest size the app card may be dragged down to. */
@@ -58,7 +58,7 @@ interface Rect {
 @injectable()
 export class WindowResizer implements IDiagramStartup {
     @inject(TYPES.IActionDispatcher)
-    protected actionDispatcher: GLSPActionDispatcher;
+    protected actionDispatcher: IActionDispatcher;
 
     protected shell: HTMLElement;
     protected card: HTMLElement;

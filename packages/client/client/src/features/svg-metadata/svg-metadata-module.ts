@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureDefinition, FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { svgMetadataFeatureDef } from './svg-metadata-feature';
 import { MetadataPlacer } from './metadata-placer';
 

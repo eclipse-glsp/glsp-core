@@ -22,10 +22,10 @@ import {
     LazyInjector,
     MaybePromise,
     MouseListener,
-    MouseTool,
-    TYPES
+    MouseTool
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { IDiagramStartup } from '../model/diagram-loader';
 import { Ranked } from '../ranked';
 

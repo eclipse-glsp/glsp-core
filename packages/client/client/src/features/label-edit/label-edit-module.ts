@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ApplyLabelEditCommand, FeatureDefinition, FeatureModule, TYPES, bindAsService, configureCommand } from '@eclipse-glsp/sprotty';
+import { ApplyLabelEditCommand, FeatureDefinition, FeatureModule, bindAsService, configureCommand } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { labelEditFeatureDef } from './label-edit-feature';
 import { DirectLabelEditTool } from './edit-label-tool';
 import { BalloonLabelValidationDecorator, ServerEditLabelValidator } from './edit-label-validator';

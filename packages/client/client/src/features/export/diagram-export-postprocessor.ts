@@ -22,11 +22,11 @@ import {
     IActionDispatcher,
     IVNodePostprocessor,
     RejectAction,
-    RequestExportAction,
-    TYPES
+    RequestExportAction
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, multiInject } from 'inversify';
 import { VNode } from 'snabbdom';
+import { TYPES } from '../../types';
 import { DiagramExporter } from './diagram-exporter';
 
 /**

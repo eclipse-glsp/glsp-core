@@ -36,6 +36,10 @@ class MockFeedbackActionDispatcher implements IFeedbackActionDispatcher {
         return result;
     }
 
+    getRegisteredFeedbackEmitters(action: Action): IFeedbackEmitter[] {
+        return [...this.feedbackEmitters.entries()].filter(([, actions]) => actions.includes(action)).map(([emitter]) => emitter);
+    }
+
     getFeedbackCommands(): Command[] {
         return [];
     }
@@ -45,6 +49,10 @@ class MockFeedbackActionDispatcher implements IFeedbackActionDispatcher {
     }
 
     async applyFeedbackCommands(context: CommandExecutionContext): Promise<void> {}
+
+    dispose(): void {
+        this.feedbackEmitters.clear();
+    }
 }
 
 describe('FeedbackEmitter', () => {

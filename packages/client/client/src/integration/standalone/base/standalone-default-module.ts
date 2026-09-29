@@ -30,10 +30,10 @@ import {
     MessageAction,
     StartProgressAction,
     TriggerLayoutAction,
-    TYPES,
     UpdateProgressAction
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../../types';
 import { standaloneDefaultFeatureDef } from './standalone-default-feature';
 
 export const standaloneDefaultModule = new FeatureModule((bind, unbind, isBound, rebind) => {

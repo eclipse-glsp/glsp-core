@@ -14,13 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { IActionHandler, TYPES } from '@eclipse-glsp/sprotty';
+import { IActionHandler } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct } from 'inversify';
 import { IFeedbackActionDispatcher } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
+import { TYPES } from '../../types';
 import { EnableDebugModeAction } from './debug-model';
 
-export interface IDebugManager {
+export interface IDebugManager extends IActionHandler {
     /** Flag to indicate whether the debug mode is enabled. */
     readonly isDebugEnabled: boolean;
     /** Sets the debug enabled state. */
@@ -34,7 +35,7 @@ export interface IDebugManager {
  * This class manages the debug mode and provides functionality to enable or disable it.
  */
 @injectable()
-export class DebugManager implements IActionHandler, IDebugManager {
+export class DebugManager implements IDebugManager {
     protected _debugEnabled: boolean = false;
     protected debugFeedback: FeedbackEmitter;
 

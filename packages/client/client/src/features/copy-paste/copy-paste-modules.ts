@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureDefinition, FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, bindAsService } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { copyPasteFeatureDef } from './copy-paste-features';
 import { LocalClipboardService, ServerCopyPasteHandler } from './copy-paste-handler';
 
 export const copyPasteModule = new FeatureModule((bind, _unbind, isBound) => {
-    bind(TYPES.ICopyPasteHandler).to(ServerCopyPasteHandler);
-    bind(TYPES.IAsyncClipboardService).to(LocalClipboardService).inSingletonScope();
+    bindAsService(bind, TYPES.ICopyPasteHandler, ServerCopyPasteHandler);
+    bindAsService(bind, TYPES.IAsyncClipboardService, LocalClipboardService);
 }, FeatureDefinition.toModuleOptions(copyPasteFeatureDef));

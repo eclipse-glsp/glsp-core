@@ -22,11 +22,11 @@ import {
     Point,
     RequestContextActions,
     SetContextActions,
-    TYPES,
     isSelected
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 
 export namespace ServerContextMenu {
     export const CONTEXT_ID = 'context-menu';
@@ -35,7 +35,7 @@ export namespace ServerContextMenu {
 @injectable()
 export class ServerContextMenuItemProvider implements IContextMenuItemProvider {
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     async getItems(root: Readonly<GModelElement>, _lastMousePosition?: Point): Promise<ClientMenuItem[]> {
         const selectedElementIds = Array.from(

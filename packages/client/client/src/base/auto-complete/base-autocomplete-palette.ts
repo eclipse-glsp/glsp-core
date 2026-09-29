@@ -14,9 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, GModelRoot, IActionDispatcher, LabeledAction, TYPES, type MaybePromise } from '@eclipse-glsp/sprotty';
+import { Action, GModelRoot, IActionDispatcher, LabeledAction, type MaybePromise } from '@eclipse-glsp/sprotty';
 import { inject } from 'inversify';
 import '../../../css/autocomplete-palette.css';
+import { TYPES } from '../../types';
 import { messages } from '../messages';
 import { GLSPAbstractUIExtension } from '../ui-extension/ui-extension';
 import { AutoCompleteWidget, CloseReason, toActionArray, type AutoCompleteSettings } from './auto-complete-widget';

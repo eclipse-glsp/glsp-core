@@ -17,15 +17,16 @@ import 'reflect-metadata';
 
 import {
     BaseJsonrpcGLSPClient,
-    DiagramLoader,
-    GLSPActionDispatcher,
     GLSPClient,
     GLSPWebSocketProvider,
+    IActionDispatcher,
+    IDiagramLoader,
     McpInitializeParameters,
     McpInitializeResult,
     MessageAction,
     ShowToastMessageAction,
-    StatusAction
+    StatusAction,
+    TYPES
 } from '@eclipse-glsp/client';
 import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
@@ -49,8 +50,8 @@ wsProvider.listen({ onConnection: initialize, onReconnect: reconnect, logger: co
 async function initialize(connectionProvider: MessageConnection, isReconnecting = false): Promise<void> {
     glspClient = new BaseJsonrpcGLSPClient({ id, connectionProvider });
     container = await createContainer({ clientId, diagramType, glspClientProvider: async () => glspClient, sourceUri: examplePath });
-    const actionDispatcher = container.get(GLSPActionDispatcher);
-    const diagramLoader = container.get(DiagramLoader);
+    const actionDispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
+    const diagramLoader = container.get<IDiagramLoader>(TYPES.IDiagramLoader);
     const mcpEnabled = hasParameter('mcp');
 
     if (mcpEnabled) {

@@ -19,8 +19,8 @@ import {
     Alignment,
     CenterAction,
     ClientMenuItem,
-    EditorContextService,
     FitToScreenAction,
+    IEditorContextService,
     ReduceFunctionType,
     RequestExportAction,
     ResizeDimension,
@@ -93,7 +93,7 @@ const ALIGN_ENTRIES: AlignEntry[] = [
  * @param editorContext Used to derive the enablement of the layout commands.
  * @returns The children of the diagram menu.
  */
-export function createDiagramMenu(editorContext: EditorContextService): ClientMenuItem[] {
+export function createDiagramMenu(editorContext: IEditorContextService): ClientMenuItem[] {
     const layoutEnabled = (): boolean => !editorContext.isReadonly && editorContext.selectedElements.length > 1;
 
     const resize: ClientMenuItem = {

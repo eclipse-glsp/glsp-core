@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { BindingContext, FeatureKey, FeatureModule, TYPES, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { BindingContext, FeatureKey, FeatureModule, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
 import { GLSPClientFeature } from '../../../client-feature-keys';
+import { TYPES } from '../../../types';
 import { KeyboardGridCellSelectedAction, KeyboardGridKeyboardEventAction } from '../keyboard-grid/action';
 import { DeselectKeyTool } from './deselect-key-tool';
 import { GridCellZoomTool } from './grid-cell-zoom-key-tool';

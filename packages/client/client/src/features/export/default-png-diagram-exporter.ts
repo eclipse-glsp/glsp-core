@@ -16,8 +16,9 @@
 
 import { Action, ExportFormat, ExportMimeType, GModelRoot, PngExportOptions } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { DiagramExporter } from './diagram-exporter';
-import { GLSPSvgExporter } from './glsp-svg-exporter';
+import { ISvgExporter } from './glsp-svg-exporter';
 
 /** Default raster width (in CSS px) when neither `width` nor `height` is specified. */
 const DEFAULT_PNG_WIDTH = 1024;
@@ -34,7 +35,7 @@ export class DefaultPngDiagramExporter implements DiagramExporter<PngExportOptio
     readonly mimeType: ExportMimeType = 'image/png';
     readonly encoding = 'base64' as const;
 
-    @inject(GLSPSvgExporter) protected svgExporter: GLSPSvgExporter;
+    @inject(TYPES.ISvgExporter) protected svgExporter: ISvgExporter;
 
     async export(root: GModelRoot, options: PngExportOptions = {}, cause?: Action): Promise<string> {
         if (typeof document === 'undefined' || typeof OffscreenCanvas === 'undefined') {

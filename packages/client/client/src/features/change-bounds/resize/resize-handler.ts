@@ -28,13 +28,13 @@ import {
     ISnapper,
     Point,
     SetBoundsAction,
-    TYPES,
     debounce
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, postConstruct } from 'inversify';
-import { EditorContextService } from '../../../base/editor-context-service';
+import { IEditorContextService } from '../../../base/editor-context-service';
 import { IFeedbackActionDispatcher } from '../../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
+import { TYPES } from '../../../types';
 import { Resizable, SelectableBoundsAware, getElements, isSelectableAndBoundsAware, toElementAndBounds } from '../../../utils/gmodel-util';
 import { isValidMove, isValidSize, minHeight, minWidth } from '../../../utils/layout-utils';
 import { Grid } from '../../grid/grid';
@@ -71,8 +71,8 @@ export namespace ResizeElementAction {
  */
 @injectable()
 export class ResizeElementHandler implements IActionHandler {
-    @inject(EditorContextService)
-    protected editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContextService: IEditorContextService;
     @inject(TYPES.IActionDispatcher)
     protected dispatcher: IActionDispatcher;
     @inject(TYPES.IFeedbackActionDispatcher)

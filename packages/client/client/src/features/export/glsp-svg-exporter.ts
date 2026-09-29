@@ -26,8 +26,25 @@ import {
 } from '@eclipse-glsp/sprotty';
 import { injectable } from 'inversify';
 
+/**
+ * Renders the current diagram to an SVG string. Used by the unified export pipeline
+ * (`DefaultSvgDiagramExporter`, `DefaultPngDiagramExporter`), which needs the SVG
+ * without the action dispatch of sprotty's {@link SvgExporter.export}.
+ *
+ * Consumers should inject it via `TYPES.ISvgExporter`. The default implementation is {@link GLSPSvgExporter}.
+ * The sprotty symbol `SPROTTY_TYPES.SvgExporter` only serves the legacy `RequestExportSvgAction` flow, so rebinding it
+ * does not affect the unified export pipeline.
+ */
+export interface ISvgExporter {
+    /**
+     * Produce the serialised SVG string without dispatching any action.
+     * @throws An error if no document or no SVG element is available.
+     */
+    exportToString(root: GModelRoot, options?: ExportSvgOptions, cause?: Action): string;
+}
+
 @injectable()
-export class GLSPSvgExporter extends SvgExporter {
+export class GLSPSvgExporter extends SvgExporter implements ISvgExporter {
     /**
      * Legacy entry point for the SVG-only export flow. New code should use the unified
      * `RequestExportAction` flow (registered via the `DiagramExporter` registry);

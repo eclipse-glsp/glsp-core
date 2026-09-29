@@ -21,12 +21,12 @@ import {
     IActionDispatcher,
     SetBoundsAction,
     SetBoundsCommand,
-    TYPES,
     isLayoutContainer
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
 import { Ranked } from '../../base/ranked';
+import { TYPES } from '../../types';
 import { LocalRequestBoundsAction } from './local-bounds';
 
 export interface SetBoundsFeedbackAction extends Omit<SetBoundsAction, 'kind'> {

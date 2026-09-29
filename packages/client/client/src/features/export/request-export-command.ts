@@ -22,10 +22,10 @@ import {
     isHoverable,
     isSelectable,
     isViewport,
-    RequestExportAction,
-    TYPES
+    RequestExportAction
 } from '@eclipse-glsp/sprotty';
 import { inject } from 'inversify';
+import { TYPES } from '../../types';
 
 /**
  * {@link HiddenCommand} for the unified {@link RequestExportAction} kind. Performs the same

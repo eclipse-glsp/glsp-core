@@ -26,7 +26,7 @@ import {
     isMoveable
 } from '@eclipse-glsp/sprotty';
 import { DragAwareMouseListener } from '../../base/drag-aware-mouse-listener';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { CSS_HIDDEN, ModifyCSSFeedbackAction } from '../../base/feedback/css-feedback';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
 import { MoveableElement } from '../../utils/gmodel-util';
@@ -49,7 +49,7 @@ export class MouseTrackingElementPositionListener extends DragAwareMouseListener
         protected elementId: string,
         protected tool: PositioningTool,
         protected cursorPosition: 'top-left' | 'middle' = 'top-left',
-        protected editorContext?: EditorContextService
+        protected editorContext?: IEditorContextService
     ) {
         super();
         this.tracker = this.tool.changeBoundsManager.createTracker();

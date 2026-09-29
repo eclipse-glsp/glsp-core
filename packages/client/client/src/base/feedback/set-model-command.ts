@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CommandExecutionContext, GModelRoot, ILogger, SetModelAction, SetModelCommand, TYPES } from '@eclipse-glsp/sprotty';
+import { CommandExecutionContext, GModelRoot, ILogger, SetModelAction, SetModelCommand } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
+import { TYPES } from '../../types';
 import { IFeedbackActionDispatcher } from './feedback-action-dispatcher';
 
 @injectable()

@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ActionHandlerRegistration, ActionHandlerRegistry, IActionHandlerInitializer, LazyInjector, TYPES } from '@eclipse-glsp/sprotty';
+import { ActionHandlerRegistration, ActionHandlerRegistry, IActionHandlerInitializer, LazyInjector } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../types';
 
 @injectable()
 export class GLSPActionHandlerRegistry extends ActionHandlerRegistry {

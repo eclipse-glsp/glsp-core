@@ -24,10 +24,10 @@ import {
     RequestEditValidationAction,
     SetEditValidationResultAction,
     Severity,
-    TYPES,
     ValidationStatus
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 
 export namespace LabelEditValidation {
     export const CONTEXT_ID = 'label-edit';

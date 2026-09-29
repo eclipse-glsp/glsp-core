@@ -23,7 +23,6 @@ import {
     GEdgeSchema,
     GModelRoot,
     GRoutableElement,
-    TYPES,
     configureCommand,
     configureView,
     deletableFeature,
@@ -34,6 +33,7 @@ import {
 import { inject, injectable } from 'inversify';
 import { feedbackFeature } from '../../../base/feedback/feedback-action-dispatcher';
 import { FeedbackCommand } from '../../../base/feedback/feedback-command';
+import { TYPES } from '../../../types';
 import { enableFeatures, isRoutable } from '../../../utils/gmodel-util';
 import { toAbsolutePosition } from '../../../utils/viewpoint-util';
 import { FeedbackEdgeEndView } from './view';

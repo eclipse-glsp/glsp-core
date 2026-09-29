@@ -14,10 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelElement, Point, TYPES, findChildrenAtPosition } from '@eclipse-glsp/sprotty';
+import { GModelElement, Point, findChildrenAtPosition } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { CSS_GHOST_ELEMENT, CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
+import { TYPES } from '../../../types';
 import { ContainerElement, isContainable } from '../../hints/model';
 import { IChangeBoundsManager } from '../change-bounds/change-bounds-manager';
 

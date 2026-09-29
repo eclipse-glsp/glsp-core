@@ -22,7 +22,6 @@ import {
     GNode,
     Point,
     PointToPointLine,
-    TYPES,
     TypeGuard,
     isSelectable,
     toTypeGuard,
@@ -30,6 +29,7 @@ import {
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { GEdge } from '../../../model';
+import { TYPES } from '../../../types';
 import { BoundsAwareModelElement, getMatchingElements, isSelectableAndBoundsAware } from '../../../utils/gmodel-util';
 import { toAbsoluteBounds } from '../../../utils/viewpoint-util';
 import { DrawMarqueeAction } from './marquee-tool-feedback';
@@ -39,8 +39,38 @@ export interface IMarqueeBehavior {
     readonly entireEdge: boolean;
 }
 
+/**
+ * Utility service used by the marquee selection tool to determine which elements are marked by the marquee.
+ * Consumers should inject it via {@link TYPES.IMarqueeUtil}. The default implementation is {@link MarqueeUtil}.
+ */
+export interface IMarqueeUtil {
+    /** Whether the marquee selection should extend the current selection instead of replacing it. */
+    isContinuousMode(element: GModelElement, event: MouseEvent): boolean;
+
+    /** Returns all nodes of the given root that can be marked by the marquee. */
+    getMarkableNodes(root: GModelRoot): BoundsAwareModelElement[];
+
+    /** Returns all edges of the given root that can be marked by the marquee. */
+    getMarkableEdges(root: GModelRoot): GEdge[];
+
+    /** Updates the start point of the marquee. */
+    updateStartPoint(position: Point): void;
+
+    /** Updates the current (end) point of the marquee. */
+    updateCurrentPoint(position: Point): void;
+
+    /** Checks whether the given node or edge is marked by the current marquee. */
+    isMarked(element: BoundsAwareModelElement | GEdge): boolean;
+
+    /** Creates the action to draw the current marquee. */
+    drawMarqueeAction(): DrawMarqueeAction;
+}
+
+/**
+ * The default {@link IMarqueeUtil} implementation.
+ */
 @injectable()
-export class MarqueeUtil {
+export class MarqueeUtil implements IMarqueeUtil {
     protected startPoint: Point;
     protected currentPoint: Point;
 

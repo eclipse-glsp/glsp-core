@@ -15,7 +15,7 @@
  ********************************************************************************/
 import 'reflect-metadata';
 
-import { BaseJsonrpcGLSPClient, DiagramLoader, GLSPClient, GLSPWebWorkerProvider } from '@eclipse-glsp/client';
+import { BaseJsonrpcGLSPClient, GLSPClient, GLSPWebWorkerProvider, IDiagramLoader, TYPES } from '@eclipse-glsp/client';
 import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
 import createContainer from '../common/di.config';
@@ -38,6 +38,6 @@ async function initialize(connectionProvider: MessageConnection): Promise<void> 
         glspClientProvider: async () => glspClient,
         sourceUri: 'example1.wf'
     });
-    const diagramLoader = container.get(DiagramLoader);
+    const diagramLoader = container.get<IDiagramLoader>(TYPES.IDiagramLoader);
     await diagramLoader.load();
 }

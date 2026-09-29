@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, CommandExecutionContext, GModelElement, GModelRoot, TYPES, hasArrayProp } from '@eclipse-glsp/sprotty';
+import { Action, CommandExecutionContext, GModelElement, GModelRoot, hasArrayProp } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { addCssClasses, getElements, removeCssClasses } from '../../utils/gmodel-util';
 import { FeedbackCommand } from './feedback-command';
 

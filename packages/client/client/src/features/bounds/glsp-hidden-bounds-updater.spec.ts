@@ -34,7 +34,6 @@ import {
     RequestBoundsAction,
     RequestExportAction,
     ResponseAction,
-    TYPES,
     Viewport,
     createFeatureSet
 } from '@eclipse-glsp/sprotty';
@@ -47,6 +46,7 @@ import { feedbackFeature } from '../../base/feedback/feedback-action-dispatcher'
 import { ServerAction } from '../../base/model/glsp-model-source';
 import { GModelRegistry } from '../../base/model/model-registry';
 import { GEdge, GGraph } from '../../model';
+import { TYPES } from '../../types';
 import { enableFeatures } from '../../utils/gmodel-util';
 import { routingModule } from '../routing/routing-module';
 import { MARQUEE } from '../tools/marquee-selection/marquee-tool-feedback';
@@ -87,6 +87,10 @@ class RecordingActionDispatcher implements IActionDispatcher {
 
     dispatchAfterNextUpdate(...actions: Action[]): void {
         this.dispatched.push(...actions);
+    }
+
+    hasHandler(_action: Action): boolean {
+        return true;
     }
 }
 

@@ -21,11 +21,11 @@ import {
     LabeledAction,
     Point,
     RequestContextActions,
-    SetContextActions,
-    TYPES
+    SetContextActions
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 
 export namespace ServerCommandPalette {
     export const CONTEXT_ID = 'command-palette';
@@ -36,7 +36,7 @@ export namespace ServerCommandPalette {
 @injectable()
 export class ServerCommandPaletteActionProvider implements ICommandPaletteActionProvider {
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     async getActions(_root: Readonly<GModelElement>, text: string, _lastMousePosition?: Point, index?: number): Promise<LabeledAction[]> {
         const requestAction = RequestContextActions.create({

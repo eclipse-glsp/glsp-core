@@ -27,19 +27,19 @@ import {
     SetContextActions,
     SetModelAction,
     SetUIExtensionVisibilityAction,
-    TYPES,
     TriggerNodeCreationAction,
     UpdateModelAction,
     codiconCSSClasses,
     matchesKeystroke
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, postConstruct } from 'inversify';
-import { EditorContextService, IEditModeListener } from '../../base/editor-context-service';
-import { FocusTracker } from '../../base/focus/focus-tracker';
+import { IEditModeListener, IEditorContextService } from '../../base/editor-context-service';
+import { IFocusTracker } from '../../base/focus/focus-tracker';
 import { messages, repeatOnMessagesUpdated } from '../../base/messages';
 import { IDiagramStartup } from '../../base/model/diagram-loader';
 import { EnableDefaultToolsAction, EnableToolsAction } from '../../base/tool-manager/tool';
 import { GLSPAbstractUIExtension } from '../../base/ui-extension/ui-extension';
+import { TYPES } from '../../types';
 import { IDebugManager } from '../debug/debug-manager';
 import { IGridManager } from '../grid/grid-manager';
 import { MouseDeleteTool } from '../tools/deletion/delete-tool';
@@ -73,11 +73,11 @@ export class ToolPalette extends GLSPAbstractUIExtension implements IActionHandl
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
 
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
-    @inject(FocusTracker)
-    protected focusTracker: FocusTracker;
+    @inject(TYPES.IFocusTracker)
+    protected focusTracker: IFocusTracker;
 
     @inject(TYPES.IGridManager)
     @optional()

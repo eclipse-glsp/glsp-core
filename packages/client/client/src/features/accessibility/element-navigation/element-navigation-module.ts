@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { BindingContext, FeatureKey, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { BindingContext, FeatureKey, FeatureModule, bindAsService } from '@eclipse-glsp/sprotty';
 import '../../../../css/navigation.css';
 import { GLSPClientFeature } from '../../../client-feature-keys';
+import { TYPES } from '../../../types';
 import { ElementNavigatorTool } from './diagram-navigation-tool';
 import { LocalElementNavigator } from './local-element-navigator';
 import { PositionNavigator } from './position-navigator';

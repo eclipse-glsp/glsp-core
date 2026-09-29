@@ -22,14 +22,14 @@ import {
     KeyListener,
     Point,
     SetViewportAction,
-    TYPES,
     Viewport,
     matchesKeystroke
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { messages, repeatOnMessagesUpdated } from '../../../base/messages';
-import { SelectionService } from '../../../base/selection-service';
+import { ISelectionService } from '../../../base/selection-service';
 import type { IShortcutManager } from '../../../base/shortcuts/shortcuts-manager';
+import { TYPES } from '../../../types';
 import { getAbsolutePositionByPoint } from '../../../utils/viewpoint-util';
 import { BaseTool } from '../../tools/base-tools';
 import type { ZoomFactors } from '../../viewport/zoom-viewport-action';
@@ -49,7 +49,7 @@ export class GridCellZoomTool extends BaseTool {
 
     @inject(TYPES.IShortcutManager) protected readonly shortcutManager: IShortcutManager;
     @inject(TYPES.ZoomFactors) protected readonly zoomFactors: ZoomFactors;
-    @inject(SelectionService) selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) selectionService: ISelectionService;
 
     get id(): string {
         return GridCellZoomTool.ID;

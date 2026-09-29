@@ -14,10 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { IActionDispatcher, TYPES, ViewerOptions } from '@eclipse-glsp/sprotty';
+import { IActionDispatcher, ViewerOptions } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { messages } from '../../../base/messages';
 import { Tool } from '../../../base/tool-manager/tool';
+import { TYPES } from '../../../types';
 import { ShowToastMessageAction } from '../toast/toast-handler';
 
 @injectable()

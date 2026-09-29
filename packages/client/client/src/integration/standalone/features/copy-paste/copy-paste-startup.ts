@@ -14,11 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { DOMHelper, Disposable, DisposableCollection, EMPTY_ROOT, GModelRoot, TYPES } from '@eclipse-glsp/sprotty';
+import { DOMHelper, Disposable, DisposableCollection, EMPTY_ROOT, GModelRoot } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, preDestroy } from 'inversify';
 import { IGModelRootListener } from '../../../../base/editor-context-service';
 import { IDiagramStartup } from '../../../../base/model/diagram-loader';
 import { ICopyPasteHandler } from '../../../../features/copy-paste/copy-paste-handler';
+import { TYPES } from '../../../../types';
 /**
  * Startup service to hook up the copy&paste event handler
  */

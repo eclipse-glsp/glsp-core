@@ -17,10 +17,10 @@ import {
     Action,
     AutoCompleteWidget,
     DOMHelper,
-    EditorContextService,
     GLSPAbstractUIExtension,
     GModelRoot,
     IActionDispatcher,
+    IEditorContextService,
     ILogger,
     LabeledAction,
     ModelIndexImpl,
@@ -97,8 +97,8 @@ export class TaskEditor extends GLSPAbstractUIExtension {
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
 
-    @inject(EditorContextService)
-    protected editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContextService: IEditorContextService;
 
     @inject(TYPES.ViewerOptions)
     protected viewerOptions: ViewerOptions;

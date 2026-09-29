@@ -25,7 +25,6 @@ import {
     GhostElement,
     IModelFactory,
     Point,
-    TYPES,
     TriggerNodeCreationAction,
     isBoundsAware,
     isCtrlOrCmd,
@@ -33,10 +32,11 @@ import {
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
-import { EditorContextService } from '../../../base/editor-context-service';
+import { IEditorContextService } from '../../../base/editor-context-service';
 import { CSS_GHOST_ELEMENT, CSS_HIDDEN, CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
+import { TYPES } from '../../../types';
 import { MoveableElement } from '../../../utils/gmodel-util';
 import { AddTemplateElementsAction, getTemplateElementId } from '../../element-template/add-template-element';
 import { MouseTrackingElementPositionListener, PositioningTool } from '../../element-template/mouse-tracking-element-position-listener';
@@ -103,7 +103,7 @@ export class NodeInsertTrackingListener extends MouseTrackingElementPositionList
         protected elementTypeId: string,
         protected override tool: ContainerPositioningTool,
         cursorPosition: 'top-left' | 'middle' = 'top-left',
-        editorContext?: EditorContextService
+        editorContext?: IEditorContextService
     ) {
         super(elementId, tool, cursorPosition, editorContext);
     }

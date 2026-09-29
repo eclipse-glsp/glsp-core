@@ -13,14 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    EditLabelAction,
-    EditLabelActionHandler,
-    FeatureDefinition,
-    FeatureModule,
-    TYPES,
-    configureActionHandler
-} from '@eclipse-glsp/sprotty';
+import { EditLabelAction, EditLabelActionHandler, FeatureDefinition, FeatureModule, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { labelEditUiFeatureDef } from './label-edit-ui-feature';
 import { GlspEditLabelUI } from './label-edit-ui';
 

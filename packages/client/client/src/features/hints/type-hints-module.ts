@@ -17,11 +17,11 @@ import {
     FeatureDefinition,
     FeatureModule,
     SetTypeHintsAction,
-    TYPES,
     bindAsService,
     configureActionHandler,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { typeHintsFeatureDef } from './type-hints-feature';
 import { ApplyTypeHintsCommand, TypeHintProvider } from './type-hint-provider';
 
