@@ -30,6 +30,7 @@ describe('Node modification actions', () => {
             const operation: ChangeBoundsOperation = {
                 kind: 'changeBounds',
                 isOperation: true,
+                requestId: '',
                 newBounds: []
             };
             expect(ChangeBoundsOperation.is(operation)).toBe(true);
@@ -47,6 +48,7 @@ describe('Node modification actions', () => {
             const expected: ChangeBoundsOperation = {
                 kind: 'changeBounds',
                 isOperation: true,
+                requestId: '',
                 newBounds: [{ elementId: 'someElement', newSize: Dimension.EMPTY, newPosition: Point.ORIGIN }]
             };
             const { newBounds } = expected;
@@ -61,6 +63,7 @@ describe('ChangeContainerOperation', () => {
             const action: ChangeContainerOperation = {
                 kind: 'changeContainer',
                 isOperation: true,
+                requestId: '',
                 elementId: '',
                 targetContainerId: ''
             };
@@ -79,6 +82,7 @@ describe('ChangeContainerOperation', () => {
             const expected: ChangeContainerOperation = {
                 kind: 'changeContainer',
                 isOperation: true,
+                requestId: '',
                 elementId: 'myElement',
                 targetContainerId: 'myContainer'
             };
@@ -89,6 +93,7 @@ describe('ChangeContainerOperation', () => {
             const expected: ChangeContainerOperation = {
                 kind: 'changeContainer',
                 isOperation: true,
+                requestId: '',
                 elementId: 'myElement',
                 targetContainerId: 'myContainer',
                 location: Point.ORIGIN

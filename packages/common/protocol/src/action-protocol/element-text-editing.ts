@@ -133,6 +133,7 @@ export namespace ApplyLabelEditOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }

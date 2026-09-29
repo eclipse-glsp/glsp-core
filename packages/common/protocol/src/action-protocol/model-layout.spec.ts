@@ -146,7 +146,8 @@ describe('Model layout actions', () => {
             it('should return true for an object having the correct type and a value for all required interface properties', () => {
                 const action: LayoutOperation = {
                     kind: 'layout',
-                    isOperation: true
+                    isOperation: true,
+                    requestId: ''
                 };
                 expect(LayoutOperation.is(action)).toBe(true);
             });
@@ -166,6 +167,7 @@ describe('Model layout actions', () => {
                 const expected: LayoutOperation = {
                     kind: 'layout',
                     isOperation: true,
+                    requestId: '',
                     elementIds: ['myElements']
                 };
                 const { elementIds } = expected;

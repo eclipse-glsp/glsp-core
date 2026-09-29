@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { MaybePromise, Operation } from '@eclipse-glsp/protocol';
+import { MaybePromise, Operation, OperationResponseAction } from '@eclipse-glsp/protocol';
 import { inject, injectable, interfaces } from 'inversify';
 import { Command } from '../command/command';
 import { ModelState } from '../model/model-state';
@@ -60,6 +60,23 @@ export abstract class OperationHandler {
      */
     execute(operation: Operation): MaybePromise<Command | undefined> {
         return this.handles(operation) ? this.createCommand(operation) : undefined;
+    }
+
+    /**
+     * Creates the response that answers the given {@link Operation} once it has been executed successfully.
+     * The default implementation returns a plain acknowledgement. Override this method to report operation-specific results
+     * (e.g. the ids of created elements), typically captured by the executed command. The response type should match the one
+     * declared by the operation (see {@link Operation}).
+     * The `responseId` and the model `revision` of the response are set by the `OperationActionHandler`.
+     * If this method throws, the operation is rejected although the command has already been executed: the model update is
+     * still sent to the client and the changes remain on the command stack (i.e. they can be undone).
+     *
+     * @param operation The executed operation.
+     * @param command The command that has been executed for the operation or `undefined` if no command was created.
+     * @returns The response for the executed operation.
+     */
+    createResponse(operation: Operation, command: Command | undefined): MaybePromise<OperationResponseAction> {
+        return OperationResponseAction.create();
     }
 
     /**

@@ -27,6 +27,7 @@ import {
     InitializeClientSessionParameters,
     InitializeResult,
     ModelSource,
+    Operation,
     RejectAction,
     RequestAction,
     ResponseAction,
@@ -170,7 +171,8 @@ export class GLSPModelSource extends ModelSource implements Disposable {
         const action = message.action;
         ServerAction.mark(action);
         this.logger.log(this, 'receiving', action);
-        if (RequestAction.is(action)) {
+        // Operations without a request id have not been dispatched as request => no response is expected
+        if (RequestAction.is(action) && (!Operation.is(action) || RequestAction.hasValidRequestId(action))) {
             this.handleServerRequest(action);
             return;
         }

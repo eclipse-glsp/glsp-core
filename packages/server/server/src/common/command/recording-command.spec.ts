@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { AnyObject, MaybePromise } from '@eclipse-glsp/protocol';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbstractRecordingCommand } from './recording-command';
 
 interface TestModel {
@@ -82,5 +82,31 @@ describe('RecordingCommand', () => {
         jsonObject = JSON.parse(JSON.stringify(afterState));
         await command.redo();
         expect(jsonObject).toEqual(afterState);
+    });
+
+    it('should roll back partial changes and rethrow if the execution fails', async () => {
+        const error = new Error('execution failed');
+        const command = new TestRecordingCommand(jsonObject, () => {
+            jsonObject.string = 'bar';
+            jsonObject.maybe = { hello: 'world' };
+            throw error;
+        });
+        await expect(command.execute()).rejects.toBe(error);
+        expect(jsonObject).toEqual(beforeState);
+        expect(command.canUndo()).toBe(false);
+    });
+
+    it('should rethrow the execution error if the rollback fails', async () => {
+        const error = new Error('execution failed');
+        const rollbackError = new Error('rollback failed');
+        const command = new TestRecordingCommand(jsonObject, () => {
+            throw error;
+        });
+        vi.spyOn(command as unknown as { rollback: () => Promise<void> }, 'rollback').mockRejectedValue(rollbackError);
+        const handleRollbackError = vi
+            .spyOn(command as unknown as { handleRollbackError: (error: unknown) => void }, 'handleRollbackError')
+            .mockImplementation(() => {});
+        await expect(command.execute()).rejects.toBe(error);
+        expect(handleRollbackError).toHaveBeenCalledWith(rollbackError);
     });
 });

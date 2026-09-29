@@ -163,6 +163,7 @@ export namespace LayoutOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             elementIds,
             ...options
         };

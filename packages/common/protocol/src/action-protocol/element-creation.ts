@@ -82,6 +82,7 @@ export namespace CreateNodeOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             elementTypeId,
             ...options
         };
@@ -119,6 +120,7 @@ export namespace CreateEdgeOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }
@@ -148,6 +150,7 @@ export namespace DeleteElementOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             elementIds,
             ...options
         };

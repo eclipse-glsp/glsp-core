@@ -41,6 +41,7 @@ export * from './base/model/model-initialization-constraint';
 export * from './base/model/model-registry';
 export * from './base/mouse-position-tracker';
 export * from './base/ranked';
+export * from './base/reject-action-handler';
 export * from './base/selection-clearing-mouse-listener';
 export * from './base/selection-service';
 export * from './base/shortcuts/available-shortcuts-extension';

@@ -153,7 +153,12 @@ export class DefaultCommandStack implements CommandStack {
 
     protected handleError(error: any): never {
         // if an error occurred during the command execution the stack might be in an erroneous state => we have to flush the command stack
+        const wasDirty = this.isDirty;
         this.flush();
+        // Flushing resets the save index. Ensure that unsaved changes are not reported as saved.
+        if (wasDirty) {
+            this.saveIndex = -2;
+        }
         this.logger.error('An error occurred during command execution. CommandStack will be flushed!', error);
         throw error;
     }

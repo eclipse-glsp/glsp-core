@@ -24,8 +24,10 @@ import {
     HandleActionResult,
     IActionDispatcher,
     MaybePromise,
+    OperationResponseAction,
     RejectAction,
     RequestAction,
+    RequestRejectedError,
     ResponseAction,
     SetModelAction,
     TYPES
@@ -35,6 +37,17 @@ import { GLSPActionHandlerRegistry } from './action-handler-registry';
 import { IGModelRootListener } from './editor-context-service';
 import { OptionalAction } from './model/glsp-model-source';
 import { ModelInitializationConstraint } from './model/model-initialization-constraint';
+
+/**
+ * An `Operation` dispatched as request whose response has been received, but whose completion is deferred until the
+ * model has been updated to the resulting revision (see {@link GLSPActionDispatcher.completeOperation}).
+ */
+export interface DeferredOperation {
+    /** The model revision the operation waits for before it is completed. */
+    revision: number;
+    /** Completes the operation, i.e. resolves the corresponding request. */
+    complete: () => void;
+}
 
 @injectable()
 export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRootListener, IActionDispatcher {
@@ -50,6 +63,10 @@ export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRoo
     /** @deprecated No longer in used. The {@link ActionHandlerRegistry} is now directly injected */
     @inject(TYPES.ActionHandlerRegistryProvider) protected override actionHandlerRegistryProvider: () => Promise<ActionHandlerRegistry>;
     protected postUpdateQueue: Action[] = [];
+    /** The revision of the current model root, updated on every model root change. */
+    protected modelRevision?: number;
+    /** All operations whose completion is deferred until the model has been updated, by request id. */
+    protected readonly deferredOperations = new Map<string, DeferredOperation>();
 
     protected initializeDeferred = new Deferred<void>();
 
@@ -112,7 +129,8 @@ export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRoo
         this.postUpdateQueue.push(...actions);
     }
 
-    modelRootChanged(_root: Readonly<GModelRoot>): void {
+    modelRootChanged(root: Readonly<GModelRoot>): void {
+        this.updateModelRevision(root.revision);
         if (this.postUpdateQueue.length === 0) {
             return;
         }
@@ -133,26 +151,91 @@ export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRoo
     }
 
     protected async handleResponseAction(action: ResponseAction): Promise<void> {
-        const timeout = this.timeouts.get(action.responseId);
-        if (timeout !== undefined) {
-            clearTimeout(timeout);
-            this.timeouts.delete(action.responseId);
-        }
-
-        const request = this.requests.get(action.responseId);
+        const requestId = action.responseId;
+        const request = this.requests.get(requestId);
         if (!request) {
+            this.clearRequestTimeout(requestId);
+            if (OperationResponseAction.is(action) && !this.hasHandler(action)) {
+                // Pure acknowledgement of an operation that is no longer pending (e.g. timed out) => nothing to handle
+                this.logger.log(this, 'No matching request for operation response, dropping it', action);
+                return;
+            }
             // No pending request: re-dispatch as a normal action.
             this.logger.log(this, 'No matching request for response, dispatch normally', action);
             action.responseId = '';
             return this.handleAction(action);
         }
 
-        this.requests.delete(action.responseId);
+        if (OperationResponseAction.is(action)) {
+            // The request and its timeout stay registered until the operation is completed, so that the timeout of
+            // `requestUntil` still applies if the model never reaches the response revision.
+            this.completeOperation(requestId, action.revision, () => {
+                if (this.requests.get(requestId) === request) {
+                    this.requests.delete(requestId);
+                    this.clearRequestTimeout(requestId);
+                    request.resolve(action);
+                }
+            });
+            return;
+        }
+
+        this.requests.delete(requestId);
+        this.clearRequestTimeout(requestId);
         if (RejectAction.is(action)) {
-            request.reject(new Error(action.message));
-            this.logger.warn(this, `Request with id ${action.responseId} failed.`, action.message, action.detail);
+            request.reject(new RequestRejectedError(action));
+            this.logger.warn(this, `Request with id ${requestId} failed.`, action.message, action.detail);
         } else {
             request.resolve(action);
+        }
+    }
+
+    protected clearRequestTimeout(requestId: string): void {
+        const timeout = this.timeouts.get(requestId);
+        if (timeout !== undefined) {
+            clearTimeout(timeout);
+            this.timeouts.delete(requestId);
+        }
+    }
+
+    /**
+     * Completes the operation with the given request id once the model has been updated to (at least) the given revision.
+     * Operation responses carry the model revision that results from the operation. With client-side layout, the server sends
+     * the corresponding model update only after the client has returned the computed bounds, i.e. after the response.
+     * Deferring the completion of the operation until the revision is reached ensures that callers awaiting an operation
+     * always observe the updated model. Deferred operations are completed by {@link updateModelRevision}.
+     * The timeout of operations dispatched via {@link requestUntil} still applies while the completion is deferred.
+     *
+     * @param requestId The request id of the operation.
+     * @param revision The model revision to wait for. If `undefined`, the operation is completed immediately.
+     * @param complete Completes the operation, i.e. resolves the corresponding request.
+     */
+    protected completeOperation(requestId: string, revision: number | undefined, complete: () => void): void {
+        if (revision === undefined || (this.modelRevision !== undefined && this.modelRevision >= revision)) {
+            complete();
+            return;
+        }
+        this.logger.log(
+            this,
+            `Deferring completion of operation ${requestId} until model revision ${revision} (current: ${this.modelRevision})`
+        );
+        this.deferredOperations.set(requestId, { revision, complete });
+    }
+
+    /**
+     * Updates the current model revision and completes all deferred operations for which the revision has been reached
+     * (see {@link completeOperation}). If the revision decreased (e.g. because the model has been reloaded), all deferred
+     * operations are completed, as the awaited revision will never be reached.
+     */
+    protected updateModelRevision(revision: number | undefined): void {
+        const previousRevision = this.modelRevision;
+        this.modelRevision = revision;
+        const reset = revision === undefined || (previousRevision !== undefined && revision < previousRevision);
+        for (const [requestId, operation] of this.deferredOperations) {
+            if (reset || revision >= operation.revision) {
+                this.deferredOperations.delete(requestId);
+                this.logger.log(this, `Operation ${requestId} completed at model revision ${revision}`);
+                operation.complete();
+            }
         }
     }
 
@@ -257,11 +340,8 @@ export class GLSPActionDispatcher extends ActionDispatcher implements IGModelRoo
         // handleResponseAction only clears the timeout on the response path; clear it here on every
         // other settle path (timeout, rejection, missing handler) so the timer and map entry can't leak.
         const clearRequestTimeout = (): void => {
-            const pending = this.timeouts.get(requestId);
-            if (pending !== undefined) {
-                clearTimeout(pending);
-                this.timeouts.delete(requestId);
-            }
+            this.deferredOperations.delete(requestId);
+            this.clearRequestTimeout(requestId);
         };
         result.then(clearRequestTimeout, clearRequestTimeout);
         return result;

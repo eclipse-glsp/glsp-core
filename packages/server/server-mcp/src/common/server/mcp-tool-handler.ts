@@ -402,9 +402,8 @@ export abstract class AbstractMcpDiagramToolHandler<
  *    dispatcher belongs on the base, not in per-handler boilerplate.
  *  - Throws {@link McpReadOnlyError} when `modelState.isReadonly`, surfacing a hard failure
  *    to the LLM. The MCP-side gate is necessary even though core's `OperationActionHandler`
- *    checks readonly itself: core's gate is a *soft* warning (returns a `MessageAction`, the
- *    dispatch resolves successfully and the tool body would otherwise report success while
- *    nothing changed), and `UndoRedoActionHandler` doesn't gate readonly at all.
+ *    rejects operations in readonly mode itself: it fails fast with a dedicated error type
+ *    before anything is dispatched, and `UndoRedoActionHandler` doesn't gate readonly at all.
  *
  * Parallels core's `OperationHandler` (sibling to `ActionHandler`, not a refinement) — but
  * note the role flip: core's `OperationHandler` is downstream of dispatch and only needs

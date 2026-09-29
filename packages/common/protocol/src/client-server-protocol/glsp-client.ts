@@ -180,5 +180,5 @@ export namespace GLSPClient {
         return AnyObject.is(object) && hasStringProp(object, 'id');
     }
 
-    export const protocolVersion = '1.0.0';
+    export const protocolVersion = '2.0.0';
 }

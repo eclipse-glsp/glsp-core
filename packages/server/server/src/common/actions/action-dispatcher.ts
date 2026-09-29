@@ -18,8 +18,11 @@ import {
     Deferred,
     Disposable,
     MaybeArray,
+    Operation,
+    OperationResponseAction,
     RejectAction,
     RequestAction,
+    RequestRejectedError,
     ResponseAction,
     SetModelAction,
     UpdateModelAction,
@@ -329,16 +332,25 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         // the deferred out-of-band via interceptPendingResponse().
         const dispatchPromise = this.dispatch(action);
 
-        dispatchPromise.catch(error => {
-            if (this.pendingRequests.delete(action.requestId)) {
+        const settle = (settleDeferred: () => void): void => {
+            if (this.pendingRequests.get(action.requestId) === deferred) {
+                this.pendingRequests.delete(action.requestId);
                 const timeout = this.requestTimeouts.get(action.requestId);
                 if (timeout !== undefined) {
                     clearTimeout(timeout);
                     this.requestTimeouts.delete(action.requestId);
                 }
-                deferred.reject(error);
+                settleDeferred();
             }
-        });
+        };
+        dispatchPromise.then(
+            () => {
+                if (Operation.is(action)) {
+                    settle(() => deferred.resolve(this.acknowledgeUnansweredOperation(action)));
+                }
+            },
+            error => settle(() => deferred.reject(error))
+        );
 
         return deferred.promise as Promise<Res | undefined>;
     }
@@ -356,6 +368,23 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             return actions;
         }
         return [];
+    }
+
+    /**
+     * Creates the fallback response for an {@link Operation} that has been dispatched as request but has not been answered
+     * once its dispatch completed. Operations are normally answered by the `OperationActionHandler`. If an operation kind is
+     * handled by a plain {@link ActionHandler} instead, no response is produced. Without this fallback such requests would
+     * never settle (and leak their pending entry). The fallback acknowledgement carries no model revision, i.e. the requesting
+     * party does not wait for a model update.
+     *
+     * @param operation The operation that has not been answered.
+     * @returns The response that answers the operation.
+     */
+    protected acknowledgeUnansweredOperation(operation: Operation): OperationResponseAction {
+        this.logger.debug(
+            `Operation '${operation.kind}' (${operation.requestId}) has not been answered by its handlers, acknowledging it.`
+        );
+        return OperationResponseAction.create({ responseId: operation.requestId });
     }
 
     /**
@@ -385,7 +414,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             // post-update actions stay queued until the next successful update.
             const postUpdateActions = this.drainPostUpdateQueue(action);
             if (RejectAction.is(action)) {
-                deferred.reject(new Error(`${action.message}${action.detail ? ': ' + action.detail : ''}`));
+                deferred.reject(new RequestRejectedError(action));
             } else {
                 deferred.resolve(action);
             }
@@ -425,13 +454,21 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 /**
  * Transfers the {@link RequestAction.requestId id} from request to response if applicable.
  *
+ * An {@link Operation} is only answered by an {@link OperationResponseAction} or a {@link RejectAction}. Other response actions
+ * that are returned while executing an operation (e.g. a `SetMarkersAction` or `SetModelAction` of the model submission) are
+ * not stamped, so that they keep answering their own request (if any) and cannot take over the response of the operation.
+ *
  * @param request  potential {@link RequestAction}
  * @param response potential {@link ResponseAction}
  * @returns given response action with id set if applicable
  */
 export function respond(request: Action, response: Action): Action {
-    if (RequestAction.is(request) && ResponseAction.is(response)) {
-        response.responseId = request.requestId;
+    if (!RequestAction.is(request) || !ResponseAction.is(response)) {
+        return response;
     }
+    if (Operation.is(request) && !OperationResponseAction.is(response) && !RejectAction.is(response)) {
+        return response;
+    }
+    response.responseId = request.requestId;
     return response;
 }

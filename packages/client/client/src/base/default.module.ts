@@ -23,6 +23,7 @@ import {
     MousePositionTracker,
     MouseTool,
     MoveCommand,
+    RejectAction,
     SetDirtyStateAction,
     SetEditModeAction,
     SetModelCommand,
@@ -52,6 +53,7 @@ import { GLSPModelSource } from './model/glsp-model-source';
 import { ModelChangeService } from './model/model-change-service';
 import { DefaultModelInitializationConstraint, ModelInitializationConstraint } from './model/model-initialization-constraint';
 import { GModelRegistry } from './model/model-registry';
+import { RejectActionHandler } from './reject-action-handler';
 import { GLSPMousePositionTracker } from './mouse-position-tracker';
 import { SelectionClearingMouseListener } from './selection-clearing-mouse-listener';
 import { SelectionService } from './selection-service';
@@ -111,6 +113,9 @@ export const defaultModule = new FeatureModule(
         bindOrRebind(context, TYPES.IActionDispatcher).toService(GLSPActionDispatcher);
 
         bindOrRebind(context, ActionHandlerRegistry).to(GLSPActionHandlerRegistry).inSingletonScope();
+
+        bind(RejectActionHandler).toSelf().inSingletonScope();
+        configureActionHandler(context, RejectAction.KIND, RejectActionHandler);
 
         bindAsService(context, TYPES.ModelSource, GLSPModelSource);
         bind(DiagramLoader).toSelf().inSingletonScope();

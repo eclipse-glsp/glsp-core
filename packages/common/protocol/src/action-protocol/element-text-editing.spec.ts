@@ -120,6 +120,7 @@ describe('Element text editing actions', () => {
                 const operation: ApplyLabelEditOperation = {
                     kind: 'applyLabelEdit',
                     isOperation: true,
+                    requestId: '',
                     labelId: '',
                     text: ''
                 };
@@ -138,6 +139,7 @@ describe('Element text editing actions', () => {
                 const expected: ApplyLabelEditOperation = {
                     kind: 'applyLabelEdit',
                     isOperation: true,
+                    requestId: '',
                     labelId: 'myLabel',
                     text: 'myText'
                 };

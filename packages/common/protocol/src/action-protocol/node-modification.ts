@@ -43,6 +43,7 @@ export namespace ChangeBoundsOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             newBounds
         };
     }
@@ -89,6 +90,7 @@ export namespace ChangeContainerOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }

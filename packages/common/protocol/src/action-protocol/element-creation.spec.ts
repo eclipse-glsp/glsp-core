@@ -29,6 +29,7 @@ describe('Element creation operations', () => {
                 const operation: CreateOperation = {
                     kind: 'CreateEdgeOperation',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: 'someType'
                 };
                 expect(CreateOperation.is(operation)).toBe(true);
@@ -48,6 +49,7 @@ describe('Element creation operations', () => {
                 const operation: CreateNodeOperation = {
                     kind: 'createNode',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: ''
                 };
                 expect(CreateNodeOperation.is(operation)).toBe(true);
@@ -65,6 +67,7 @@ describe('Element creation operations', () => {
                 const expected: CreateNodeOperation = {
                     kind: 'createNode',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: 'someNode'
                 };
                 const { elementTypeId } = expected;
@@ -77,6 +80,7 @@ describe('Element creation operations', () => {
                     containerId: 'container',
                     location: Point.ORIGIN,
                     isOperation: true,
+                    requestId: '',
                     args: { some: 'args' }
                 };
                 const { elementTypeId, containerId, location, args } = expected;
@@ -91,6 +95,7 @@ describe('Element creation operations', () => {
                 const operation: CreateEdgeOperation = {
                     kind: 'createEdge',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: '',
                     sourceElementId: '',
                     targetElementId: ''
@@ -110,6 +115,7 @@ describe('Element creation operations', () => {
                 const expected: CreateEdgeOperation = {
                     kind: 'createEdge',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: 'someNode',
                     sourceElementId: 'source',
                     targetElementId: 'target'
@@ -121,6 +127,7 @@ describe('Element creation operations', () => {
                 const expected: CreateEdgeOperation = {
                     kind: 'createEdge',
                     isOperation: true,
+                    requestId: '',
                     elementTypeId: 'someNode',
                     sourceElementId: 'source',
                     targetElementId: 'target',
@@ -138,6 +145,7 @@ describe('Element creation operations', () => {
                 const operation: DeleteElementOperation = {
                     kind: 'deleteElement',
                     isOperation: true,
+                    requestId: '',
                     elementIds: []
                 };
                 expect(DeleteElementOperation.is(operation)).toBe(true);
@@ -155,6 +163,7 @@ describe('Element creation operations', () => {
                 const expected: DeleteElementOperation = {
                     kind: 'deleteElement',
                     isOperation: true,
+                    requestId: '',
                     elementIds: ['deleteMe']
                 };
                 const { elementIds } = expected;
