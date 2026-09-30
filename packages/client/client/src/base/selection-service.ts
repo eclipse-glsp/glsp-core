@@ -34,13 +34,13 @@ import {
     SelectionResult,
     SprottySelectAllCommand,
     SprottySelectCommand,
-    TYPES,
     hasArrayProp,
     hasFunctionProp,
     isSelectable,
     pluck
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct, preDestroy } from 'inversify';
+import { TYPES } from '../types';
 import { SelectableElement, getElements, getMatchingElements } from '../utils/gmodel-util';
 import { IGModelRootListener } from './editor-context-service';
 import { IFeedbackActionDispatcher } from './feedback/feedback-action-dispatcher';
@@ -62,8 +62,55 @@ export interface SelectionChange {
     deselectedElements: string[];
 }
 
+/**
+ * Central service that tracks the current selection of the diagram and notifies registered
+ * {@link ISelectionListener}s about changes. Consumers should inject it via {@link TYPES.ISelectionService}.
+ * The default implementation is {@link SelectionService}.
+ */
+export interface ISelectionService extends IGModelRootListener, IActionHandler, Disposable, IDiagramStartup {
+    /** Event that is fired whenever the selection changes. */
+    readonly onSelectionChanged: Event<SelectionChange>;
+
+    /**
+     * Registers a selection listener that is notified on every selection change.
+     * @param listener The listener to register.
+     * @returns A disposable that removes the listener again.
+     */
+    addListener(listener: ISelectionListener): Disposable;
+
+    /**
+     * Updates the selection of the given root. Element ids that are part of both the selection and the
+     * deselection keep their current state. Listeners are only notified if the selection actually changed.
+     * @param newRoot The (new) model root.
+     * @param select The ids of the elements to select.
+     * @param deselect The ids of the elements to deselect.
+     */
+    updateSelection(newRoot: Readonly<GModelRoot>, select: string[], deselect: string[]): void;
+
+    /** Returns the model root the current selection belongs to. */
+    getModelRoot(): Readonly<GModelRoot>;
+
+    /** Returns the currently selected elements. */
+    getSelectedElements(): Readonly<SelectableElement>[];
+
+    /** Returns the ids of the currently selected elements. */
+    getSelectedElementIDs(): string[];
+
+    /** Returns `true` if at least one element is selected. */
+    hasSelectedElements(): boolean;
+
+    /** Returns `true` if exactly one element is selected. */
+    isSingleSelection(): boolean;
+
+    /** Returns `true` if more than one element is selected. */
+    isMultiSelection(): boolean;
+}
+
+/**
+ * The default {@link ISelectionService} implementation.
+ */
 @injectable()
-export class SelectionService implements IGModelRootListener, IActionHandler, Disposable, IDiagramStartup {
+export class SelectionService implements ISelectionService {
     @inject(TYPES.IFeedbackActionDispatcher)
     protected feedbackDispatcher: IFeedbackActionDispatcher;
 
@@ -219,7 +266,7 @@ export class SelectCommand extends Command {
 
     constructor(
         @inject(TYPES.Action) public action: SelectAction,
-        @inject(SelectionService) public selectionService: SelectionService
+        @inject(TYPES.ISelectionService) public selectionService: ISelectionService
     ) {
         super();
     }
@@ -259,7 +306,7 @@ export class SelectAllCommand extends Command {
 
     constructor(
         @inject(TYPES.Action) public action: SelectAllAction,
-        @inject(SelectionService) public selectionService: SelectionService
+        @inject(TYPES.ISelectionService) public selectionService: ISelectionService
     ) {
         super();
     }

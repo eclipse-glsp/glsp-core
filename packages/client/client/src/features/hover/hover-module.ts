@@ -27,11 +27,11 @@ import {
     PopupPositionUpdater,
     SetPopupModelCommand,
     SetViewportCommand,
-    TYPES,
     bindAsService,
     configureActionHandler,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { hoverFeatureDef } from './hover-feature';
 import { FocusStateChangedAction } from '../../base/focus/focus-state-change-action';
 import { EnableDefaultToolsAction, EnableToolsAction } from '../../base/tool-manager/tool';

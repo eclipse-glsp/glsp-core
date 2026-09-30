@@ -14,10 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { DOMHelper, GChildElement, GModelElement, GModelRoot, IVNodePostprocessor, TYPES, setAttr } from '@eclipse-glsp/sprotty';
+import { DOMHelper, GChildElement, GModelElement, GModelRoot, IVNodePostprocessor, setAttr } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { VNode } from 'snabbdom';
 import { GEdge } from '../../model';
+import { TYPES } from '../../types';
 
 @injectable()
 export class MetadataPlacer implements IVNodePostprocessor {

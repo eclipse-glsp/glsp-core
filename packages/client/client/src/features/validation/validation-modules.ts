@@ -13,7 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureDefinition, FeatureModule, SetMarkersAction, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import {
+    FeatureDefinition,
+    FeatureModule,
+    SetMarkersAction,
+    bindAsService,
+    configureActionHandler,
+    configureCommand
+} from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { markerNavigatorFeatureDef, validationFeatureDef } from './validation-features';
 import {
     GModelElementComparator,
@@ -29,11 +37,13 @@ export const validationModule = new FeatureModule((bind, _unbind, isBound) => {
     configureActionHandler(context, SetMarkersAction.KIND, SetMarkersActionHandler);
     configureCommand(context, ApplyMarkersCommand);
     configureCommand(context, DeleteMarkersCommand);
-    bind(ValidationFeedbackEmitter).toSelf().inSingletonScope();
+    bindAsService(context, TYPES.IValidationFeedbackEmitter, ValidationFeedbackEmitter);
 }, FeatureDefinition.toModuleOptions(validationFeatureDef));
 
 export const markerNavigatorModule = new FeatureModule((bind, _unbind, isBound) => {
     bind(GModelElementComparator).to(LeftToRightTopToBottomComparator).inSingletonScope();
-    bind(MarkerNavigator).toSelf().inSingletonScope();
+    // Resolve the symbol via the class to keep existing `rebind(GModelElementComparator)` customizations working
+    bind(TYPES.IGModelElementComparator).toService(GModelElementComparator);
+    bindAsService(bind, TYPES.IMarkerNavigator, MarkerNavigator);
     configureActionHandler({ bind, isBound }, NavigateToMarkerAction.KIND, NavigateToMarkerActionHandler);
 }, FeatureDefinition.toModuleOptions(markerNavigatorFeatureDef));

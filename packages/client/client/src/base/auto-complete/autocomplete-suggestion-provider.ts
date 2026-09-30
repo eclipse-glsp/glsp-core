@@ -18,12 +18,13 @@ import {
     GModelRoot,
     InstanceRegistry,
     LazyInjector,
-    TYPES,
     type GModelElement,
     type LabeledAction,
     type MaybePromise
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
+import type { IDiagramStartup } from '../model/diagram-loader';
 
 /**
  * Interface for autocomplete suggestions.
@@ -61,10 +62,14 @@ export namespace AutocompleteSuggestionProviderContext {
 /**
  * Registry for autocomplete suggestion providers.
  */
-export interface AutocompleteSuggestionRegistry extends InstanceRegistry<IAutocompleteSuggestionProvider> {
+export interface AutocompleteSuggestionRegistry extends InstanceRegistry<IAutocompleteSuggestionProvider>, IDiagramStartup {
     providersForContext(context: string[]): IAutocompleteSuggestionProvider[];
 }
 
+/**
+ * The default {@link AutocompleteSuggestionRegistry} implementation. Registers all
+ * {@link TYPES.IAutocompleteSuggestionProvider}s on diagram startup.
+ */
 @injectable()
 export class DefaultAutocompleteSuggestionRegistry
     extends InstanceRegistry<IAutocompleteSuggestionProvider>

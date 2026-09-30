@@ -21,7 +21,6 @@ import {
     KeyListener,
     SelectAction,
     Selectable,
-    TYPES,
     findParentByFeature,
     isBoundsAware,
     isSelectable,
@@ -35,6 +34,7 @@ import { AvailableShortcutsTool } from '../../../base/shortcuts/available-shortc
 import type { IShortcutManager } from '../../../base/shortcuts/shortcuts-manager';
 import { EnableDefaultToolsAction, EnableToolsAction } from '../../../base/tool-manager/tool';
 import { GEdge } from '../../../model';
+import { TYPES } from '../../../types';
 import { SelectableBoundsAware } from '../../../utils/gmodel-util';
 import { BaseTool } from '../../tools/base-tools';
 import { RepositionAction } from '../../viewport/reposition';

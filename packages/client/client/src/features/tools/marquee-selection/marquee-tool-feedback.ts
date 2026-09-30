@@ -24,10 +24,10 @@ import {
     Point,
     GModelElement,
     GModelRoot,
-    TYPES,
     hasObjectProp
 } from '@eclipse-glsp/sprotty';
 import { FeedbackCommand } from '../../../base/feedback/feedback-command';
+import { TYPES } from '../../../types';
 
 export interface DrawMarqueeAction extends Action {
     kind: typeof DrawMarqueeAction.KIND;

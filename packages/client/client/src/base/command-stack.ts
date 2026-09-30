@@ -17,7 +17,6 @@ import {
     CommandExecutionContext,
     CommandExecutionData,
     CommandStack,
-    Disposable,
     DisposableCollection,
     Emitter,
     Event,
@@ -27,10 +26,11 @@ import {
     LazyInjector
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct, preDestroy } from 'inversify';
-import { EditorContextService } from './editor-context-service';
+import { TYPES } from '../types';
+import { IEditorContextService } from './editor-context-service';
 
 @injectable()
-export class GLSPCommandStack extends CommandStack implements ICommandStack, Disposable {
+export class GLSPCommandStack extends CommandStack implements ICommandStack {
     @inject(LazyInjector)
     protected lazyInjector: LazyInjector;
     protected toDispose = new DisposableCollection();
@@ -53,8 +53,8 @@ export class GLSPCommandStack extends CommandStack implements ICommandStack, Dis
 
     // Use lazyInjector to resolve circular dependency
     //  GLSPActionDispatcher --> GLSPCommandStack --> EditorContextService --> GLSPActionDispatcher
-    get editorContext(): EditorContextService {
-        return this.lazyInjector.get(EditorContextService);
+    get editorContext(): IEditorContextService {
+        return this.lazyInjector.get<IEditorContextService>(TYPES.IEditorContextService);
     }
 
     /**

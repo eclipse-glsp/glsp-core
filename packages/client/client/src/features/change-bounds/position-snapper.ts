@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelElement, ISnapper, Point, TYPES, Writable } from '@eclipse-glsp/sprotty';
+import { GModelElement, ISnapper, Point, Writable } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
+import { TYPES } from '../../types';
 import { IHelperLineManager } from '../helper-lines/helper-line-manager';
 import { Direction, HelperLine, isHelperLine } from '../helper-lines/model';
 

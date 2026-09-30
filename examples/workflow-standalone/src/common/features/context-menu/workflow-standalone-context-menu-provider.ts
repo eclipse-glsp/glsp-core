@@ -17,11 +17,12 @@
 import { TaskEditor, isTaskNode } from '@eclipse-glsp-examples/workflow-glsp';
 import {
     ClientMenuItem,
-    EditorContextService,
     IContextMenuItemProvider,
+    IEditorContextService,
     LazyInjector,
     NavigateAction,
-    SetUIExtensionVisibilityAction
+    SetUIExtensionVisibilityAction,
+    TYPES
 } from '@eclipse-glsp/client';
 import { inject, injectable } from 'inversify';
 
@@ -30,8 +31,8 @@ export class WorkflowStandaloneContextMenuProvider implements IContextMenuItemPr
     @inject(LazyInjector)
     protected lazyInjector: LazyInjector;
 
-    protected get editorContext(): EditorContextService {
-        return this.lazyInjector.get(EditorContextService);
+    protected get editorContext(): IEditorContextService {
+        return this.lazyInjector.get<IEditorContextService>(TYPES.IEditorContextService);
     }
     getItems(): Promise<ClientMenuItem[]> {
         const goToItems: ClientMenuItem[] = [

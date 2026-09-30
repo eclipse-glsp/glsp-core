@@ -26,11 +26,11 @@ import {
     GParentElement,
     LayoutRegistry,
     Point,
-    TYPES,
     createFeatureSet,
     layoutableChildFeature
 } from '@eclipse-glsp/sprotty';
 import { initializeDiagramContainer } from '../../client-init';
+import { TYPES } from '../../types';
 import { StatefulLayouterExt } from '../bounds/layouter';
 import { GGraph } from '../../model';
 

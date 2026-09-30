@@ -21,12 +21,12 @@ import {
     GetViewportCommand,
     MoveViewportAction,
     SetViewportCommand,
-    TYPES,
     ZoomMouseListener,
     bindAsService,
     configureActionHandler,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { viewportFeatureDef } from './viewport-features';
 import { EnableDefaultToolsAction, EnableToolsAction } from '../../base/tool-manager/tool';
 import { FocusDomAction } from '../accessibility/actions';

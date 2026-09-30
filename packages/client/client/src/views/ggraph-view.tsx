@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Bounds, Dimension, Point, RenderingContext, SGraphImpl, SGraphView, TYPES, Writable } from '@eclipse-glsp/sprotty';
+import { Bounds, Dimension, Point, RenderingContext, SGraphImpl, SGraphView, Writable } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { VNode } from 'snabbdom';
 import { GridStyle, IGridManager } from '../features/grid/grid-manager';
 import { GridProperty } from '../features/grid/grid-style';
+import { TYPES } from '../types';
 
 @injectable()
 export class GGraphView extends SGraphView {

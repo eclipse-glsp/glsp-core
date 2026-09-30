@@ -25,12 +25,12 @@ import {
     GModelRootSchema,
     IActionDispatcher,
     RequestBoundsAction,
-    TYPES,
     ViewerOptions,
     hasArrayProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { ServerAction } from '../../base/model/glsp-model-source';
+import { TYPES } from '../../types';
 import { LayoutAware } from './layout-data';
 
 export interface LocalRequestBoundsAction extends RequestBoundsAction {

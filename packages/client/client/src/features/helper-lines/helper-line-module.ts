@@ -19,13 +19,13 @@ import {
     FeatureModule,
     MoveAction,
     SetBoundsAction,
-    TYPES,
     bindAsService,
     configureActionHandler,
     configureCommand,
     configureModelElement
 } from '@eclipse-glsp/sprotty';
 import '../../../css/helper-lines.css';
+import { TYPES } from '../../types';
 import { helperLineFeatureDef } from './helper-line-feature';
 import { SetBoundsFeedbackAction } from '../bounds/set-bounds-feedback-command';
 import { MoveFinishedEventAction, MoveInitializedEventAction } from '../tools/change-bounds/change-bounds-tool-feedback';

@@ -21,13 +21,13 @@ import {
     LayoutRegistry,
     RequestBoundsCommand,
     SetBoundsCommand,
-    TYPES,
     VBoxLayouter,
     bindAsService,
     configureActionHandler,
     configureCommand,
     configureLayout
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { boundsFeatureDef } from './bounds-feature';
 import { MoveElementRelativeAction } from '../change-bounds/move-element-action';
 import { MoveElementHandler } from '../change-bounds/move-element-handler';

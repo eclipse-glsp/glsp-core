@@ -100,6 +100,62 @@ Existing `replace` configurations with eagerly imported modules keep working, as
 Removing a feature that another configured feature `requires` is now an error instead of silently skipping the dependent feature.
 In the defaults, `NodeCreationTool` requires `ElementTemplate` and `Zorder` requires `Bounds`.
 
+## Migrating to service interfaces
+
+GLSP client services are identified by interface symbols in `TYPES` of `@eclipse-glsp/client`.
+Adopters that import `TYPES` from `@eclipse-glsp/sprotty` or implement a service interface directly have to adapt their code.
+
+### Service identifiers
+
+`TYPES` is defined in `@eclipse-glsp/client`. `@eclipse-glsp/sprotty` no longer exports `TYPES`.
+It exports the complete sprotty identifiers as `SPROTTY_TYPES` instead.
+
+| Before                                          | After                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `import { TYPES } from '@eclipse-glsp/sprotty'` | `import { TYPES } from '@eclipse-glsp/client'`                           |
+| `TYPES.SvgExporter`                             | `TYPES.ISvgExporter`, or `SPROTTY_TYPES.SvgExporter` for the legacy flow |
+
+`TYPES` contains the GLSP identifiers and explicit mappings for the sprotty identifiers (e.g. `IActionDispatcher: SPROTTY_TYPES.IActionDispatcher`).
+Both resolve to the same symbols, so bindings made via either of them are shared.
+The only sprotty identifier that is not part of `TYPES` is `SvgExporter`.
+
+### Service interfaces
+
+Core and feature services are bound to an interface symbol in `TYPES` (e.g. `TYPES.ISelectionService`, `TYPES.IToolManager`, `TYPES.IMarkerNavigator`), and GLSP code injects them through that symbol.
+The default implementation classes are bound as well, and the symbols resolve through them.
+A custom implementation can be bound either way:
+
+- `rebind(SelectionService).to(MySelectionService)` for a subclass of the default implementation.
+- `rebind(TYPES.ISelectionService).to(MySelectionService)` for any implementation of the interface.
+
+In both cases, the additional registrations of the service (e.g. as `TYPES.IGModelRootListener`, `TYPES.IDiagramStartup` or action handler) resolve to the custom instance.
+
+The service interfaces declare the complete public API of their default implementation.
+Custom implementations of the following interfaces have to implement the listed members:
+
+| Interface                   | Required members                                                        |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `IActionDispatcher`         | `hasHandler`                                                            |
+| `ICommandStack`             | `dispose` (extends `Disposable`)                                        |
+| `IFeedbackActionDispatcher` | `getRegisteredFeedbackEmitters`, `dispose` (extends `Disposable`)       |
+| `IModelChangeService`       | `dispose` (extends `Disposable`)                                        |
+| `IToolManager`              | `tools`, `disableEditTools`, `tool`                                     |
+| `IChangeBoundsManager`      | `positionTracker`, `movementRestrictor`, `snapper`, `helperLineManager` |
+
+Injected fields in the default classes are typed with the interface instead of the class (for example, `ISelectionService` instead of `SelectionService`), and `TYPES.IEditorContextServiceProvider` resolves to an `IEditorContextService`.
+Subclasses that use class-only members through these fields have to inject the class explicitly.
+
+The model source is the exception: `IGLSPModelSource` has no dedicated symbol and is bound to sprotty's `TYPES.ModelSource`.
+
+`TYPES.ICopyPasteHandler` is bound in singleton scope (default: `ServerCopyPasteHandler`).
+Custom handlers that rely on a fresh instance per injection have to be bound in transient scope explicitly.
+
+### SVG export
+
+The unified export pipeline renders SVGs through `TYPES.ISvgExporter` (default: `GLSPSvgExporter`).
+`SPROTTY_TYPES.SvgExporter` resolves to `GLSPSvgExporter` as well but only serves the legacy `RequestExportSvgAction` flow.
+To customize both flows, rebind `GLSPSvgExporter` to a subclass.
+
 ## More information
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).

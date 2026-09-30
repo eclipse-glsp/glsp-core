@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureDefinition, FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, bindAsService } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { searchPaletteDefaultSuggestionsFeatureDef, searchPaletteFeatureDef } from './search-palette-feature';
 import '../../../css/search.css';
 import { SearchAutocompletePalette } from './search-palette';

@@ -25,10 +25,10 @@ import {
     ICommand,
     ILogger,
     MaybeActions,
-    TYPES,
     toTypeGuard
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, preDestroy } from 'inversify';
+import { TYPES } from '../../types';
 import { getFeedbackRank } from './feedback-command';
 import { FeedbackEmitter } from './feedback-emitter';
 
@@ -49,7 +49,7 @@ export const feedbackFeature = Symbol('feedbackFeature');
  * feedback. This dispatcher will then re-establish all feedback actions
  * of the registered emitters, whenever the `GModelRoot` has been set or updated.
  */
-export interface IFeedbackActionDispatcher {
+export interface IFeedbackActionDispatcher extends Disposable {
     /**
      * Registers `actions` to be sent out by a `feedbackEmitter`.
      * @param feedbackEmitter the emitter sending out feedback actions.
@@ -77,6 +77,11 @@ export interface IFeedbackActionDispatcher {
     getRegisteredFeedback(): Action[];
 
     /**
+     * Retrieve all currently registered `feedbackEmitter`s that sent out the given `action`.
+     */
+    getRegisteredFeedbackEmitters(action: Action): IFeedbackEmitter[];
+
+    /**
      * Retrieves all commands based on the registered feedback actions, ordered by their rank (lowest rank first).
      */
     getFeedbackCommands(): Command[];
@@ -93,8 +98,11 @@ export interface IFeedbackActionDispatcher {
     createEmitter(): FeedbackEmitter;
 }
 
+/**
+ * The default {@link IFeedbackActionDispatcher} implementation.
+ */
 @injectable()
-export class FeedbackActionDispatcher implements IFeedbackActionDispatcher, Disposable {
+export class FeedbackActionDispatcher implements IFeedbackActionDispatcher {
     protected registeredFeedback: Map<IFeedbackEmitter, Action[]> = new Map();
 
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;

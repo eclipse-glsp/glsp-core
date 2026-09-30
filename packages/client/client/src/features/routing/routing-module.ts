@@ -28,10 +28,10 @@ import {
     ManhattanEllipticAnchor,
     ManhattanRectangularAnchor,
     RectangleAnchor,
-    TYPES,
     bindAsService,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { routingFeatureDef } from './routing-feature';
 import { GLSPBezierEdgeRouter, GLSPManhattanEdgeRouter, GLSPPolylineEdgeRouter } from './edge-router';
 import { StickyManhattanDiamondAnchor, StickyManhattanEllipticAnchor, StickyManhattanRectangularAnchor } from './sticky-manhattan-anchors';

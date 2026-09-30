@@ -15,7 +15,8 @@
  ********************************************************************************/
 import { Action, IActionHandler, ICommand, LayoutOperation, TriggerLayoutAction } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 
 /**
  * The handler for {@link TriggerLayoutAction}s.
@@ -23,7 +24,7 @@ import { EditorContextService } from '../../base/editor-context-service';
  */
 @injectable()
 export class TriggerLayoutActionHandler implements IActionHandler {
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     handle(action: TriggerLayoutAction): ICommand | Action | void {
         return LayoutOperation.create(this.editorContext.get().selectedElementIds, {

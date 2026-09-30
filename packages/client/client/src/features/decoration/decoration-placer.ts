@@ -24,12 +24,12 @@ import {
     ISvgExportPostProcessor,
     LazyInjector,
     Point,
-    TYPES,
     isDecoration,
     isSizeable
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 import { filter } from '../../utils/gmodel-util';
 
 @injectable()
@@ -41,8 +41,8 @@ export class GlspDecorationPlacer extends DecorationPlacer implements ISvgExport
     @inject(LazyInjector)
     protected lazyInjector: LazyInjector;
 
-    get editorContextService(): EditorContextService {
-        return this.lazyInjector.get(EditorContextService);
+    get editorContextService(): IEditorContextService {
+        return this.lazyInjector.get<IEditorContextService>(TYPES.IEditorContextService);
     }
 
     protected override getPosition(element: GModelElement & Decoration): Point {

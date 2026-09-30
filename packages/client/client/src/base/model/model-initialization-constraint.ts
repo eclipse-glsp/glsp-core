@@ -25,6 +25,46 @@ import {
 } from '@eclipse-glsp/sprotty';
 
 /**
+ * Determines when the GLSP model initialization is completed, i.e. the model has been set and its bounds have been computed.
+ * Consumers should inject it via `TYPES.IModelInitializationConstraint`.
+ * The abstract base implementation is {@link ModelInitializationConstraint}.
+ */
+export interface IModelInitializationConstraint {
+    /** Whether the model initialization has been completed. */
+    readonly isCompleted: boolean;
+
+    /**
+     * Register a listener that will be invoked once the initialization process
+     * has been completed. If the initialization is already completed on registration
+     * the given listener will be invoked right away
+     * @param listener
+     */
+    onInitialized(listener: () => void): Disposable;
+
+    /**
+     * Retrieve a promise that resolves once the initialization process
+     * has been completed.
+     * @returns the initialization promise
+     */
+    onInitialized(): Promise<void>;
+
+    /**
+     * Notifies the constraint about a dispatched action. Marks the initialization
+     * as completed once {@link IModelInitializationConstraint.isInitializedAfter} returns `true`.
+     * @param action The dispatched action
+     */
+    notifyDispatched(action: Action): void;
+
+    /**
+     * Central method to check the initialization state. Is invoked
+     * for every action dispatched by the `ActionDispatcher` (until the initialization has completed).
+     * Should return `true` once the action has been passed which marks the end of the initialization process.
+     * @param action The last dispatched action
+     */
+    isInitializedAfter(action: Action): boolean;
+}
+
+/**
  * The constraint defining when the initialization of the GLSP model is completed.
  *
  * Many actions, such as the `CenterAction`, can only be successfully processed if
@@ -43,7 +83,7 @@ import {
  * `onceInitialized()` promise is fulfilled by the `GLSPActionDispatcher`.
  */
 @injectable()
-export abstract class ModelInitializationConstraint {
+export abstract class ModelInitializationConstraint implements IModelInitializationConstraint {
     protected completion: Deferred<void> = new Deferred();
 
     protected _isCompleted = false;

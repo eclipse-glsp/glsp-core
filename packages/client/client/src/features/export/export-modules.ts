@@ -18,10 +18,11 @@ import {
     ExportSvgPostprocessor,
     FeatureDefinition,
     FeatureModule,
-    TYPES,
+    SPROTTY_TYPES,
     bindAsService,
     configureCommand
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { exportFeatureDef } from './export-features';
 import { DefaultPngDiagramExporter } from './default-png-diagram-exporter';
 import { DefaultSvgDiagramExporter } from './default-svg-diagram-exporter';
@@ -31,7 +32,9 @@ import { RequestExportCommand } from './request-export-command';
 
 export const exportModule = new FeatureModule((bind, _unbind, isBound) => {
     const context = { bind, isBound };
-    bindAsService(context, TYPES.SvgExporter, GLSPSvgExporter);
+    bindAsService(context, TYPES.ISvgExporter, GLSPSvgExporter);
+    // Sprotty's `ExportSvgCommand` of the legacy SVG-only pipeline resolves the exporter via the sprotty symbol
+    bind(SPROTTY_TYPES.SvgExporter).toService(GLSPSvgExporter);
 
     // Unified export pipeline.
     bindAsService(context, TYPES.HiddenVNodePostprocessor, DiagramExportPostprocessor);

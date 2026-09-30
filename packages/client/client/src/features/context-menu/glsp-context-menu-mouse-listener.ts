@@ -22,12 +22,12 @@ import {
     IContextMenuServiceProvider,
     MouseListener,
     SelectAction,
-    TYPES,
     findParentByFeature,
     isSelectable
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, postConstruct } from 'inversify';
 import { FocusStateChangedAction } from '../../base/focus/focus-state-change-action';
+import { TYPES } from '../../types';
 
 @injectable()
 export class GLSPContextMenuMouseListener extends MouseListener {

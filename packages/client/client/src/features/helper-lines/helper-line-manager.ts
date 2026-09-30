@@ -21,14 +21,14 @@ import {
     MoveAction,
     Point,
     SetBoundsAction,
-    TYPES,
     Vector,
     Writable
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, postConstruct } from 'inversify';
 import { IFeedbackActionDispatcher } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
-import { ISelectionListener, SelectionService } from '../../base/selection-service';
+import { ISelectionListener, ISelectionService } from '../../base/selection-service';
+import { TYPES } from '../../types';
 import { SetBoundsFeedbackAction } from '../bounds/set-bounds-feedback-command';
 import { GResizeHandle, ResizeHandleLocation } from '../change-bounds/model';
 import { Grid } from '../grid/grid';
@@ -46,7 +46,7 @@ import {
 } from './helper-line-feedback';
 import { Direction, HelperLine, HelperLineType, isHelperLine } from './model';
 
-export interface IHelperLineManager {
+export interface IHelperLineManager extends IActionHandler, ISelectionListener {
     /**
      * Calculates the minimum move delta on one axis that is necessary to break through a helper line.
      *
@@ -113,9 +113,9 @@ export const DEFAULT_HELPER_LINE_OPTIONS: Required<IHelperLineOptions> = {
 };
 
 @injectable()
-export class HelperLineManager implements IActionHandler, ISelectionListener, IHelperLineManager {
+export class HelperLineManager implements IHelperLineManager {
     @inject(TYPES.IFeedbackActionDispatcher) protected feedbackDispatcher: IFeedbackActionDispatcher;
-    @inject(SelectionService) protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService) protected selectionService: ISelectionService;
     @optional() @inject(TYPES.IHelperLineOptions) protected userOptions?: IHelperLineOptions;
     @optional() @inject(TYPES.Grid) protected grid?: Grid;
 

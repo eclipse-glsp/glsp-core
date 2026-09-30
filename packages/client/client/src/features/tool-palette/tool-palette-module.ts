@@ -17,11 +17,11 @@ import {
     FeatureDefinition,
     FeatureModule,
     SetModelAction,
-    TYPES,
     UpdateModelAction,
     bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { toolPaletteFeatureDef } from './tool-palette-feature';
 import '../../../css/tool-palette.css';
 import { EnableDefaultToolsAction } from '../../base/tool-manager/tool';

@@ -18,10 +18,10 @@ import {
     ExportSvgAction,
     FeatureDefinition,
     FeatureModule,
-    TYPES,
     bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../../../types';
 import { standaloneExportFeatureDef } from './standalone-export-feature';
 import { ExportResultActionHandler } from '../../../../features/export/export-result-action-handler';
 import { ExportSvgActionHandler } from '../../../../features/export/export-svg-action-handler';

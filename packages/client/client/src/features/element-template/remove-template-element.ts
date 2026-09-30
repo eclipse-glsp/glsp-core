@@ -14,9 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, CommandExecutionContext, CommandReturn, ElementTemplate, GChildElement, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, CommandExecutionContext, CommandReturn, ElementTemplate, GChildElement } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
+import { TYPES } from '../../types';
 import { getTemplateElementId } from './add-template-element';
 
 export interface RemoveTemplateElementsAction extends Action {

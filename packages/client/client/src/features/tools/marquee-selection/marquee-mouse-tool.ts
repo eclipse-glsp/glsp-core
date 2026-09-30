@@ -19,17 +19,18 @@ import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener'
 import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
 import { GEdge } from '../../../model';
+import { TYPES } from '../../../types';
 import { BoundsAwareModelElement, getMatchingElements, isSelectableAndBoundsAware } from '../../../utils/gmodel-util';
 import { getAbsolutePosition } from '../../../utils/viewpoint-util';
 import { BaseEditTool } from '../base-tools';
-import { MarqueeUtil } from './marquee-behavior';
+import { IMarqueeUtil } from './marquee-behavior';
 import { RemoveMarqueeAction } from './marquee-tool-feedback';
 
 @injectable()
 export class MarqueeMouseTool extends BaseEditTool {
     static ID = 'glsp.marquee-mouse-tool';
 
-    @inject(MarqueeUtil) protected marqueeUtil: MarqueeUtil;
+    @inject(TYPES.IMarqueeUtil) protected marqueeUtil: IMarqueeUtil;
 
     protected shiftKeyListener: ShiftKeyListener = new ShiftKeyListener();
 
@@ -58,7 +59,7 @@ export class MarqueeMouseListener extends DragAwareMouseListener {
 
     constructor(
         root: GModelRoot,
-        protected marqueeUtil: MarqueeUtil
+        protected marqueeUtil: IMarqueeUtil
     ) {
         super();
         // pre-calculate all markable node and edges to improve performance

@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelRoot, groupBy, matchesKeystroke, TYPES } from '@eclipse-glsp/sprotty';
+import { GModelRoot, groupBy, matchesKeystroke } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { GLSPAbstractUIExtension } from '../ui-extension/ui-extension';
 import { messages } from '../messages';
 import type { IShortcutManager, ShortcutRegistration } from './shortcuts-manager';

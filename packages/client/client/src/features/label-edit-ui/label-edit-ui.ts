@@ -15,13 +15,14 @@
  ********************************************************************************/
 import { Bounds, EditLabelUI } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { CSS_HIDDEN_EXTENSION_CLASS, CSS_UI_EXTENSION_CLASS } from '../../base/ui-extension/ui-extension';
+import { TYPES } from '../../types';
 
 @injectable()
 export class GlspEditLabelUI extends EditLabelUI {
-    @inject(EditorContextService)
-    protected editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContextService: IEditorContextService;
 
     protected override initializeContents(containerElement: HTMLElement): void {
         super.initializeContents(containerElement);

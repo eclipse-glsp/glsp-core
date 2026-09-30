@@ -16,18 +16,19 @@
 import { TaskEditor } from '@eclipse-glsp-examples/workflow-glsp';
 import {
     Action,
-    EditorContextService,
     GModelRoot,
+    IEditorContextService,
     KeyListener,
     SetUIExtensionVisibilityAction,
+    TYPES,
     matchesKeystroke
 } from '@eclipse-glsp/client';
 import { inject, injectable } from 'inversify';
 
 @injectable()
 export class TaskEditorKeyListener extends KeyListener {
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     override keyDown(_element: GModelRoot, event: KeyboardEvent): Action[] {
         if (matchesKeystroke(event, 'F2', 'ctrlCmd')) {

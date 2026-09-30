@@ -13,14 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Disposable, DisposableCollection, IActionDispatcher, IActionHandler, MaybeActions, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, Disposable, DisposableCollection, IActionDispatcher, IActionHandler, MaybeActions } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { IFeedbackActionDispatcher, IFeedbackEmitter } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
 import { EnableToolsAction, Tool } from '../../base/tool-manager/tool';
 import { GLSPKeyTool } from '../../base/view/key-tool';
 import { GLSPMouseTool } from '../../base/view/mouse-tool';
+import { TYPES } from '../../types';
 
 export interface FeedbackAwareTool extends Tool {
     /**
@@ -61,7 +62,7 @@ export abstract class BaseTool implements FeedbackAwareTool {
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
     @inject(GLSPMouseTool) protected mouseTool: GLSPMouseTool;
     @inject(GLSPKeyTool) protected keyTool: GLSPKeyTool;
-    @inject(EditorContextService) protected readonly editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected readonly editorContext: IEditorContextService;
 
     protected readonly toDisposeOnDisable = new DisposableCollection();
 

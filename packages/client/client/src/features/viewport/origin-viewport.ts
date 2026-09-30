@@ -14,23 +14,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import {
-    Bounds,
-    BoundsAwareViewportCommand,
-    GModelRoot,
-    OriginViewportAction,
-    TYPES,
-    Viewport,
-    limitViewport
-} from '@eclipse-glsp/sprotty';
+import { Bounds, BoundsAwareViewportCommand, GModelRoot, OriginViewportAction, Viewport, limitViewport } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 
 @injectable()
 export class OriginViewportCommand extends BoundsAwareViewportCommand {
     static readonly KIND = OriginViewportAction.KIND;
 
-    @inject(EditorContextService) protected readonly editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected readonly editorContext: IEditorContextService;
 
     constructor(@inject(TYPES.Action) protected action: OriginViewportAction) {
         super(action.animate);

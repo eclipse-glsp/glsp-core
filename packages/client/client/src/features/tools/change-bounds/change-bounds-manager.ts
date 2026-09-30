@@ -22,7 +22,6 @@ import {
     MousePositionTracker,
     Movement,
     Point,
-    TYPES,
     Vector,
     isBoundsAware,
     isLocateable
@@ -38,6 +37,7 @@ import {
     toggleCssClasses
 } from '../../../base/feedback/css-feedback';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
+import { TYPES } from '../../../types';
 import { isValidMove, minDimensions } from '../../../utils/layout-utils';
 import { LayoutAware } from '../../bounds/layout-data';
 import { GResizeHandle, ResizeHandleLocation } from '../../change-bounds/model';
@@ -56,6 +56,18 @@ export const CSS_RESTRICTED_RESIZE = 'resize-not-allowed';
 export const CSS_ACTIVE_HANDLE = 'active';
 
 export interface IChangeBoundsManager {
+    /** The mouse position tracker used to compute movements in diagram coordinates. */
+    readonly positionTracker: MousePositionTracker;
+
+    /** The optional movement restrictor used to validate element positions. */
+    readonly movementRestrictor?: IMovementRestrictor;
+
+    /** The optional snapper used to snap element positions. */
+    readonly snapper?: ISnapper;
+
+    /** The optional helper line manager used to compute the minimum movement. */
+    readonly helperLineManager?: IHelperLineManager;
+
     /**
      * Unsnap the modifier used for changing bounds.
      * @returns The unsnapped keyboard modifier, or undefined if no modifier was snapped.

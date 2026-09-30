@@ -24,23 +24,37 @@ import {
     ICommand,
     Marker,
     SetMarkersAction,
-    TYPES,
     hasArrayProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { IFeedbackActionDispatcher, IFeedbackEmitter } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackCommand } from '../../base/feedback/feedback-command';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
+import { TYPES } from '../../types';
 import { removeCssClasses } from '../../utils/gmodel-util';
 import { GIssueMarker, createGIssue, getGIssueMarker, getOrCreateGIssueMarker, getSeverity } from './issue-marker';
 
 /**
  * Feedback emitter sending actions for visualizing model validation feedback and
  * re-establishing this feedback visualization after the model has been updated.
+ * Consumers should inject it via {@link TYPES.IValidationFeedbackEmitter}.
+ * The default implementation is {@link ValidationFeedbackEmitter}.
+ */
+export interface IValidationFeedbackEmitter extends IFeedbackEmitter {
+    /**
+     * Register the action that should be emitted for visualizing validation feedback.
+     * @param action the action that should be emitted when the model is updated and that will visualize the model validation feedback.
+     * @param reason the reason for this validation feedback.
+     */
+    registerValidationFeedbackAction(action: ApplyMarkersAction, reason?: string): void;
+}
+
+/**
+ * The default {@link IValidationFeedbackEmitter} implementation.
  */
 @injectable()
-export class ValidationFeedbackEmitter implements IFeedbackEmitter {
+export class ValidationFeedbackEmitter implements IValidationFeedbackEmitter {
     @inject(TYPES.IFeedbackActionDispatcher) protected feedbackActionDispatcher: IFeedbackActionDispatcher;
 
     protected registeredFeedbackByReason: Map<string, FeedbackEmitter> = new Map();
@@ -85,15 +99,15 @@ export abstract class ExternalMarkerManager {
 
 @injectable()
 export class SetMarkersActionHandler implements IActionHandler {
-    @inject(ValidationFeedbackEmitter)
-    protected validationFeedbackEmitter: ValidationFeedbackEmitter;
+    @inject(TYPES.IValidationFeedbackEmitter)
+    protected validationFeedbackEmitter: IValidationFeedbackEmitter;
 
     @inject(ExternalMarkerManager)
     @optional()
     protected externalMarkerManager?: ExternalMarkerManager;
 
-    @inject(EditorContextService)
-    protected editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContextService: IEditorContextService;
 
     handle(action: SetMarkersAction): void | Action | ICommand {
         const markers: Marker[] = action.markers;

@@ -300,6 +300,7 @@ export * from './integration/standalone/standalone-feature-definitions';
 export * from './integration/standalone/standalone-feature-keys';
 export * from './model';
 export * from './re-exports';
+export * from './types';
 export * from './utils/argument-utils';
 export * from './utils/geometry-util';
 export * from './utils/gmodel-util';

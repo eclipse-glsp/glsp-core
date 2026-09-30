@@ -17,13 +17,13 @@ import {
     BindingContext,
     FeatureKey,
     FeatureModule,
-    TYPES,
     TriggerEdgeCreationAction,
     TriggerNodeCreationAction,
     bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
 import { GLSPClientFeature } from '../../../client-feature-keys';
+import { TYPES } from '../../../types';
 import { SetEdgeTargetSelectionAction } from '../edge-autocomplete/action';
 import { EdgeAutocompletePalette, SetEdgeTargetGridSuggestionProvider } from '../edge-autocomplete/edge-autocomplete-palette';
 import { EdgeAutocompletePaletteTool } from '../edge-autocomplete/edge-autocomplete-tool';

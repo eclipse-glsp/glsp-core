@@ -13,13 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, GModelRoot, IActionDispatcher, IActionHandler, TYPES, TriggerNodeCreationAction } from '@eclipse-glsp/sprotty';
+import { Action, GModelRoot, IActionDispatcher, IActionHandler, TriggerNodeCreationAction } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../../base/editor-context-service';
+import { IEditorContextService } from '../../../base/editor-context-service';
 import { CursorCSS } from '../../../base/feedback/css-feedback';
 import { GLSPAbstractUIExtension } from '../../../base/ui-extension/ui-extension';
+import { TYPES } from '../../../types';
 import { pageToCssPosition } from '../../../utils/viewpoint-util';
-import { ContainerManager } from '../../tools/node-creation/container-manager';
+import { IContainerManager } from '../../tools/node-creation/container-manager';
 import { KeyboardGridCellSelectedAction } from '../keyboard-grid/action';
 import { SetKeyboardPointerRenderPositionAction } from './actions';
 import { KeyboardPointerMetadata } from './constants';
@@ -33,10 +34,10 @@ export class KeyboardPointer extends GLSPAbstractUIExtension implements IActionH
         kind: 'triggerNodeCreation'
     };
 
-    @inject(EditorContextService)
-    public editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    public editorContextService: IEditorContextService;
     @inject(TYPES.IContainerManager)
-    public containerManager: ContainerManager;
+    public containerManager: IContainerManager;
 
     protected position: KeyboardPointerPosition = new KeyboardPointerPosition(this);
     protected keyListener: KeyboardPointerKeyboardListener;

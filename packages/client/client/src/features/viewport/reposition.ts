@@ -23,14 +23,14 @@ import {
     GModelElement,
     GModelRoot,
     Point,
-    TYPES,
     Viewport,
     getRouteBounds,
     hasArrayProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { GEdge } from '../../model';
+import { TYPES } from '../../types';
 import { calcElementAndRoute } from '../../utils/gmodel-util';
 
 export interface RepositionAction extends Action {
@@ -60,7 +60,7 @@ export namespace RepositionAction {
 export class RepositionCommand extends BoundsAwareViewportCommand {
     static readonly KIND = RepositionAction.KIND;
 
-    @inject(EditorContextService) protected readonly editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected readonly editorContext: IEditorContextService;
 
     constructor(@inject(TYPES.Action) protected action: RepositionAction) {
         super(true);

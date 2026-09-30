@@ -67,6 +67,9 @@ class MockActionDispatcher implements IActionDispatcher {
         return Promise.resolve();
     }
     dispatchAfterNextUpdate(...actions: Action[]): void {}
+    hasHandler(_action: Action): boolean {
+        return true;
+    }
     dispatch(action: Action): Promise<void> {
         this.dispatchedActions.push(action);
         return Promise.resolve();

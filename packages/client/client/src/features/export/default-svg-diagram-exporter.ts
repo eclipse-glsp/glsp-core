@@ -16,8 +16,9 @@
 
 import { Action, ExportFormat, ExportMimeType, GModelRoot, SvgExportOptions } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { DiagramExporter } from './diagram-exporter';
-import { GLSPSvgExporter } from './glsp-svg-exporter';
+import { ISvgExporter } from './glsp-svg-exporter';
 
 /**
  * Default SVG strategy for the unified export registry. Wraps {@link GLSPSvgExporter} —
@@ -31,7 +32,7 @@ export class DefaultSvgDiagramExporter implements DiagramExporter<SvgExportOptio
     readonly mimeType: ExportMimeType = 'image/svg+xml';
     readonly encoding = 'text' as const;
 
-    @inject(GLSPSvgExporter) protected svgExporter: GLSPSvgExporter;
+    @inject(TYPES.ISvgExporter) protected svgExporter: ISvgExporter;
 
     async export(root: GModelRoot, options: SvgExportOptions = {}, cause?: Action): Promise<string> {
         return this.svgExporter.exportToString(root, options, cause);

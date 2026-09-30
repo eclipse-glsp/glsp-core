@@ -30,7 +30,6 @@ import {
     PolylineEdgeRouter,
     SwitchEditModeAction,
     SwitchEditModeCommand,
-    TYPES,
     findChildrenAtPosition,
     findParentByFeature,
     hasStringProp,
@@ -45,6 +44,7 @@ import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener'
 import { IFeedbackActionDispatcher, feedbackFeature } from '../../../base/feedback/feedback-action-dispatcher';
 import { FeedbackCommand } from '../../../base/feedback/feedback-command';
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
+import { TYPES } from '../../../types';
 import { enableFeatures, forEachElement, getMatchingElements, isRoutable, isRoutingHandle } from '../../../utils/gmodel-util';
 import { getAbsolutePosition, toAbsoluteBounds } from '../../../utils/viewpoint-util';
 import { addReconnectHandles, removeReconnectHandles } from '../../reconnect/model';

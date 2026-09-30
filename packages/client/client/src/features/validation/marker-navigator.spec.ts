@@ -21,14 +21,14 @@ import {
     GModelRoot,
     GNode,
     GParentElement,
-    IContextMenuItemProvider,
-    TYPES
+    IContextMenuItemProvider
 } from '@eclipse-glsp/sprotty';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Container } from 'inversify';
 import 'reflect-metadata';
 import { defaultModule } from '../../base/default.module';
 import { GGraph } from '../../model';
+import { TYPES } from '../../types';
 import { decorationModule } from '../decoration/decoration-module';
 import { GIssueMarker } from './issue-marker';
 import { MarkerNavigator, MarkerNavigatorContextMenuItemProvider } from './marker-navigator';

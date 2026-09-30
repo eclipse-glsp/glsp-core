@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { inject, injectable } from 'inversify';
-import { Command, CommandExecutionContext, GModelRoot, SelectAction, SprottySelectCommand, TYPES } from '@eclipse-glsp/sprotty';
+import { Command, CommandExecutionContext, GModelRoot, SelectAction, SprottySelectCommand } from '@eclipse-glsp/sprotty';
 import { SelectFeedbackAction } from '../../base/selection-service';
+import { TYPES } from '../../types';
 
 @injectable()
 export class SelectFeedbackCommand extends Command {

@@ -22,12 +22,12 @@ import {
     GNode,
     IActionDispatcher,
     Point,
-    TYPES,
     isBoundsAware,
     isSelectable,
     toArray
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../../types';
 import { SelectableBoundsAware } from '../../../utils/gmodel-util';
 import { ElementNavigator } from './element-navigator';
 

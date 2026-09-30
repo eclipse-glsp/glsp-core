@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, CommandExecutionContext, CommandReturn, TYPES, hasStringProp } from '@eclipse-glsp/sprotty';
+import { Action, CommandExecutionContext, CommandReturn, hasStringProp } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 
 import { FeedbackCommand } from '../../../base/feedback/feedback-command';
 import { OptionalAction } from '../../../base/model/glsp-model-source';
+import { TYPES } from '../../../types';
 import { forEachElement } from '../../../utils/gmodel-util';
 import { ResizeHandleLocation, addResizeHandles, isResizable, removeResizeHandles } from '../../change-bounds/model';
 import { IChangeBoundsManager } from './change-bounds-manager';

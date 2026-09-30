@@ -28,14 +28,14 @@ import {
     MoveViewportAction,
     Point,
     SetViewportAction,
-    TYPES,
     Viewport
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
-import { FocusTracker } from '../../base/focus/focus-tracker';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { IFocusTracker } from '../../base/focus/focus-tracker';
 import { IDiagramStartup } from '../../base/model/diagram-loader';
 import { EnableDefaultToolsAction } from '../../base/tool-manager/tool';
+import { TYPES } from '../../types';
 import { getElements, isSelectableAndBoundsAware, SelectableBoundsAware } from '../../utils/gmodel-util';
 import { FocusDomAction } from '../accessibility/actions';
 import { ZoomAction } from './zoom-viewport-action';
@@ -48,11 +48,11 @@ export class RestoreViewportHandler implements IActionHandler, IDiagramStartup {
     @inject(TYPES.DOMHelper)
     protected domHelper: DOMHelper;
 
-    @inject(FocusTracker)
-    protected focusTracker: FocusTracker;
+    @inject(TYPES.IFocusTracker)
+    protected focusTracker: IFocusTracker;
 
-    @inject(EditorContextService)
-    protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContext: IEditorContextService;
 
     handle(action: Action): void | Action {
         if (EnableDefaultToolsAction.is(action) || (FocusDomAction.is(action) && action.id === 'graph')) {
@@ -103,8 +103,8 @@ export class RestoreViewportHandler implements IActionHandler, IDiagramStartup {
  */
 @injectable()
 export class MoveViewportHandler implements IActionHandler {
-    @inject(EditorContextService)
-    protected readonly editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected readonly editorContextService: IEditorContextService;
 
     handle(action: MoveViewportAction): void | Action | ICommand {
         return this.handleMoveViewport(action);
@@ -132,8 +132,8 @@ export class MoveViewportHandler implements IActionHandler {
  */
 @injectable()
 export class ZoomHandler implements IActionHandler {
-    @inject(EditorContextService)
-    protected readonly editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected readonly editorContextService: IEditorContextService;
     @inject(TYPES.IActionDispatcher)
     protected readonly actionDispatcher: IActionDispatcher;
 

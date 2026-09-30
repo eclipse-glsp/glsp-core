@@ -35,17 +35,17 @@ import {
     Point,
     SetDirtyStateAction,
     SetEditModeAction,
-    TYPES,
     ValueChange,
     Viewport,
     findParentByFeature,
     isViewport
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct, preDestroy } from 'inversify';
-import { FocusChange, FocusTracker } from './focus/focus-tracker';
+import { TYPES } from '../types';
+import { FocusChange, IFocusTracker } from './focus/focus-tracker';
 import { IDiagramOptions, IDiagramStartup } from './model/diagram-loader';
 import { IModelChangeService, ViewportChange } from './model/model-change-service';
-import { SelectionChange, SelectionService } from './selection-service';
+import { ISelectionService, SelectionChange } from './selection-service';
 
 /**
  * A hook to listen for model root changes. Will be called after a server update
@@ -69,6 +69,63 @@ export interface IEditModeListener {
 }
 
 export type DirtyStateChange = Pick<SetDirtyStateAction, 'isDirty' | 'reason'>;
+
+/**
+ * Gives read-only access to certain aspects of the diagram, such as the currently selected elements,
+ * the model root and the edit mode, and creates the {@link EditorContext} that is sent to the server as part of several actions.
+ * Consumers should inject it via {@link TYPES.IEditorContextService}. The default implementation is {@link EditorContextService}.
+ */
+export interface IEditorContextService extends IActionHandler, Disposable, IDiagramStartup {
+    /** Event that is fired when the edit mode of the diagram changes i.e. after a {@link SetEditModeAction} has been handled. */
+    readonly onEditModeChanged: Event<ValueChange<string>>;
+    /** Event that is fired when the dirty state of the diagram changes i.e. after a {@link SetDirtyStateAction} has been handled. */
+    readonly onDirtyStateChanged: Event<DirtyStateChange>;
+    /** Event that is fired when the model root of the diagram changes i.e. after the `CommandStack` has processed a model update. */
+    readonly onModelRootChanged: Event<Readonly<GModelRoot>>;
+    /** Event that is fired when the focus state of the diagram changes. */
+    readonly onFocusChanged: Event<FocusChange>;
+    /** Event that is fired when the selection of the diagram changes. */
+    readonly onSelectionChanged: Event<SelectionChange>;
+    /** Event that is fired when the viewport of the diagram changes. */
+    readonly onViewportChanged: Event<ViewportChange>;
+
+    /** The source URI of the diagram, if any. */
+    readonly sourceUri: string | undefined;
+    /** The current edit mode of the diagram. */
+    readonly editMode: string;
+    /** The diagram type of the diagram. */
+    readonly diagramType: string;
+    /** The client id of the diagram. */
+    readonly clientId: string;
+    /** The current model root. Throws an error if the model root is not available yet. */
+    readonly modelRoot: Readonly<GModelRoot>;
+    /** The viewport element of the current model root, if any. */
+    readonly viewport: Readonly<GModelRoot & Viewport> | undefined;
+    /** The scroll and zoom data of the current viewport. */
+    readonly viewportData: Readonly<Viewport>;
+    /** The canvas bounds of the current model root. */
+    readonly canvasBounds: Readonly<Bounds>;
+    /** The currently selected elements. */
+    readonly selectedElements: Readonly<GModelElement>[];
+    /** Whether the diagram is in readonly mode. */
+    readonly isReadonly: boolean;
+    /** Whether the diagram has unsaved changes. */
+    readonly isDirty: boolean;
+
+    /**
+     * Creates an {@link EditorContext} for the current selection.
+     * @param args Optional arguments to include in the context.
+     */
+    get(args?: Args): EditorContext;
+
+    /**
+     * Creates an {@link EditorContext} with the given selection instead of the current selection.
+     * @param selectedElementIds The element ids to use as selection.
+     * @param args Optional arguments to include in the context.
+     */
+    getWithSelection(selectedElementIds: string[], args?: Args): EditorContext;
+}
+
 /**
  * The `EditorContextService` is a central injectable component that gives read-only access to
  * certain aspects of the diagram, such as the currently selected elements, the model root,
@@ -82,9 +139,9 @@ export type DirtyStateChange = Pick<SetDirtyStateAction, 'isDirty' | 'reason'>;
  *    position, etc.).
  */
 @injectable()
-export class EditorContextService implements IActionHandler, Disposable, IDiagramStartup {
-    @inject(SelectionService)
-    protected selectionService: SelectionService;
+export class EditorContextService implements IEditorContextService {
+    @inject(TYPES.ISelectionService)
+    protected selectionService: ISelectionService;
 
     @inject(TYPES.IModelChangeService)
     protected modelChangeService: IModelChangeService;
@@ -101,8 +158,8 @@ export class EditorContextService implements IActionHandler, Disposable, IDiagra
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
 
-    @inject(FocusTracker)
-    protected focusTracker: FocusTracker;
+    @inject(TYPES.IFocusTracker)
+    protected focusTracker: IFocusTracker;
 
     protected _editMode: string;
     protected onEditModeChangedEmitter = new Emitter<ValueChange<string>>();
@@ -131,7 +188,7 @@ export class EditorContextService implements IActionHandler, Disposable, IDiagra
 
     /**
      * Event that is fired when the focus state of the diagram changes i.e. after a {@link FocusStateChangedAction} has been handled
-     * by the {@link FocusTracker}.
+     * by the {@link IFocusTracker}.
      */
     get onFocusChanged(): Event<FocusChange> {
         return this.focusTracker.onFocusChanged;
@@ -139,7 +196,7 @@ export class EditorContextService implements IActionHandler, Disposable, IDiagra
 
     /**
      * Event that is fired when the selection of the diagram changes i.e. a selection change has been handled
-     * by the {@link SelectionService}.
+     * by the {@link ISelectionService}.
      */
     get onSelectionChanged(): Event<SelectionChange> {
         return this.selectionService.onSelectionChanged;
@@ -276,4 +333,4 @@ export class EditorContextService implements IActionHandler, Disposable, IDiagra
     }
 }
 
-export type EditorContextServiceProvider = () => Promise<EditorContextService>;
+export type EditorContextServiceProvider = () => Promise<IEditorContextService>;

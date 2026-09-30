@@ -13,10 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, matchesKeystroke, SetUIExtensionVisibilityAction, TYPES } from '@eclipse-glsp/sprotty';
+import { Action, matchesKeystroke, SetUIExtensionVisibilityAction } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { messages, repeatOnMessagesUpdated } from '../../base/messages';
 import type { IShortcutManager } from '../../base/shortcuts/shortcuts-manager';
+import { TYPES } from '../../types';
 import { KeyboardGridMetadata, KeyboardNodeGridMetadata } from './keyboard-grid/constants';
 import { ToolPalette } from '../tool-palette/tool-palette';
 import { BaseEditTool } from '../tools/base-tools';

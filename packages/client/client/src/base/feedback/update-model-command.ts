@@ -20,12 +20,12 @@ import {
     GModelRoot,
     ILogger,
     MorphEdgesAnimation,
-    TYPES,
     UpdateAnimationData,
     UpdateModelAction,
     UpdateModelCommand
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
+import { TYPES } from '../../types';
 import { IFeedbackActionDispatcher } from './feedback-action-dispatcher';
 
 /**

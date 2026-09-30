@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, bindAsService, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { gridFeatureDef } from './grid-feature';
 import '../../../css/grid.css';
 import { Grid } from './grid';

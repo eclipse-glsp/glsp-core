@@ -14,8 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { IUIExtension, LazyInjector, MaybePromise, TYPES, UIExtensionRegistry } from '@eclipse-glsp/sprotty';
+import { IUIExtension, LazyInjector, MaybePromise, UIExtensionRegistry } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { IDiagramStartup } from '../model/diagram-loader';
 
 @injectable()

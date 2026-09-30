@@ -21,7 +21,6 @@ import {
     KeyListener,
     KeyTool,
     SelectAction,
-    TYPES,
     isSelectable,
     matchesKeystroke,
     toArray
@@ -29,6 +28,7 @@ import {
 import { inject, injectable } from 'inversify';
 import { Tool } from '../../../base/tool-manager/tool';
 import { IToolManager } from '../../../base/tool-manager/tool-manager';
+import { TYPES } from '../../../types';
 import { SwitchRoutingModeAction } from '../../tools/edge-edit/edge-edit-tool-feedback';
 
 /**

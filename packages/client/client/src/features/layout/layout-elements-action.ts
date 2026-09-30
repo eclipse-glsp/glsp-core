@@ -26,14 +26,14 @@ import {
     MoveAction,
     Point,
     SetBoundsAction,
-    TYPES,
     Writable,
     hasArrayProp,
     hasNumberProp,
     hasStringProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
-import { SelectionService } from '../../base/selection-service';
+import { ISelectionService } from '../../base/selection-service';
+import { TYPES } from '../../types';
 import { BoundsAwareModelElement, getElements } from '../../utils/gmodel-util';
 import { toValidElementAndBounds, toValidElementMove } from '../../utils/layout-utils';
 import { isBoundsAwareMoveable, isResizable } from '../change-bounds/model';
@@ -163,8 +163,8 @@ export abstract class LayoutElementsActionHandler implements IActionHandler {
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
 
-    @inject(SelectionService)
-    protected selectionService: SelectionService;
+    @inject(TYPES.ISelectionService)
+    protected selectionService: ISelectionService;
 
     @inject(TYPES.IMovementRestrictor)
     @optional()

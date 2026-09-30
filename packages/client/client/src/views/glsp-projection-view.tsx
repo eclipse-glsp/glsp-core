@@ -25,7 +25,6 @@ import {
     ProjectionParams,
     RenderingContext,
     SGraphImpl,
-    TYPES,
     ViewProjection,
     Writable,
     getProjections,
@@ -39,6 +38,7 @@ import { VNode, VNodeStyle, h } from 'snabbdom';
 import { messages } from '../base/messages';
 import { GridStyle, IGridManager } from '../features/grid/grid-manager';
 import { GridProperty } from '../features/grid/grid-style';
+import { TYPES } from '../types';
 
 /**
  * Special viewport root view that renders horizontal and vertical projection bars for quick navigation.

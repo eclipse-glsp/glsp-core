@@ -25,20 +25,20 @@ import {
     LazyInjector,
     SetModelCommand,
     SetViewportCommand,
-    TYPES,
     UpdateModelCommand,
     Viewport,
     almostEquals,
     isViewport
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, postConstruct, preDestroy } from 'inversify';
+import { TYPES } from '../../types';
 
 /**
  * Service that tracks changes to the model root and the viewport.
  * Allows to register listeners that are notified when the model root or the viewport changes.
  * The current model root can be queried at any time.
  */
-export interface IModelChangeService {
+export interface IModelChangeService extends Disposable {
     /** The current model root */
     readonly currentRoot: Readonly<GModelRoot> | undefined;
     /**
@@ -63,8 +63,11 @@ export interface ViewportChange {
     oldViewport?: Readonly<Viewport>;
 }
 
+/**
+ * The default {@link IModelChangeService} implementation.
+ */
 @injectable()
-export class ModelChangeService implements IModelChangeService, Disposable {
+export class ModelChangeService implements IModelChangeService {
     @inject(LazyInjector)
     protected lazyInjector: LazyInjector;
     protected _currentRoot?: Readonly<GModelRoot>;

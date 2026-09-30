@@ -26,13 +26,13 @@ import {
     RequestAction,
     RequestModelAction,
     StatusAction,
-    TYPES,
     hasNumberProp
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
+import { TYPES } from '../../types';
 import { Ranked } from '../ranked';
-import { GLSPModelSource } from './glsp-model-source';
-import { ModelInitializationConstraint } from './model-initialization-constraint';
+import type { IGLSPModelSource } from './glsp-model-source';
+import { IModelInitializationConstraint } from './model-initialization-constraint';
 
 /**
  * Configuration options for a specific GLSP diagram instance.
@@ -98,7 +98,7 @@ export interface IDiagramStartup extends Partial<Ranked> {
 
     postRequestModel?(): MaybePromise<void>;
     /** Hook for services that want to execute code after the diagram model is fully initialized
-     * (i.e. {@link ModelInitializationConstraint} is completed).
+     * (i.e. {@link IModelInitializationConstraint} is completed).
      */
     postModelInitialization?(): MaybePromise<void>;
 }
@@ -147,24 +147,39 @@ export interface ResolvedDiagramLoadingOptions {
 }
 
 /**
- * The central component responsible for initializing the diagram and loading the graphical model
- * from the GLSP server.
+ * The central component responsible for initializing the diagram and loading the graphical model from the GLSP server.
+ * Consumers should inject it via {@link TYPES.IDiagramLoader}. The default implementation is {@link DiagramLoader}.
+ */
+export interface IDiagramLoader {
+    /** The registered {@link IDiagramStartup} hooks. */
+    readonly diagramStartups: IDiagramStartup[];
+
+    /**
+     * Initializes the connection to the GLSP server, requests the graphical model and invokes the
+     * {@link IDiagramStartup} hooks along the way.
+     * @param options The loading options.
+     */
+    load<P extends InitializeParameters = InitializeParameters>(options?: DiagramLoadingOptions<P>): Promise<void>;
+}
+
+/**
+ * The default {@link IDiagramLoader} implementation.
  * Invoking the {@link DiagramLoader.load} method is typically the first operation that is executed after
  * a diagram DI container has been created.
  */
 @injectable()
-export class DiagramLoader {
+export class DiagramLoader implements IDiagramLoader {
     @inject(TYPES.IDiagramOptions)
     protected options: IDiagramOptions;
 
     @inject(TYPES.IActionDispatcher)
     protected actionDispatcher: IActionDispatcher;
 
-    @inject(GLSPModelSource)
-    protected modelSource: GLSPModelSource;
+    @inject(TYPES.ModelSource)
+    protected modelSource: IGLSPModelSource;
 
-    @inject(ModelInitializationConstraint)
-    protected modelInitializationConstraint: ModelInitializationConstraint;
+    @inject(TYPES.IModelInitializationConstraint)
+    protected modelInitializationConstraint: IModelInitializationConstraint;
 
     @inject(LazyInjector)
     protected lazyInjector: LazyInjector;

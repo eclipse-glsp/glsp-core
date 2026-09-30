@@ -35,9 +35,10 @@ import {
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional } from 'inversify';
 import { VNode } from 'snabbdom';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { feedbackFeature } from '../../base/feedback/feedback-action-dispatcher';
 import { ServerAction } from '../../base/model/glsp-model-source';
+import { TYPES } from '../../types';
 import { BoundsAwareModelElement, calcElementAndRoute, getDescendantIds, isRoutable } from '../../utils/gmodel-util';
 import { LayoutAware } from './layout-data';
 import { LocalComputedBoundsAction, LocalRequestBoundsAction } from './local-bounds';
@@ -54,7 +55,7 @@ export class BoundsDataExt extends BoundsData {
 @injectable()
 export class GLSPHiddenBoundsUpdater extends HiddenBoundsUpdater {
     @inject(EdgeRouterRegistry) @optional() protected readonly edgeRouterRegistry?: EdgeRouterRegistry;
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     protected element2route: ElementAndRoutingPoints[] = [];
 

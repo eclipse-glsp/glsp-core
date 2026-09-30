@@ -13,13 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ActionHandlerRegistry, Deferred, IActionHandler, RequestAction, ResponseAction, TYPES } from '@eclipse-glsp/sprotty';
+import { ActionHandlerRegistry, Deferred, IActionHandler, RequestAction, ResponseAction } from '@eclipse-glsp/sprotty';
 import { describe, expect, it } from 'vitest';
 import { Container } from 'inversify';
 
 /** Yields to the event loop long enough for pending microtasks (and already-queued timers) to run. */
 const flushMicrotasks = (): Promise<void> => new Promise(resolve => setTimeout(resolve, 0));
 
+import { TYPES } from '../types';
 import { GLSPActionDispatcher } from './action-dispatcher';
 import { defaultModule } from './default.module';
 import { IDiagramOptions } from './model/diagram-loader';

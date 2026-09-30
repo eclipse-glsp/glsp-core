@@ -27,14 +27,14 @@ import {
     MoveAction,
     MoveViewportAction,
     Point,
-    TYPES,
     debounce,
     isBoundsAware
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, postConstruct } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
 import { IFeedbackActionDispatcher } from '../../base/feedback/feedback-action-dispatcher';
 import { FeedbackEmitter } from '../../base/feedback/feedback-emitter';
+import { TYPES } from '../../types';
 import { SelectableBoundsAware, getElements, isSelectableAndBoundsAware } from '../../utils/gmodel-util';
 import { isValidMove } from '../../utils/layout-utils';
 import { outsideOfViewport } from '../../utils/viewpoint-util';
@@ -46,8 +46,8 @@ import { MoveElementRelativeAction } from './move-element-action';
  */
 @injectable()
 export class MoveElementHandler implements IActionHandler {
-    @inject(EditorContextService)
-    protected editorContextService: EditorContextService;
+    @inject(TYPES.IEditorContextService)
+    protected editorContextService: IEditorContextService;
 
     @inject(TYPES.IActionDispatcher)
     protected dispatcher: IActionDispatcher;

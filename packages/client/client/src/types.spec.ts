@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2026 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,17 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { SPROTTY_TYPES } from '@eclipse-glsp/sprotty';
+import { describe, expect, it } from 'vitest';
+import { TYPES } from './types';
 
-import { FeatureDefinition, FeatureModule, bindAsService } from '@eclipse-glsp/sprotty';
-import { TYPES } from '../../../../types';
-import { undoRedoFeatureDef } from './undo-redo-feature';
-import { GLSPUndoRedoKeyListener } from './undo-redo-key-listener';
+describe('TYPES', () => {
+    const sprottyKeys = Object.keys(SPROTTY_TYPES).filter(key => key !== 'SvgExporter') as (keyof typeof TYPES &
+        keyof typeof SPROTTY_TYPES)[];
 
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const undoRedoModule = new FeatureModule((bind, unbind, isBound, rebind) => {
-    bindAsService(bind, TYPES.KeyListener, GLSPUndoRedoKeyListener);
-}, FeatureDefinition.toModuleOptions(undoRedoFeatureDef));
+    it.each(sprottyKeys)('should map %s to the sprotty symbol', key => {
+        expect(TYPES[key]).toBe(SPROTTY_TYPES[key]);
+    });
+
+    it('should not contain the sprotty SvgExporter identifier', () => {
+        expect(TYPES).not.toHaveProperty('SvgExporter');
+    });
+});

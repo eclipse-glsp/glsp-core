@@ -14,12 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { KeyListener, matchesKeystroke, TYPES, type Action, type GModelElement } from '@eclipse-glsp/sprotty';
+import { KeyListener, matchesKeystroke, type Action, type GModelElement } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
 import { Disposable } from 'vscode-jsonrpc';
 import { messages, repeatOnMessagesUpdated } from '../../../base/messages';
-import { SelectionService } from '../../../base/selection-service';
-import type { ShortcutManager } from '../../../base/shortcuts/shortcuts-manager';
+import { ISelectionService } from '../../../base/selection-service';
+import type { IShortcutManager } from '../../../base/shortcuts/shortcuts-manager';
+import { TYPES } from '../../../types';
 import { ShowToastMessageAction } from '../../accessibility/toast/toast-handler';
 import { BaseEditTool } from '../../tools/base-tools';
 import { isResizable } from '../model';
@@ -27,8 +28,8 @@ import { ResizeElementAction, ResizeType } from './resize-handler';
 
 @injectable()
 export class ResizeKeyListener extends KeyListener {
-    @inject(SelectionService)
-    protected readonly selectionService: SelectionService;
+    @inject(TYPES.ISelectionService)
+    protected readonly selectionService: ISelectionService;
 
     override keyDown(element: GModelElement, event: KeyboardEvent): Action[] {
         const actions = [];
@@ -91,7 +92,7 @@ export class ResizeKeyTool extends BaseEditTool {
     }
 
     @inject(TYPES.IShortcutManager)
-    protected readonly shortcutManager: ShortcutManager;
+    protected readonly shortcutManager: IShortcutManager;
     @inject(ResizeKeyListener)
     protected readonly keyListener: ResizeKeyListener;
 

@@ -21,7 +21,6 @@ import {
     GModelElement,
     IActionDispatcher,
     RequestCheckEdgeAction,
-    TYPES,
     TriggerEdgeCreationAction,
     findParentByFeature,
     isConnectable,
@@ -33,6 +32,7 @@ import { CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feed
 import { FeedbackEmitter } from '../../../base/feedback/feedback-emitter';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
 import { GEdge } from '../../../model';
+import { TYPES } from '../../../types';
 import { Grid } from '../../grid/grid';
 import { ITypeHintProvider } from '../../hints/type-hint-provider';
 import { BaseCreationTool } from '../base-tools';

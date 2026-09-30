@@ -21,11 +21,11 @@ import {
     PasteOperation,
     RequestClipboardDataAction,
     SetClipboardDataAction,
-    TYPES,
     ViewerOptions
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import { EditorContextService } from '../../base/editor-context-service';
+import { IEditorContextService } from '../../base/editor-context-service';
+import { TYPES } from '../../types';
 
 export interface ICopyPasteHandler {
     handleCopy(event: ClipboardEvent): void;
@@ -103,7 +103,7 @@ export class ServerCopyPasteHandler implements ICopyPasteHandler {
     @inject(TYPES.IActionDispatcher) protected actionDispatcher: IActionDispatcher;
     @inject(TYPES.ViewerOptions) protected viewerOptions: ViewerOptions;
     @inject(TYPES.IAsyncClipboardService) protected clipboardService: IAsyncClipboardService;
-    @inject(EditorContextService) protected editorContext: EditorContextService;
+    @inject(TYPES.IEditorContextService) protected editorContext: IEditorContextService;
 
     handleCopy(event: ClipboardEvent): void {
         if (event.clipboardData && this.shouldCopy(event)) {

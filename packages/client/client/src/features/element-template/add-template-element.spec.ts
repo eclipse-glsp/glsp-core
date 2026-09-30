@@ -26,8 +26,7 @@ import {
     GParentElement,
     IActionDispatcher,
     RequestAction,
-    ResponseAction,
-    TYPES
+    ResponseAction
 } from '@eclipse-glsp/sprotty';
 import { Container } from 'inversify';
 import 'reflect-metadata';
@@ -35,6 +34,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { feedbackFeature } from '../../base/feedback/feedback-action-dispatcher';
 import { GModelRegistry } from '../../base/model/model-registry';
 import { GGraph } from '../../model';
+import { TYPES } from '../../types';
 import { AddTemplateElementsAction, AddTemplateElementsFeedbackCommand } from './add-template-element';
 
 const CHILD_ID = 'template_child';
@@ -71,6 +71,10 @@ class StubActionDispatcher implements IActionDispatcher {
 
     dispatchAfterNextUpdate(...actions: Action[]): void {
         this.dispatched.push(...actions);
+    }
+
+    hasHandler(_action: Action): boolean {
+        return true;
     }
 }
 

@@ -18,14 +18,16 @@ import {
     FeatureModule,
     NavigateToExternalTargetAction,
     NavigateToTargetAction,
+    bindAsService,
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
+import { TYPES } from '../../types';
 import { navigationFeatureDef } from './navigation-feature';
 import { NavigateAction, NavigationActionHandler, ProcessNavigationArgumentsAction } from './navigation-action-handler';
 import { NavigationTargetResolver } from './navigation-target-resolver';
 
 export const navigationModule = new FeatureModule((bind, _unbind, isBound) => {
-    bind(NavigationTargetResolver).toSelf().inSingletonScope();
+    bindAsService(bind, TYPES.INavigationTargetResolver, NavigationTargetResolver);
     bind(NavigationActionHandler).toSelf().inSingletonScope();
     configureActionHandler({ bind, isBound }, NavigateAction.KIND, NavigationActionHandler);
     configureActionHandler({ bind, isBound }, NavigateToTargetAction.KIND, NavigationActionHandler);

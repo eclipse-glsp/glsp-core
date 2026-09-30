@@ -27,7 +27,6 @@ import {
     SetDirtyStateAction,
     SetEditModeAction,
     SetModelCommand,
-    TYPES,
     bindAsService,
     bindLazyInjector,
     bindOrRebind,
@@ -37,12 +36,13 @@ import {
 } from '@eclipse-glsp/sprotty';
 import '@vscode/codicons/dist/codicon.css';
 import '../../css/glsp-sprotty.css';
+import { TYPES } from '../types';
 import { GLSPActionDispatcher } from './action-dispatcher';
 import { GLSPActionHandlerRegistry } from './action-handler-registry';
 import { DefaultAutocompleteSuggestionRegistry } from './auto-complete/autocomplete-suggestion-provider';
 import { GLSPCommandStack } from './command-stack';
 import { defaultFeatureDef } from './default-feature';
-import { EditorContextService } from './editor-context-service';
+import { EditorContextService, IEditorContextService } from './editor-context-service';
 import { ModifyCssFeedbackCommand } from './feedback/css-feedback';
 import { FeedbackActionDispatcher } from './feedback/feedback-action-dispatcher';
 import { FeedbackAwareSetModelCommand } from './feedback/set-model-command';
@@ -76,21 +76,23 @@ export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, .
 
     bindLazyInjector(context);
 
-    bind(EditorContextService).toSelf().inSingletonScope();
-    bind(TYPES.IDiagramStartup).toService(EditorContextService);
-    bind(TYPES.IEditorContextServiceProvider).toProvider<EditorContextService>(ctx => async () => ctx.container.get(EditorContextService));
-    bind(TYPES.IModelChangeService).to(ModelChangeService).inSingletonScope();
+    bindAsService(context, TYPES.IEditorContextService, EditorContextService);
+    bind(TYPES.IDiagramStartup).toService(TYPES.IEditorContextService);
+    bind(TYPES.IEditorContextServiceProvider).toProvider<IEditorContextService>(
+        ctx => async () => ctx.container.get<IEditorContextService>(TYPES.IEditorContextService)
+    );
+    bindAsService(context, TYPES.IModelChangeService, ModelChangeService);
 
-    configureActionHandler(context, SetEditModeAction.KIND, EditorContextService);
-    configureActionHandler(context, SetDirtyStateAction.KIND, EditorContextService);
-    configureActionHandler(context, GetEditorContextAction.KIND, EditorContextService);
+    configureActionHandler(context, SetEditModeAction.KIND, TYPES.IEditorContextService);
+    configureActionHandler(context, SetDirtyStateAction.KIND, TYPES.IEditorContextService);
+    configureActionHandler(context, GetEditorContextAction.KIND, TYPES.IEditorContextService);
 
-    bind(FocusTracker).toSelf().inSingletonScope();
-    bind(TYPES.IDiagramStartup).toService(FocusTracker);
-    configureActionHandler(context, FocusStateChangedAction.KIND, FocusTracker);
+    bindAsService(context, TYPES.IFocusTracker, FocusTracker);
+    bind(TYPES.IDiagramStartup).toService(TYPES.IFocusTracker);
+    configureActionHandler(context, FocusStateChangedAction.KIND, TYPES.IFocusTracker);
 
     // Model update initialization ------------------------------------
-    bind(TYPES.IFeedbackActionDispatcher).to(FeedbackActionDispatcher).inSingletonScope();
+    bindAsService(context, TYPES.IFeedbackActionDispatcher, FeedbackActionDispatcher);
     configureCommand(context, FeedbackAwareUpdateModelCommand);
     rebind(SetModelCommand).to(FeedbackAwareSetModelCommand);
 
@@ -104,7 +106,8 @@ export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, .
     bind(TYPES.IDiagramStartup).toService(GLSPKeyTool);
 
     bindAsService(context, TYPES.MouseListener, SelectionClearingMouseListener);
-    bindOrRebind(context, TYPES.ICommandStack).to(GLSPCommandStack).inSingletonScope();
+    bind(GLSPCommandStack).toSelf().inSingletonScope();
+    bindOrRebind(context, TYPES.ICommandStack).toService(GLSPCommandStack);
     bind(GLSPActionDispatcher).toSelf().inSingletonScope();
     bind(TYPES.IGModelRootListener).toService(GLSPActionDispatcher);
     bindOrRebind(context, TYPES.IActionDispatcher).toService(GLSPActionDispatcher);
@@ -112,17 +115,19 @@ export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, .
     bindOrRebind(context, ActionHandlerRegistry).to(GLSPActionHandlerRegistry).inSingletonScope();
 
     bindAsService(context, TYPES.ModelSource, GLSPModelSource);
-    bind(DiagramLoader).toSelf().inSingletonScope();
+    bindAsService(context, TYPES.IDiagramLoader, DiagramLoader);
     bind(ModelInitializationConstraint).to(DefaultModelInitializationConstraint).inSingletonScope();
+    // Resolve the symbol via the abstract class to keep existing `rebind(ModelInitializationConstraint)` customizations working
+    bind(TYPES.IModelInitializationConstraint).toService(ModelInitializationConstraint);
 
     // support re-registration of model elements and views
     bindOrRebind(context, TYPES.SModelRegistry).to(GModelRegistry).inSingletonScope();
     bindOrRebind(context, TYPES.ViewRegistry).to(GViewRegistry).inSingletonScope();
 
-    bind(SelectionService).toSelf().inSingletonScope();
-    bind(TYPES.IGModelRootListener).toService(SelectionService);
-    bind(TYPES.IDiagramStartup).toService(SelectionService);
-    configureActionHandler(context, GetSelectionAction.KIND, SelectionService);
+    bindAsService(context, TYPES.ISelectionService, SelectionService);
+    bind(TYPES.IGModelRootListener).toService(TYPES.ISelectionService);
+    bind(TYPES.IDiagramStartup).toService(TYPES.ISelectionService);
+    configureActionHandler(context, GetSelectionAction.KIND, TYPES.ISelectionService);
 
     // Feedback Support ------------------------------------
     // Generic re-usable feedback modifying css classes
@@ -134,7 +139,7 @@ export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, .
     bind(TYPES.HiddenVNodePostprocessor).toService(LocationPostprocessor);
 
     // Tool manager initialization ------------------------------------
-    bind(TYPES.IToolManager).to(ToolManager).inSingletonScope();
+    bindAsService(context, TYPES.IToolManager, ToolManager);
     bind(TYPES.IDiagramStartup).toService(TYPES.IToolManager);
     bind(TYPES.IEditModeListener).toService(TYPES.IToolManager);
     bind(DefaultToolsEnablingKeyListener).toSelf().inSingletonScope();
@@ -153,6 +158,6 @@ export const defaultModule = new FeatureModule((bind, unbind, isBound, rebind, .
     bindAsService(context, TYPES.IShortcutManager, ShortcutManager);
 
     // Autocomplete suggestion provider initialization ------------------------------------
-    bind(TYPES.IAutocompleteSuggestionProviderRegistry).to(DefaultAutocompleteSuggestionRegistry).inSingletonScope();
+    bindAsService(context, TYPES.IAutocompleteSuggestionProviderRegistry, DefaultAutocompleteSuggestionRegistry);
     bind(TYPES.IDiagramStartup).toService(TYPES.IAutocompleteSuggestionProviderRegistry);
 }, FeatureDefinition.toModuleOptions(defaultFeatureDef));
