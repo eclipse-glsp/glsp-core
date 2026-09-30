@@ -14,7 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, InitializeParameters, InitializeResult, Logger, NullLogger } from '@eclipse-glsp/server';
+import {
+    ClientSessionManager,
+    GLSP_PROTOCOL_VERSION,
+    InitializeParameters,
+    InitializeResult,
+    Logger,
+    NullLogger
+} from '@eclipse-glsp/server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -111,7 +118,7 @@ async function startLauncher(
     const params: InitializeParameters = {
         applicationId: 'spec-app',
         clientSessionId: 'spec-session',
-        protocolVersion: '1.0.0',
+        protocolVersion: GLSP_PROTOCOL_VERSION,
         args: {},
         mcpServer: {
             port: options.port ?? 0,
@@ -126,7 +133,7 @@ async function startLauncher(
         allowedHosts: options.allowedHosts,
         allowedOrigins: options.allowedOrigins
     };
-    const baseResult: InitializeResult = { protocolVersion: '1.0.0', serverActions: {} } as unknown as InitializeResult;
+    const baseResult: InitializeResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} } as unknown as InitializeResult;
     const result = await launcher.initializeServer({} as never, params, baseResult);
     const url = (result as unknown as { mcpServer?: { url?: string } }).mcpServer?.url;
     if (!url) throw new Error('launcher did not announce a URL');

@@ -16,6 +16,7 @@
 
 import {
     ClientSessionManager,
+    GLSP_PROTOCOL_VERSION,
     InitializeParameters,
     InitializeResult,
     Logger,
@@ -149,7 +150,7 @@ async function initLauncher(
     const params: InitializeParameters = {
         applicationId: 'spec-app',
         clientSessionId: 'spec-session',
-        protocolVersion: '1.0.0',
+        protocolVersion: GLSP_PROTOCOL_VERSION,
         args: {},
         mcpServer: {
             port: overrides.port ?? 0,
@@ -159,7 +160,7 @@ async function initLauncher(
             options: overrides.options ?? {}
         }
     } as unknown as InitializeParameters;
-    const baseResult: InitializeResult = { protocolVersion: '1.0.0', serverActions: {} } as unknown as InitializeResult;
+    const baseResult: InitializeResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} } as unknown as InitializeResult;
     return launcher.initializeServer({} as never, params, baseResult);
 }
 
