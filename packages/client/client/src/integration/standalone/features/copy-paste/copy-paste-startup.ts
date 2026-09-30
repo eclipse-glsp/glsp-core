@@ -16,9 +16,9 @@
 
 import { DOMHelper, Disposable, DisposableCollection, EMPTY_ROOT, GModelRoot, TYPES } from '@eclipse-glsp/sprotty';
 import { inject, injectable, optional, preDestroy } from 'inversify';
-import { IGModelRootListener } from '../../base/editor-context-service';
-import { IDiagramStartup } from '../../base/model/diagram-loader';
-import { ICopyPasteHandler } from './copy-paste-handler';
+import { IGModelRootListener } from '../../../../base/editor-context-service';
+import { IDiagramStartup } from '../../../../base/model/diagram-loader';
+import { ICopyPasteHandler } from '../../../../features/copy-paste/copy-paste-handler';
 /**
  * Startup service to hook up the copy&paste event handler
  */

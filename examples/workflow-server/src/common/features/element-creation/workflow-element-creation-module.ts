@@ -15,11 +15,13 @@
  ********************************************************************************/
 import {
     BindingContext,
+    FeatureKey,
     InstanceMultiBinding,
     OperationHandlerConstructor,
-    OperationsModule,
+    GLSPServerFeature,
     ServerFeatureModule
 } from '@eclipse-glsp/server';
+import { WorkflowFeature } from '../../workflow-feature-keys';
 import { CreateAutomatedTaskHandler } from '../../handler/create-automated-task-handler';
 import { CreateCategoryHandler } from '../../handler/create-category-handler';
 import { CreateDecisionNodeHandler } from '../../handler/create-decision-node-handler';
@@ -34,14 +36,12 @@ import { CreateWeightedEdgeHandler } from '../../handler/create-weighted-edge-ha
  * Contributes the create operation handlers for all workflow node and edge types.
  */
 export class WorkflowElementCreationModule extends ServerFeatureModule {
-    static readonly KEY = 'workflow.elementCreation';
-
-    override get featureKey(): string {
-        return WorkflowElementCreationModule.KEY;
+    override get featureKey(): FeatureKey {
+        return WorkflowFeature.ElementCreation;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations];
     }
 
     protected registerBindings(_context: BindingContext): void {

@@ -13,14 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, configureCommand } from '@eclipse-glsp/sprotty';
-import { boundsModule } from '../bounds/bounds-module';
+import { FeatureDefinition, FeatureModule, configureCommand } from '@eclipse-glsp/sprotty';
+import { zorderFeatureDef } from './zorder-feature';
 import { BringToFrontCommand } from './bring-to-front-command';
 
-export const zorderModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        const context = { bind, isBound };
-        configureCommand(context, BringToFrontCommand);
-    },
-    { featureId: Symbol('zorder'), requires: [boundsModule] }
-);
+export const zorderModule = new FeatureModule((bind, _unbind, isBound) => {
+    const context = { bind, isBound };
+    configureCommand(context, BringToFrontCommand);
+}, FeatureDefinition.toModuleOptions(zorderFeatureDef));

@@ -53,6 +53,7 @@ export * from './client-server-protocol/jsonrpc/worker-connection-provider';
 export * from './client-server-protocol/jsonrpc/ws-connection-provider';
 export * from './client-server-protocol/mcp';
 export * from './client-server-protocol/types';
+export * from './features/feature-key';
 export * from './model/default-types';
 export * from './model/model-schema';
 export * from './re-exports';

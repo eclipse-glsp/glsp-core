@@ -13,30 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { bindAsService, FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { copyPasteFeatureDef } from './copy-paste-features';
 import { LocalClipboardService, ServerCopyPasteHandler } from './copy-paste-handler';
-import { CopyPasteStartup } from './copy-paste-standalone';
 
-export const copyPasteModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        bind(TYPES.ICopyPasteHandler).to(ServerCopyPasteHandler);
-        bind(TYPES.IAsyncClipboardService).to(LocalClipboardService).inSingletonScope();
-    },
-    { featureId: Symbol('copyPaste') }
-);
-
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const standaloneCopyPasteModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        bindAsService(bind, TYPES.IDiagramStartup, CopyPasteStartup);
-        bind(TYPES.IGModelRootListener).toService(CopyPasteStartup);
-    },
-    {
-        featureId: Symbol('standaloneCopyPaste'),
-        requires: copyPasteModule
-    }
-);
+export const copyPasteModule = new FeatureModule((bind, _unbind, isBound) => {
+    bind(TYPES.ICopyPasteHandler).to(ServerCopyPasteHandler);
+    bind(TYPES.IAsyncClipboardService).to(LocalClipboardService).inSingletonScope();
+}, FeatureDefinition.toModuleOptions(copyPasteFeatureDef));

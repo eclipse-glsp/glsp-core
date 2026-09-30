@@ -15,9 +15,9 @@
  ********************************************************************************/
 /**
  * Service identifier for {@link ServerFeatureDescription}s. Every loaded `ServerFeatureModule` contributes
- * exactly one description, so `container.getAll(ServerFeature)` lists all features of a client session.
+ * exactly one description, so `container.getAll(ServerFeatureDescription)` lists all features of a client session.
  */
-export const ServerFeature = Symbol('ServerFeature');
+export const ServerFeatureDescription = Symbol('ServerFeatureDescription');
 
 /**
  * Describes a server feature that has been loaded into a client session container.

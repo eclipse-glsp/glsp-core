@@ -32,7 +32,6 @@ import {
     isMoveable
 } from '@eclipse-glsp/sprotty';
 import { inject, injectable } from 'inversify';
-import '../../../../css/ghost-element.css';
 import { DragAwareMouseListener } from '../../../base/drag-aware-mouse-listener';
 import { EditorContextService } from '../../../base/editor-context-service';
 import { CSS_GHOST_ELEMENT, CSS_HIDDEN, CursorCSS, cursorFeedbackAction } from '../../../base/feedback/css-feedback';

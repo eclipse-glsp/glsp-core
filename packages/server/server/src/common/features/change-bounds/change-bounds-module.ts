@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
-import { OperationsModule } from '../../operations/operations-module';
 
 /**
  * Feature module for moving and resizing elements. Reported as {@link GLSPCapability.ChangeBounds} capability.
@@ -27,14 +27,12 @@ import { OperationsModule } from '../../operations/operations-module';
  * that implements {@link ChangeBoundsModule.bindChangeBoundsOperationHandler} (e.g. the GModel variant `GModelChangeBoundsModule`).
  */
 export abstract class ChangeBoundsModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.ChangeBounds;
-
     override get featureKey(): GLSPCapability {
-        return ChangeBoundsModule.KEY;
+        return GLSPServerFeature.ChangeBounds;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations];
     }
 
     protected registerBindings(context: BindingContext): void {

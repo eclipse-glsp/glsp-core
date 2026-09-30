@@ -13,18 +13,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { bindAsService, configureActionHandler, FeatureModule, SetModelAction, TYPES, UpdateModelAction } from '@eclipse-glsp/sprotty';
+import {
+    FeatureDefinition,
+    FeatureModule,
+    SetModelAction,
+    TYPES,
+    UpdateModelAction,
+    bindAsService,
+    configureActionHandler
+} from '@eclipse-glsp/sprotty';
+import { toolPaletteFeatureDef } from './tool-palette-feature';
 import '../../../css/tool-palette.css';
 import { EnableDefaultToolsAction } from '../../base/tool-manager/tool';
 import { ToolPalette } from './tool-palette';
 
-export const toolPaletteModule = new FeatureModule(
-    (bind, _unbind, isBound, _rebind) => {
-        bindAsService(bind, TYPES.IUIExtension, ToolPalette);
-        bind(TYPES.IDiagramStartup).toService(ToolPalette);
-        configureActionHandler({ bind, isBound }, EnableDefaultToolsAction.KIND, ToolPalette);
-        configureActionHandler({ bind, isBound }, UpdateModelAction.KIND, ToolPalette);
-        configureActionHandler({ bind, isBound }, SetModelAction.KIND, ToolPalette);
-    },
-    { featureId: Symbol('toolPalette') }
-);
+export const toolPaletteModule = new FeatureModule((bind, _unbind, isBound, _rebind) => {
+    bindAsService(bind, TYPES.IUIExtension, ToolPalette);
+    bind(TYPES.IDiagramStartup).toService(ToolPalette);
+    configureActionHandler({ bind, isBound }, EnableDefaultToolsAction.KIND, ToolPalette);
+    configureActionHandler({ bind, isBound }, UpdateModelAction.KIND, ToolPalette);
+    configureActionHandler({ bind, isBound }, SetModelAction.KIND, ToolPalette);
+}, FeatureDefinition.toModuleOptions(toolPaletteFeatureDef));

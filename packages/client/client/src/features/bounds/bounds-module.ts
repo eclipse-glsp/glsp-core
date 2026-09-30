@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
+    FeatureDefinition,
     FeatureModule,
     HBoxLayouter,
     HiddenBoundsUpdater,
@@ -27,6 +28,7 @@ import {
     configureCommand,
     configureLayout
 } from '@eclipse-glsp/sprotty';
+import { boundsFeatureDef } from './bounds-feature';
 import { MoveElementRelativeAction } from '../change-bounds/move-element-action';
 import { MoveElementHandler } from '../change-bounds/move-element-handler';
 import { PositionSnapper } from '../change-bounds/position-snapper';
@@ -38,29 +40,26 @@ import { LocalComputedBoundsCommand } from './local-bounds';
 import { SetBoundsFeedbackCommand } from './set-bounds-feedback-command';
 import { VBoxLayouterExt } from './vbox-layout';
 
-export const boundsModule = new FeatureModule(
-    (bind, _unbind, isBound, _rebind) => {
-        const context = { bind, isBound };
-        configureCommand(context, SetBoundsCommand);
-        configureCommand(context, RequestBoundsCommand);
-        bind(HiddenBoundsUpdater).toSelf().inSingletonScope();
-        bindAsService(context, TYPES.HiddenVNodePostprocessor, GLSPHiddenBoundsUpdater);
+export const boundsModule = new FeatureModule((bind, _unbind, isBound, _rebind) => {
+    const context = { bind, isBound };
+    configureCommand(context, SetBoundsCommand);
+    configureCommand(context, RequestBoundsCommand);
+    bind(HiddenBoundsUpdater).toSelf().inSingletonScope();
+    bindAsService(context, TYPES.HiddenVNodePostprocessor, GLSPHiddenBoundsUpdater);
 
-        configureCommand(context, LocalComputedBoundsCommand);
-        configureCommand(context, SetBoundsFeedbackCommand);
+    configureCommand(context, LocalComputedBoundsCommand);
+    configureCommand(context, SetBoundsFeedbackCommand);
 
-        bind(TYPES.Layouter).to(LayouterExt).inSingletonScope();
-        bind(TYPES.LayoutRegistry).to(LayoutRegistry).inSingletonScope();
+    bind(TYPES.Layouter).to(LayouterExt).inSingletonScope();
+    bind(TYPES.LayoutRegistry).to(LayoutRegistry).inSingletonScope();
 
-        configureLayout(context, VBoxLayouter.KIND, VBoxLayouterExt);
-        configureLayout(context, HBoxLayouter.KIND, HBoxLayouterExt);
-        configureLayout(context, FreeFormLayouter.KIND, FreeFormLayouter);
+    configureLayout(context, VBoxLayouter.KIND, VBoxLayouterExt);
+    configureLayout(context, HBoxLayouter.KIND, HBoxLayouterExt);
+    configureLayout(context, FreeFormLayouter.KIND, FreeFormLayouter);
 
-        bind(MoveElementHandler).toSelf().inSingletonScope();
-        configureActionHandler(context, MoveElementRelativeAction.KIND, MoveElementHandler);
+    bind(MoveElementHandler).toSelf().inSingletonScope();
+    configureActionHandler(context, MoveElementRelativeAction.KIND, MoveElementHandler);
 
-        // backwards compatibility
-        bind(PositionSnapper).toSelf();
-    },
-    { featureId: Symbol('bounds') }
-);
+    // backwards compatibility
+    bind(PositionSnapper).toSelf();
+}, FeatureDefinition.toModuleOptions(boundsFeatureDef));

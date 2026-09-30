@@ -17,6 +17,7 @@ import '../../../../css/keyboard-tool-palette.css';
 
 import {
     BindingContext,
+    FeatureKey,
     FeatureModule,
     SetModelAction,
     TYPES,
@@ -25,6 +26,7 @@ import {
     configureActionHandler
 } from '@eclipse-glsp/sprotty';
 import { EnableDefaultToolsAction } from '../../../base/tool-manager/tool';
+import { GLSPClientFeature } from '../../../client-feature-keys';
 import { EnableToolPaletteAction } from '../../tool-palette/tool-palette';
 import { FocusDomAction } from '../actions';
 import { KeyboardToolPalette } from './keyboard-tool-palette';
@@ -34,7 +36,7 @@ export const keyboardToolPaletteModule = new FeatureModule(
         const context = { bind, unbind, isBound, rebind };
         configureKeyboardToolPaletteTool(context);
     },
-    { featureId: Symbol('keyboardToolPalette') }
+    { featureId: FeatureKey.toId(GLSPClientFeature.KeyboardToolPalette) }
 );
 
 export function configureKeyboardToolPaletteTool(context: BindingContext): void {

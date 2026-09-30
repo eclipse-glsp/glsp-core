@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TriggerLayoutAction, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TriggerLayoutAction, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { layoutFeatureDef } from './layout-feature';
 import {
     AlignElementsAction,
     AlignElementsActionHandler,
@@ -22,12 +23,9 @@ import {
 } from './layout-elements-action';
 import { TriggerLayoutActionHandler } from './trigger-layout-action-handler';
 
-export const layoutModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        const context = { bind, isBound };
-        configureActionHandler(context, ResizeElementsAction.KIND, ResizeElementsActionHandler);
-        configureActionHandler(context, AlignElementsAction.KIND, AlignElementsActionHandler);
-        configureActionHandler(context, TriggerLayoutAction.KIND, TriggerLayoutActionHandler);
-    },
-    { featureId: Symbol('layout') }
-);
+export const layoutModule = new FeatureModule((bind, _unbind, isBound) => {
+    const context = { bind, isBound };
+    configureActionHandler(context, ResizeElementsAction.KIND, ResizeElementsActionHandler);
+    configureActionHandler(context, AlignElementsAction.KIND, AlignElementsActionHandler);
+    configureActionHandler(context, TriggerLayoutAction.KIND, TriggerLayoutActionHandler);
+}, FeatureDefinition.toModuleOptions(layoutFeatureDef));

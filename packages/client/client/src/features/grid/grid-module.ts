@@ -14,25 +14,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureModule, TYPES, bindAsService, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { gridFeatureDef } from './grid-feature';
 import '../../../css/grid.css';
 import { Grid } from './grid';
 import { GridManager } from './grid-manager';
 import { ShowGridAction, ShowGridCommand } from './grid-model';
 import { GridSnapper } from './grid-snapper';
 
-export const gridModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
+export const gridModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
 
-        bind(TYPES.Grid).toConstantValue(Grid.DEFAULT);
+    bind(TYPES.Grid).toConstantValue(Grid.DEFAULT);
 
-        configureCommand(context, ShowGridCommand);
+    configureCommand(context, ShowGridCommand);
 
-        bindAsService(context, TYPES.IGridManager, GridManager);
-        configureActionHandler(context, ShowGridAction.KIND, GridManager);
+    bindAsService(context, TYPES.IGridManager, GridManager);
+    configureActionHandler(context, ShowGridAction.KIND, GridManager);
 
-        bind(TYPES.ISnapper).to(GridSnapper);
-    },
-    { featureId: Symbol('grid') }
-);
+    bind(TYPES.ISnapper).to(GridSnapper);
+}, FeatureDefinition.toModuleOptions(gridFeatureDef));

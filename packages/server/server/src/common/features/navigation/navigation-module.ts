@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyBindingTarget, applyOptionalBindingTarget } from '../../di/binding-target';
 import { InstanceMultiBinding, MultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { NavigationTargetProviders } from '../../di/service-identifiers';
-import { BaseDiagramModule } from '../../di/base-diagram-module';
 import { NavigationTargetProvider } from './navigation-target-provider';
 import { DefaultNavigationTargetProviderRegistry, NavigationTargetProviderRegistry } from './navigation-target-provider-registry';
 import { NavigationTargetResolver } from './navigation-target-resolver';
@@ -36,14 +36,12 @@ import { ResolveNavigationTargetsActionHandler } from './resolve-navigation-targ
  * - {@link NavigationTargetProviders} (empty), {@link NavigationTargetProviderRegistry}
  */
 export class NavigationModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.Navigation;
-
     override get featureKey(): GLSPCapability {
-        return NavigationModule.KEY;
+        return GLSPServerFeature.Navigation;
     }
 
-    override get requiredFeatures(): string[] {
-        return [BaseDiagramModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Base];
     }
 
     protected registerBindings(context: BindingContext): void {

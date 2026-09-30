@@ -34,6 +34,7 @@
     "lib",
     "src"
   ],
+  "sideEffects": false,
   "main": "lib/index",
   "types": "lib/index",
   "publishConfig": {

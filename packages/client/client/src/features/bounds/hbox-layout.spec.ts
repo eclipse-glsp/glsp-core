@@ -14,13 +14,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import 'reflect-metadata';
-import { BoundsData, ConsoleLogger, Dimension, GModelElement, GNode } from '@eclipse-glsp/sprotty';
+import { BoundsData, ConsoleLogger, Dimension, GModelElement, GNode, LayoutRegistry } from '@eclipse-glsp/sprotty';
 import { createLabel, createNode, layout, setupLayoutRegistry } from '../test/layouter-test-util';
 
 describe('HBoxLayouter', () => {
-    const layoutRegistry = setupLayoutRegistry();
+    let layoutRegistry: LayoutRegistry;
+    beforeAll(async () => {
+        layoutRegistry = await setupLayoutRegistry();
+    });
     const log = new ConsoleLogger();
     const map = new Map<GModelElement, BoundsData>();
 

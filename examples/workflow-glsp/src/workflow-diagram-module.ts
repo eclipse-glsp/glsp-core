@@ -25,6 +25,7 @@ import {
     GCompartmentView,
     GEdge,
     GGraph,
+    GLSPOptionalFeatures,
     GLSPProjectionView,
     GLabel,
     GLabelView,
@@ -40,10 +41,7 @@ import {
     bindOrRebind,
     configureDefaultModelElements,
     configureModelElement,
-    debugModule,
     editLabelFeature,
-    gridModule,
-    helperLineModule,
     initializeDiagramContainer,
     overrideModelElement
 } from '@eclipse-glsp/client';
@@ -98,17 +96,20 @@ export const workflowDiagramModule = new FeatureModule(
     { featureId: Symbol('workflowDiagram') }
 );
 
-export function createWorkflowDiagramContainer(...containerConfiguration: ContainerConfiguration): Container {
+export function createWorkflowDiagramContainer(...containerConfiguration: ContainerConfiguration): Promise<Container> {
     return initializeWorkflowDiagramContainer(new Container(), ...containerConfiguration);
 }
 
-export function initializeWorkflowDiagramContainer(container: Container, ...containerConfiguration: ContainerConfiguration): Container {
+export function initializeWorkflowDiagramContainer(
+    container: Container,
+    ...containerConfiguration: ContainerConfiguration
+): Promise<Container> {
     return initializeDiagramContainer(
         container,
         taskEditorModule,
-        helperLineModule,
-        gridModule,
-        debugModule,
+        GLSPOptionalFeatures.HelperLine,
+        GLSPOptionalFeatures.Grid,
+        GLSPOptionalFeatures.Debug,
         workflowDiagramModule,
         ...containerConfiguration
     );

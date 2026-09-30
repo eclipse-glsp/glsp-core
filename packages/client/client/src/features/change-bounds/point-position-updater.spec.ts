@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { GModelElement } from '@eclipse-glsp/sprotty';
 import { describe, expect, it } from 'vitest';
-import { GridSnapper } from './../grid/grid-snapper';
+import { GridSnapper } from '../grid/grid-snapper';
 import { PointPositionUpdater } from './point-position-updater';
 
 describe('PointPositionUpdater', () => {

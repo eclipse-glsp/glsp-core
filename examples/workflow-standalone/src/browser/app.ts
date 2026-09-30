@@ -32,7 +32,7 @@ workerProvider.listen({ onConnection: initialize, logger: console });
 
 async function initialize(connectionProvider: MessageConnection): Promise<void> {
     glspClient = new BaseJsonrpcGLSPClient({ id, connectionProvider });
-    container = createContainer({
+    container = await createContainer({
         clientId,
         diagramType,
         glspClientProvider: async () => glspClient,

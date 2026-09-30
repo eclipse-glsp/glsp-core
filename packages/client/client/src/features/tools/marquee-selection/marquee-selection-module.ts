@@ -13,25 +13,23 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TYPES, bindAsService, configureCommand, configureModelElement } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES, bindAsService, configureCommand, configureModelElement } from '@eclipse-glsp/sprotty';
+import { marqueeSelectionToolFeatureDef } from './marquee-selection-feature';
+import { MarqueeUtil } from './marquee-behavior';
 import { MarqueeMouseTool } from './marquee-mouse-tool';
 import { MarqueeTool } from './marquee-tool';
 import { DrawMarqueeCommand, MARQUEE, RemoveMarqueeCommand } from './marquee-tool-feedback';
 import { MarqueeNode } from './model';
 import { MarqueeView } from './view';
-import { MarqueeUtil } from './marquee-behavior';
 
-export const marqueeSelectionToolModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        context.bind(MarqueeUtil).toSelf().inSingletonScope();
-        bindAsService(context, TYPES.IDefaultTool, MarqueeTool);
-        bindAsService(context, TYPES.ITool, MarqueeMouseTool);
+export const marqueeSelectionToolModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    context.bind(MarqueeUtil).toSelf().inSingletonScope();
+    bindAsService(context, TYPES.IDefaultTool, MarqueeTool);
+    bindAsService(context, TYPES.ITool, MarqueeMouseTool);
 
-        configureCommand(context, DrawMarqueeCommand);
-        configureCommand(context, RemoveMarqueeCommand);
+    configureCommand(context, DrawMarqueeCommand);
+    configureCommand(context, RemoveMarqueeCommand);
 
-        configureModelElement(context, MARQUEE, MarqueeNode, MarqueeView);
-    },
-    { featureId: Symbol('marqueeSelectionTool') }
-);
+    configureModelElement(context, MARQUEE, MarqueeNode, MarqueeView);
+}, FeatureDefinition.toModuleOptions(marqueeSelectionToolFeatureDef));

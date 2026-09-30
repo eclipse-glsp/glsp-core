@@ -17,17 +17,17 @@ import {
     BindingContext,
     CapabilityFeatureModule,
     CapabilityKey,
-    ContextActionsModule,
     ContextActionsProvider,
     ContextActionsProviders,
     ContextEditValidator,
     ContextEditValidators,
     InstanceMultiBinding,
-    LabelEditModule,
     MultiBinding,
+    FeatureKey,
     OperationHandlerConstructor,
-    OperationsModule
+    GLSPServerFeature
 } from '@eclipse-glsp/server';
+import { WorkflowFeature } from '../../workflow-feature-keys';
 import { EditTaskOperationHandler } from '../../taskedit/edit-task-operation-handler';
 import { TaskEditContextActionProvider } from '../../taskedit/task-edit-context-provider';
 import { TaskEditValidator } from '../../taskedit/task-edit-validator';
@@ -37,14 +37,12 @@ import { TaskEditValidator } from '../../taskedit/task-edit-validator';
  * Reported as custom `workflow.taskEdit` capability.
  */
 export class WorkflowTaskEditModule extends CapabilityFeatureModule {
-    static readonly KEY: CapabilityKey = 'workflow.taskEdit';
-
     override get featureKey(): CapabilityKey {
-        return WorkflowTaskEditModule.KEY;
+        return WorkflowFeature.TaskEdit;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY, ContextActionsModule.KEY, LabelEditModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations, GLSPServerFeature.ContextActions, GLSPServerFeature.LabelEdit];
     }
 
     protected registerBindings(_context: BindingContext): void {

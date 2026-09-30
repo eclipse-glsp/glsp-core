@@ -13,12 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { OperationHandlerConstructor } from '../../operations/operation-handler';
-import { OperationsModule } from '../../operations/operations-module';
 
 /**
  * Feature module for reconnecting edges and changing routing points. Reported as {@link GLSPCapability.EdgeEdit} capability.
@@ -27,14 +27,12 @@ import { OperationsModule } from '../../operations/operations-module';
  * implements the `bindXxxOperationHandler()` methods (e.g. the GModel variant `GModelEdgeEditModule`).
  */
 export abstract class EdgeEditModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.EdgeEdit;
-
     override get featureKey(): GLSPCapability {
-        return EdgeEditModule.KEY;
+        return GLSPServerFeature.EdgeEdit;
     }
 
-    override get requiredFeatures(): string[] {
-        return [OperationsModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.Operations];
     }
 
     protected registerBindings(context: BindingContext): void {

@@ -14,16 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureModule, StatusAction, TYPES, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, StatusAction, TYPES, bindAsService, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { statusFeatureDef } from './status-feature';
 import '../../../css/status-overlay.css';
 import { StatusOverlay } from './status-overlay';
 
-export const statusModule = new FeatureModule(
-    (bind, unbind, isBound, rebind) => {
-        const context = { bind, unbind, isBound, rebind };
-        bindAsService(context, TYPES.IUIExtension, StatusOverlay);
-        bind(TYPES.IDiagramStartup).toService(StatusOverlay);
-        configureActionHandler(context, StatusAction.KIND, StatusOverlay);
-    },
-    { featureId: Symbol('status') }
-);
+export const statusModule = new FeatureModule((bind, unbind, isBound, rebind) => {
+    const context = { bind, unbind, isBound, rebind };
+    bindAsService(context, TYPES.IUIExtension, StatusOverlay);
+    bind(TYPES.IDiagramStartup).toService(StatusOverlay);
+    configureActionHandler(context, StatusAction.KIND, StatusOverlay);
+}, FeatureDefinition.toModuleOptions(statusFeatureDef));

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CapabilityKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { CapabilityKey, FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { Container } from 'inversify';
 import { describe, expect, it } from 'vitest';
@@ -22,7 +22,7 @@ import { CapabilityContribution } from '../capabilities/capability-contribution'
 import { DefaultSessionCapabilityProvider, SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { StubActionDispatcher } from '../test/mock-util';
 import { CapabilityFeatureModule } from './capability-feature-module';
-import { ServerFeature, ServerFeatureDescription } from './feature';
+import { ServerFeatureDescription } from './feature';
 import { ServerFeatureModule } from './server-feature-module';
 
 class PopupTestModule extends CapabilityFeatureModule {
@@ -36,11 +36,11 @@ class PopupTestModule extends CapabilityFeatureModule {
 class PopupTestSubModule extends PopupTestModule {}
 
 class CustomTestModule extends ServerFeatureModule {
-    override get featureKey(): string {
+    override get featureKey(): FeatureKey {
         return 'acme.custom';
     }
 
-    override get requiredFeatures(): string[] {
+    override get requiredFeatures(): FeatureKey[] {
         return [GLSPCapability.Popup];
     }
 
@@ -56,8 +56,8 @@ class AcmeCapabilityTestModule extends CapabilityFeatureModule {
 }
 
 class InvalidTestModule extends ServerFeatureModule {
-    override get featureKey(): string {
-        return '';
+    override get featureKey(): FeatureKey {
+        return '' as FeatureKey;
     }
 
     protected registerBindings(_context: BindingContext): void {}
@@ -70,13 +70,13 @@ describe('ServerFeatureModule', () => {
     });
 
     it('should fail on an invalid feature key', () => {
-        expect(() => new InvalidTestModule()).toThrow(/non-empty constant string/);
+        expect(() => new InvalidTestModule()).toThrow(/constant, namespaced key/);
     });
 
     it('should publish its feature description', () => {
         const container = new Container();
         container.load(new PopupTestModule(), new CustomTestModule());
-        const descriptions = container.getAll<ServerFeatureDescription>(ServerFeature);
+        const descriptions = container.getAll<ServerFeatureDescription>(ServerFeatureDescription);
         expect(descriptions).toEqual([
             { featureKey: 'glsp.popup', capability: true },
             { featureKey: 'acme.custom', capability: false }

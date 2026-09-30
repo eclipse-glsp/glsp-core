@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPCapability } from '@eclipse-glsp/protocol';
+import { FeatureKey, GLSPCapability } from '@eclipse-glsp/protocol';
+import { GLSPServerFeature } from '../../server-feature-keys';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ActionHandlerConstructor } from '../../actions/action-handler';
 import { BindingTarget, applyBindingTarget } from '../../di/binding-target';
@@ -21,7 +22,6 @@ import { InstanceMultiBinding } from '../../di/multi-binding';
 import { CapabilityFeatureModule } from '../../di/capability-feature-module';
 import { PopupModelFactory } from './popup-model-factory';
 import { RequestPopupModelActionHandler } from './request-popup-model-action-handler';
-import { SourceModelModule } from '../../model/source-model-module';
 
 /**
  * Feature module for hover popups. Reported as {@link GLSPCapability.Popup} capability.
@@ -34,14 +34,12 @@ import { SourceModelModule } from '../../model/source-model-module';
  * - {@link PopupModelFactory}
  */
 export abstract class PopupModule extends CapabilityFeatureModule {
-    static readonly KEY = GLSPCapability.Popup;
-
     override get featureKey(): GLSPCapability {
-        return PopupModule.KEY;
+        return GLSPServerFeature.Popup;
     }
 
-    override get requiredFeatures(): string[] {
-        return [SourceModelModule.KEY];
+    override get requiredFeatures(): FeatureKey[] {
+        return [GLSPServerFeature.SourceModel];
     }
 
     protected registerBindings(context: BindingContext): void {

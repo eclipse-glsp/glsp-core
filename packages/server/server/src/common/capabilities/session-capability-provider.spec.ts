@@ -17,7 +17,7 @@ import { CapabilitiesChangedAction, GLSPCapability } from '@eclipse-glsp/protoco
 import { Container } from 'inversify';
 import { describe, expect, it, vi } from 'vitest';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { ServerFeature } from '../di/feature';
+import { ServerFeatureDescription } from '../di/feature';
 import { ClientActionKinds } from '../di/service-identifiers';
 import * as mock from '../test/mock-util';
 import { DefaultSessionCapabilityProvider } from './session-capability-provider';
@@ -30,7 +30,7 @@ describe('DefaultSessionCapabilityProvider', () => {
         const container = new Container();
         const actionDispatcher = new mock.StubActionDispatcher();
         container.bind(ActionDispatcher).toConstantValue(actionDispatcher);
-        container.bind(ServerFeature).toConstantValue({ featureKey: GLSPCapability.Delete, capability: true });
+        container.bind(ServerFeatureDescription).toConstantValue({ featureKey: GLSPCapability.Delete, capability: true });
         if (clientActionKinds) {
             container.bind(ClientActionKinds).toConstantValue(new Set(clientActionKinds));
         }

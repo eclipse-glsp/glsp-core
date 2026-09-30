@@ -17,14 +17,14 @@ import { GridDefaultVisible, createWorkflowDiagramContainer } from '@eclipse-gls
 import {
     ConsoleLogger,
     EditMode,
+    GLSPClientFeature,
+    GLSPOptionalFeatures,
     IDiagramOptions,
     LogLevel,
     STANDALONE_MODULE_CONFIG,
     TYPES,
-    accessibilityModule,
     bindOrRebind,
-    createDiagramOptionsModule,
-    toolPaletteModule
+    createDiagramOptionsModule
 } from '@eclipse-glsp/client';
 import { Container } from 'inversify';
 import '../../css/app.css';
@@ -33,15 +33,21 @@ import { standaloneTaskEditorModule } from './features/direct-task-editing/stand
 import { titleBarModule } from './features/title-bar/title-bar-module';
 import { windowResizeModule } from './features/window-resize/window-resize-module';
 import { hasParameter } from './url-parameters';
-export default function createContainer(options: IDiagramOptions): Container {
+export default async function createContainer(options: IDiagramOptions): Promise<Container> {
     if (hasParameter('readonly')) {
         options.editMode = EditMode.READONLY;
     }
-    const container = createWorkflowDiagramContainer(
+    const container = await createWorkflowDiagramContainer(
         createDiagramOptionsModule(options),
         {
-            add: [standaloneTaskEditorModule, accessibilityModule, titleBarModule, standaloneContextMenuModule, windowResizeModule],
-            remove: toolPaletteModule
+            add: [
+                standaloneTaskEditorModule,
+                GLSPOptionalFeatures.Accessibility,
+                titleBarModule,
+                standaloneContextMenuModule,
+                windowResizeModule
+            ],
+            remove: GLSPClientFeature.ToolPalette
         },
         STANDALONE_MODULE_CONFIG
     );

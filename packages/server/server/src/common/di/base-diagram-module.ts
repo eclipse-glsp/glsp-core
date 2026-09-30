@@ -13,7 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { FeatureKey } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
+import { GLSPServerFeature } from '../server-feature-keys';
 import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
@@ -42,11 +44,10 @@ import { DefaultProgressService, ProgressService } from '../progress/progress-se
  * - {@link SessionCapabilityProvider}, {@link CapabilityContribution}s (empty)
  */
 export class BaseDiagramModule extends ServerFeatureModule {
-    static readonly KEY = 'glsp.base';
     static readonly FALLBACK_CLIENT_ID = 'FallbackClientId';
 
-    override get featureKey(): string {
-        return BaseDiagramModule.KEY;
+    override get featureKey(): FeatureKey {
+        return GLSPServerFeature.Base;
     }
 
     protected registerBindings(context: BindingContext): void {

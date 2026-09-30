@@ -13,47 +13,27 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, SetMarkersAction, TYPES, bindAsService, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, SetMarkersAction, configureActionHandler, configureCommand } from '@eclipse-glsp/sprotty';
+import { markerNavigatorFeatureDef, validationFeatureDef } from './validation-features';
 import {
     GModelElementComparator,
     LeftToRightTopToBottomComparator,
     MarkerNavigator,
-    MarkerNavigatorContextMenuItemProvider,
-    MarkerNavigatorKeyListener,
     NavigateToMarkerAction,
     NavigateToMarkerActionHandler
 } from './marker-navigator';
 import { ApplyMarkersCommand, DeleteMarkersCommand, SetMarkersActionHandler, ValidationFeedbackEmitter } from './validate';
 
-export const validationModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        const context = { bind, isBound };
-        configureActionHandler(context, SetMarkersAction.KIND, SetMarkersActionHandler);
-        configureCommand(context, ApplyMarkersCommand);
-        configureCommand(context, DeleteMarkersCommand);
-        bind(ValidationFeedbackEmitter).toSelf().inSingletonScope();
-    },
-    { featureId: Symbol('validation') }
-);
+export const validationModule = new FeatureModule((bind, _unbind, isBound) => {
+    const context = { bind, isBound };
+    configureActionHandler(context, SetMarkersAction.KIND, SetMarkersActionHandler);
+    configureCommand(context, ApplyMarkersCommand);
+    configureCommand(context, DeleteMarkersCommand);
+    bind(ValidationFeedbackEmitter).toSelf().inSingletonScope();
+}, FeatureDefinition.toModuleOptions(validationFeatureDef));
 
-export const markerNavigatorModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        bind(GModelElementComparator).to(LeftToRightTopToBottomComparator).inSingletonScope();
-        bind(MarkerNavigator).toSelf().inSingletonScope();
-        configureActionHandler({ bind, isBound }, NavigateToMarkerAction.KIND, NavigateToMarkerActionHandler);
-    },
-    { featureId: Symbol('markerNavigator') }
-);
-
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const standaloneMarkerNavigatorModule = new FeatureModule(
-    bind => {
-        bindAsService(bind, TYPES.IContextMenuItemProvider, MarkerNavigatorContextMenuItemProvider);
-        bindAsService(bind, TYPES.KeyListener, MarkerNavigatorKeyListener);
-    },
-    { featureId: Symbol('standaloneMarkerNavigator'), requires: markerNavigatorModule }
-);
+export const markerNavigatorModule = new FeatureModule((bind, _unbind, isBound) => {
+    bind(GModelElementComparator).to(LeftToRightTopToBottomComparator).inSingletonScope();
+    bind(MarkerNavigator).toSelf().inSingletonScope();
+    configureActionHandler({ bind, isBound }, NavigateToMarkerAction.KIND, NavigateToMarkerActionHandler);
+}, FeatureDefinition.toModuleOptions(markerNavigatorFeatureDef));

@@ -32,7 +32,8 @@ import { GGraph } from '../../model';
 import { decorationModule } from '../decoration/decoration-module';
 import { GIssueMarker } from './issue-marker';
 import { MarkerNavigator, MarkerNavigatorContextMenuItemProvider } from './marker-navigator';
-import { markerNavigatorModule, standaloneMarkerNavigatorModule } from './validation-modules';
+import { standaloneMarkerNavigatorModule } from '../../integration/standalone/features/validation/standalone-marker-navigator-module';
+import { markerNavigatorModule } from './validation-modules';
 
 describe('standaloneMarkerNavigatorModule', () => {
     it('registers marker navigation items with the context menu registry', () => {

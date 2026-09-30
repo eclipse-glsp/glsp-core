@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, FeatureModule, IActionHandler, ICommand, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { Action, FeatureDefinition, FeatureModule, IActionHandler, ICommand, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { toolFocusLossFeatureDef } from './tool-focus-loss-feature';
 import { injectable } from 'inversify';
 import { FocusStateChangedAction } from '../../base/focus/focus-state-change-action';
 import { EnableDefaultToolsAction } from '../../base/tool-manager/tool';
@@ -34,9 +35,6 @@ export class EnableDefaultToolsOnFocusLossHandler implements IActionHandler {
 /**
  * Enables the default tools in the tool manager if the diagram looses focus.
  */
-export const toolFocusLossModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        configureActionHandler({ bind, isBound }, FocusStateChangedAction.KIND, EnableDefaultToolsOnFocusLossHandler);
-    },
-    { featureId: Symbol('toolFocusLoss ') }
-);
+export const toolFocusLossModule = new FeatureModule((bind, _unbind, isBound) => {
+    configureActionHandler({ bind, isBound }, FocusStateChangedAction.KIND, EnableDefaultToolsOnFocusLossHandler);
+}, FeatureDefinition.toModuleOptions(toolFocusLossFeatureDef));

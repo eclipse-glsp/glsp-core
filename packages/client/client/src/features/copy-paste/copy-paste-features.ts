@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2026 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,17 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, TYPES, bindAsService } from '@eclipse-glsp/sprotty';
-import { SaveModelKeyboardListener } from './save-keylistener';
+import { FeatureDefinition, defineFeature } from '@eclipse-glsp/sprotty';
+import { GLSPClientFeature } from '../../client-feature-keys';
 
-/**
- * Feature module that is intended for the standalone deployment of GLSP (i.e. plain webapp)
- * When integrated into an application frame (e.g Theia/VS Code) this module is typically omitted and/or replaced
- * with an application native module.
- */
-export const saveModule = new FeatureModule(
-    bind => {
-        bindAsService(bind, TYPES.KeyListener, SaveModelKeyboardListener);
-    },
-    { featureId: Symbol('save') }
+/** Lazily loaded definition of the `copyPasteModule` feature (see {@link GLSPClientFeature.CopyPaste}). */
+export const copyPasteFeatureDef: FeatureDefinition = defineFeature(GLSPClientFeature.CopyPaste, () =>
+    import('./copy-paste-modules').then(m => m.copyPasteModule)
 );

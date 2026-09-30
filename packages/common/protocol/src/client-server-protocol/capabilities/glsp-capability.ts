@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CapabilityKey } from './capability';
+import { GLSPFeatureKey } from '../../features/feature-key';
 
 /**
- * The keys of all GLSP-defined diagram capabilities. Each key is a {@link CapabilityKey} with the reserved `glsp.` prefix
+ * The keys of all GLSP-defined diagram capabilities. Each key is a {@link GLSPFeatureKey}, i.e. uses the reserved `glsp.` prefix
  * (checked at compile time), adopters use their own prefix for custom capabilities.
  */
 export const GLSPCapability = {
@@ -44,7 +44,7 @@ export const GLSPCapability = {
     Popup: 'glsp.popup',
     /** Context actions like tool palette, command palette and context menu items (`RequestContextActions`). */
     ContextActions: 'glsp.contextActions'
-} as const satisfies Record<string, CapabilityKey>;
+} as const satisfies Record<string, GLSPFeatureKey>;
 
 /** The union of all GLSP capability keys, i.e. `'glsp.changeBounds' | 'glsp.delete' | ...`. */
 export type GLSPCapability = (typeof GLSPCapability)[keyof typeof GLSPCapability];

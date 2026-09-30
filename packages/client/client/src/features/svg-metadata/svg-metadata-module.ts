@@ -14,13 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, TYPES } from '@eclipse-glsp/sprotty';
+import { svgMetadataFeatureDef } from './svg-metadata-feature';
 import { MetadataPlacer } from './metadata-placer';
 
-export const svgMetadataModule = new FeatureModule(
-    bind => {
-        bind(MetadataPlacer).toSelf().inSingletonScope();
-        bind(TYPES.IVNodePostprocessor).toService(MetadataPlacer);
-    },
-    { featureId: Symbol('svgMetadata') }
-);
+export const svgMetadataModule = new FeatureModule(bind => {
+    bind(MetadataPlacer).toSelf().inSingletonScope();
+    bind(TYPES.IVNodePostprocessor).toService(MetadataPlacer);
+}, FeatureDefinition.toModuleOptions(svgMetadataFeatureDef));

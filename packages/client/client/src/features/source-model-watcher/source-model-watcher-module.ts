@@ -13,12 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { FeatureModule, SourceModelChangedAction, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { FeatureDefinition, FeatureModule, SourceModelChangedAction, configureActionHandler } from '@eclipse-glsp/sprotty';
+import { sourceModelWatcherFeatureDef } from './source-model-watcher-feature';
 import { SourceModelChangedActionHandler } from './source-model-changed-action-handler';
 
-export const sourceModelWatcherModule = new FeatureModule(
-    (bind, _unbind, isBound) => {
-        configureActionHandler({ bind, isBound }, SourceModelChangedAction.KIND, SourceModelChangedActionHandler);
-    },
-    { featureId: Symbol('sourceModelWatcher') }
-);
+export const sourceModelWatcherModule = new FeatureModule((bind, _unbind, isBound) => {
+    configureActionHandler({ bind, isBound }, SourceModelChangedAction.KIND, SourceModelChangedActionHandler);
+}, FeatureDefinition.toModuleOptions(sourceModelWatcherFeatureDef));

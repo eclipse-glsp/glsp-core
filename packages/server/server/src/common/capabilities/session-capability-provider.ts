@@ -16,7 +16,7 @@
 import { Args, CapabilitiesChangedAction, GLSPCapability, SessionCapabilities } from '@eclipse-glsp/protocol';
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { ServerFeature, ServerFeatureDescription } from '../di/feature';
+import { ServerFeatureDescription } from '../di/feature';
 import { ClientActionKinds } from '../di/service-identifiers';
 import { CapabilityContribution } from './capability-contribution';
 
@@ -51,7 +51,7 @@ export interface SessionCapabilityProvider {
 /**
  * Default {@link SessionCapabilityProvider} that derives the capabilities from the loaded server features:
  * 1. every GLSP-defined capability ({@link GLSPCapability}) is `false` by default,
- * 2. every loaded capability feature ({@link ServerFeature}, see `CapabilityFeatureModule`) is enabled (`true`),
+ * 2. every loaded capability feature ({@link ServerFeatureDescription}, see `CapabilityFeatureModule`) is enabled (`true`),
  * 3. all {@link CapabilityContribution}s are shallow-merged on top, in binding order,
  * 4. all updates (see {@link SessionCapabilityProvider.updateCapabilities}) are shallow-merged on top.
  *
@@ -59,7 +59,7 @@ export interface SessionCapabilityProvider {
  */
 @injectable()
 export class DefaultSessionCapabilityProvider implements SessionCapabilityProvider {
-    @multiInject(ServerFeature)
+    @multiInject(ServerFeatureDescription)
     @optional()
     protected features: ServerFeatureDescription[] = [];
 
