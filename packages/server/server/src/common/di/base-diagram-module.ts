@@ -18,7 +18,6 @@ import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dis
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
 import { ClientActionForwarder } from '../actions/client-action-handler';
-import { CapabilityContribution } from '../capabilities/capability-contribution';
 import { DefaultSessionCapabilityProvider, SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { CommandStack, DefaultCommandStack } from '../command/command-stack';
 import { BindingTarget, applyBindingTarget } from './binding-target';
@@ -39,7 +38,7 @@ import { DefaultProgressService, ProgressService } from '../progress/progress-se
  * - {@link ActionHandlerConstructor} contributions (empty), {@link ActionHandlerFactory}, {@link ActionHandlerRegistry}
  * - {@link ClientSessionInitializer}s ({@link ActionHandlerRegistryInitializer})
  * - {@link CommandStack}, {@link ProgressService}
- * - {@link SessionCapabilityProvider}, {@link CapabilityContribution}s (empty)
+ * - {@link SessionCapabilityProvider}
  */
 export class BaseDiagramModule extends ServerFeatureModule {
     static readonly KEY = 'glsp.base';
@@ -67,9 +66,6 @@ export class BaseDiagramModule extends ServerFeatureModule {
         applyBindingTarget(context, ProgressService, this.bindProgressService()).inSingletonScope();
 
         applyBindingTarget(context, SessionCapabilityProvider, this.bindSessionCapabilityProvider()).inSingletonScope();
-        this.configureMultiBinding(new MultiBinding<CapabilityContribution>(CapabilityContribution), binding =>
-            this.configureCapabilityContributions(binding)
-        );
     }
 
     protected bindClientId(): BindingTarget<string> {
@@ -110,13 +106,5 @@ export class BaseDiagramModule extends ServerFeatureModule {
 
     protected bindSessionCapabilityProvider(): BindingTarget<SessionCapabilityProvider> {
         return DefaultSessionCapabilityProvider;
-    }
-
-    /**
-     * Hook to contribute additional (e.g. custom, dot-namespaced) capabilities.
-     * Feature-specific contributions are bound by the respective feature modules.
-     */
-    protected configureCapabilityContributions(binding: MultiBinding<CapabilityContribution>): void {
-        // empty as default
     }
 }

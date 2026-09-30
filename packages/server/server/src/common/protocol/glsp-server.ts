@@ -158,17 +158,36 @@ export class DefaultGLSPServer implements GLSPServer {
         );
         this.validateServerInitialized();
 
+        const isNewSession = !this.sessionManager.getSession(params.clientSessionId);
         const session = this.sessionManager.getOrCreateClientSession(params);
 
         this.clientSessions.set(params.clientSessionId, session);
-        await this.handleInitializeClientSessionArgs(params.args);
-        const capabilities = await this.getSessionCapabilities(session, params);
+        let capabilities: SessionCapabilities | undefined;
+        try {
+            await this.handleInitializeClientSessionArgs(params.args);
+            capabilities = await this.getSessionCapabilities(session, params);
+        } catch (error: unknown) {
+            if (isNewSession) {
+                this.rollbackClientSession(params.clientSessionId);
+            }
+            throw error;
+        }
         if (capabilities) {
             this.logger.info(`Initialized client session '${params.clientSessionId}' with capabilities:`, capabilities);
         } else {
             this.logger.info(`Initialized client session '${params.clientSessionId}' without capabilities`);
         }
         return { capabilities };
+    }
+
+    /**
+     * Disposes a client session whose initialization failed, so that the client does not end up with a half-initialized
+     * session and a retry with the same id creates a fresh session. Only invoked for sessions that were created by the
+     * failed initialization, an already existing session is kept.
+     */
+    protected rollbackClientSession(clientSessionId: string): void {
+        this.clientSessions.delete(clientSessionId);
+        this.sessionManager.disposeClientSession(clientSessionId);
     }
 
     /**

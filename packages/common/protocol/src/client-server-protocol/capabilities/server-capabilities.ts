@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Capability, CapabilityKey } from './capability';
+import { CapabilityKey } from './capability';
 import { DiagramCapabilities } from './diagram-capabilities';
 
 /**
@@ -23,11 +23,5 @@ import { DiagramCapabilities } from './diagram-capabilities';
 export interface ServerCapabilities {
     /** The (static) capabilities of each diagram type that is supported by the server. */
     diagramTypes?: { [diagramType: string]: DiagramCapabilities };
-    /**
-     * Indicates that the server may send `CapabilitiesChangedAction`s to update the session capabilities after the
-     * initialization of a client session.
-     * @alpha
-     */
-    dynamicCapabilities?: Capability;
     [key: CapabilityKey]: unknown;
 }

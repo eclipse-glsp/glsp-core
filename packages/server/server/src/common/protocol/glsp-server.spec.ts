@@ -27,6 +27,7 @@ import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest'
 import { Container, ContainerModule } from 'inversify';
 import { GlobalActionProvider } from '../actions/global-action-provider';
 import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
+import { ClientSession } from '../session/client-session';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
@@ -151,8 +152,7 @@ describe('test DefaultGLSPServer', () => {
     it('initialize client session - returns session capabilities resolved with session args', async () => {
         const sessionContainer = new Container();
         const provider: SessionCapabilityProvider = {
-            getCapabilities: async args => ({ [GLSPCapability.Popup]: args?.readonly !== true }),
-            updateCapabilities: async () => {}
+            getCapabilities: async args => ({ [GLSPCapability.Popup]: args?.readonly !== true })
         };
         sessionContainer.bind(SessionCapabilityProvider).toConstantValue(provider);
         spy_sessionManager_getOrCreate.mockReturnValue(mock.createClientSession(clientSessionId, diagramType, sessionContainer));
@@ -163,6 +163,29 @@ describe('test DefaultGLSPServer', () => {
             args: { readonly: true }
         });
         expect(result.capabilities).toEqual({ [GLSPCapability.Popup]: false });
+    });
+
+    function createFailingSession(): ClientSession {
+        const sessionContainer = new Container();
+        sessionContainer.bind(SessionCapabilityProvider).toConstantValue(<SessionCapabilityProvider>{
+            getCapabilities: () => Promise.reject(new Error('Capability resolution failed'))
+        });
+        return mock.createClientSession(clientSessionId, diagramType, sessionContainer);
+    }
+
+    it('initialize client session - disposes a newly created session if the initialization fails', async () => {
+        spy_sessionManager_getOrCreate.mockReturnValue(createFailingSession());
+        await assert.rejects(() => glspServer.initializeClientSession({ clientSessionId, diagramType, clientActionKinds: [] }));
+        expect(spy_sessionManager_dispose).toHaveBeenCalledWith(clientSessionId);
+        expect(() => glspServer.process({ clientId: clientSessionId, action: { kind: 'someAction' } })).toThrow();
+    });
+
+    it('initialize client session - keeps an already existing session if the initialization fails', async () => {
+        const session = createFailingSession();
+        vi.spyOn(sessionManager, 'getSession').mockReturnValue(session);
+        spy_sessionManager_getOrCreate.mockReturnValue(session);
+        await assert.rejects(() => glspServer.initializeClientSession({ clientSessionId, diagramType, clientActionKinds: [] }));
+        expect(spy_sessionManager_dispose).not.toHaveBeenCalled();
     });
 
     it('dispose client session', async () => {

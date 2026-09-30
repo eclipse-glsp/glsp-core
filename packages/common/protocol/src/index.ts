@@ -14,7 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 export * from './action-protocol/base-protocol';
-export * from './action-protocol/capabilities';
 export * from './action-protocol/client-notification';
 export * from './action-protocol/clipboard';
 export * from './action-protocol/contexts';

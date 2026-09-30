@@ -17,10 +17,10 @@ import { CapabilityKey, GLSPCapability } from '@eclipse-glsp/protocol';
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { Container } from 'inversify';
 import { describe, expect, it } from 'vitest';
-import { ActionDispatcher } from '../actions/action-dispatcher';
 import { CapabilityContribution } from '../capabilities/capability-contribution';
 import { DefaultSessionCapabilityProvider, SessionCapabilityProvider } from '../capabilities/session-capability-provider';
-import { StubActionDispatcher } from '../test/mock-util';
+import { StubLogger } from '../test/mock-util';
+import { Logger } from '../utils/logger';
 import { CapabilityFeatureModule } from './capability-feature-module';
 import { ServerFeature, ServerFeatureDescription } from './feature';
 import { ServerFeatureModule } from './server-feature-module';
@@ -98,7 +98,7 @@ describe('DefaultSessionCapabilityProvider', () => {
         const container = new Container();
         container.load(new PopupTestModule());
         contributions.forEach(contribution => container.bind(CapabilityContribution).toConstantValue(contribution));
-        container.bind(ActionDispatcher).toConstantValue(new StubActionDispatcher());
+        container.bind(Logger).toConstantValue(new StubLogger());
         container.bind(SessionCapabilityProvider).to(DefaultSessionCapabilityProvider);
         return container.get<SessionCapabilityProvider>(SessionCapabilityProvider);
     }
@@ -106,7 +106,7 @@ describe('DefaultSessionCapabilityProvider', () => {
     it('should report loaded custom capability features but no infrastructure features', async () => {
         const container = new Container();
         container.load(new PopupTestModule(), new CustomTestModule(), new AcmeCapabilityTestModule());
-        container.bind(ActionDispatcher).toConstantValue(new StubActionDispatcher());
+        container.bind(Logger).toConstantValue(new StubLogger());
         container.bind(SessionCapabilityProvider).to(DefaultSessionCapabilityProvider);
         const capabilities = await container.get<SessionCapabilityProvider>(SessionCapabilityProvider).getCapabilities();
         expect(capabilities['acme.capability']).toBe(true);
@@ -127,5 +127,14 @@ describe('DefaultSessionCapabilityProvider', () => {
         ).getCapabilities({ value: 2 });
         expect(capabilities[GLSPCapability.Popup]).toBe(false);
         expect(capabilities['acme.custom']).toBe(2);
+    });
+
+    it('should skip a failing contribution', async () => {
+        const capabilities = await createProvider(
+            { contribute: () => ({ 'acme.custom': 1 }) },
+            { contribute: () => Promise.reject(new Error('Contribution failed')) }
+        ).getCapabilities();
+        expect(capabilities[GLSPCapability.Popup]).toBe(true);
+        expect(capabilities['acme.custom']).toBe(1);
     });
 });

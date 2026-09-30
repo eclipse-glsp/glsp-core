@@ -20,10 +20,13 @@ export const CapabilityContribution = Symbol('CapabilityContribution');
 /**
  * Contributes a slice of the {@link SessionCapabilities} of a client session.
  *
- * Contributions are multi-bound in the client session container (typically one per feature module that has capability
- * options) and are collected by the {@link SessionCapabilityProvider}. They are shallow-merged in binding order,
- * i.e. later contributions win on key collision, so adopter modules that are loaded after the defaults can override
- * GLSP capabilities. Custom capabilities must use a dot-namespaced key (e.g. `myCompany.simulation`).
+ * Contributions are multi-bound in the client session container by the feature module that owns the capability
+ * (see e.g. `LayoutModule.bindCapabilityContribution`) and are collected by the {@link SessionCapabilityProvider}.
+ * They are shallow-merged in binding order, i.e. later contributions win on key collision. To customize
+ * - a GLSP capability, subclass the owning feature module, override its `bindCapabilityContribution` and `replace` the
+ *   default module in the diagram setup,
+ * - a custom capability, bind the contribution in the (e.g. `CapabilityFeatureModule`) module that provides the feature.
+ *   Custom capabilities must use a dot-namespaced key (e.g. `myCompany.simulation`).
  */
 export interface CapabilityContribution {
     /**
