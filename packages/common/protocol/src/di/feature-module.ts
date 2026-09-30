@@ -16,6 +16,7 @@
 
 import { ContainerModule, interfaces } from 'inversify';
 import { MaybeArray, asArray } from '../utils/array-util';
+import { AnyObject, hasFunctionProp } from '../utils/type-util';
 import { BindingContext } from './inversify-util';
 
 /**
@@ -115,4 +116,13 @@ export class FeatureModule extends ContainerModule {
     isLoaded(context: Pick<BindingContext, 'isBound'>): boolean {
         return context.isBound(this.featureId);
     }
+}
+
+/**
+ * Type guard for {@link FeatureModule}s. Feature modules might originate from different inversify contexts
+ * (e.g. `inversify` vs. `@theia/core/shared/inversify`), in which case an `instanceof` check can return a false negative.
+ * The guard therefore checks the shape of the module instead.
+ */
+export function isFeatureModule(module: unknown): module is FeatureModule {
+    return AnyObject.is(module) && hasFunctionProp(module, 'registry') && typeof (module as Partial<FeatureModule>).featureId === 'symbol';
 }

@@ -16,8 +16,8 @@
 import { GGraph } from '@eclipse-glsp/graph';
 import { MaybePromise, RequestModelAction, SaveModelAction, isGModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { GModelSerializer } from '../../common/features/model/gmodel-serializer';
-import { ModelState } from '../../common/features/model/model-state';
+import { GModelSerializer } from '../../common/model/gmodel-serializer';
+import { ModelState } from '../../common/model/model-state';
 import { Logger } from '../../common/utils/logger';
 import { AbstractJsonModelStorage } from '../abstract-json-model-storage';
 

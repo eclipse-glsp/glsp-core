@@ -20,6 +20,7 @@ import { ClientSessionInitializer } from '../session/client-session-initializer'
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
 import { ActionHandler } from './action-handler';
+import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
 import { ActionHandlerRegistry } from './action-handler-registry';
 import { DefaultGlobalActionProvider } from './global-action-provider';
 
@@ -44,12 +45,24 @@ describe('test DefaultGlobalActionProvider', () => {
         bind(ActionHandlerRegistry).toConstantValue(handlerRegistry);
     });
 
+    const failingDiagramType = 'failingDiagramType';
+    const failingDiagramModule = new ContainerModule(bind => {
+        bind(ActionHandlerRegistry).toConstantValue(new ActionHandlerRegistry());
+        bind(SessionCapabilityProvider).toConstantValue({
+            getCapabilities: () => Promise.reject(new Error('Broken capability contribution'))
+        });
+    });
+
     const diagramModules = new Map<string, ContainerModule[]>();
     diagramModules.set(diagramType, [diagramModule1]);
+    diagramModules.set(failingDiagramType, [failingDiagramModule]);
+    const logger = new mock.StubLogger();
+    // The capabilities are resolved (and errors are logged) on construction, so the spy has to be installed beforehand.
+    const errorSpy = vi.spyOn(logger, 'error');
 
     container.load(
         new ContainerModule(bind => {
-            bind(Logger).toConstantValue(new mock.StubLogger());
+            bind(Logger).toConstantValue(logger);
             bind(InjectionContainer).toConstantValue(container);
             bind(DiagramModules).toConstantValue(diagramModules);
         })
@@ -59,9 +72,21 @@ describe('test DefaultGlobalActionProvider', () => {
 
     it('serverActionsKinds', () => {
         const result = actionProvider.actionKinds;
-        expect(result.size).toBe(1);
+        expect(result.size).toBe(2);
         const resultServerActions = result.get(diagramType);
         expect(resultServerActions).toBeDefined();
         expect(serverActions.every(action => resultServerActions!.includes(action))).toBe(true);
+    });
+
+    it('getDiagramCapabilities - without SessionCapabilityProvider', async () => {
+        const result = await actionProvider.getDiagramCapabilities();
+        expect(result.get(diagramType)).toEqual({});
+    });
+
+    it('getDiagramCapabilities - with a failing SessionCapabilityProvider', async () => {
+        const result = await actionProvider.getDiagramCapabilities();
+        expect(result.get(failingDiagramType)).toEqual({});
+        expect(result.get(diagramType)).toEqual({});
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(failingDiagramType), expect.any(Error));
     });
 });

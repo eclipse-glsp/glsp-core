@@ -18,7 +18,7 @@ import { inject, injectable, optional } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 import { GLSPServerError, getOrThrow } from '../../utils/glsp-server-error';
-import { ModelState } from '../model/model-state';
+import { ModelState } from '../../model/model-state';
 import { EdgeCreationChecker } from './edge-creation-checker';
 
 @injectable()

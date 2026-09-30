@@ -67,7 +67,7 @@ export interface ElkModuleOptions {
  *
  * Subclass and override the `bindXxx()` hooks to customize individual bindings — e.g. to swap the
  * layout configurator or element filter without re-implementing the whole module. The module is
- * only meaningful in combination with a `GLSPDiagramModule`.
+ * only meaningful as part of a diagram setup that includes the `LayoutModule`.
  *
  * Bindings provided:
  * - {@link ElementFilter}

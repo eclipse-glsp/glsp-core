@@ -16,8 +16,8 @@
 
 import { AnyObject, GModelElementSchema, GModelRootSchema, MaybePromise } from '@eclipse-glsp/protocol';
 import * as jsonPatch from 'fast-json-patch';
-import { GModelSerializer } from '../features/model/gmodel-serializer';
-import { ModelState } from '../features/model/model-state';
+import { GModelSerializer } from '../model/gmodel-serializer';
+import { ModelState } from '../model/model-state';
 import { Command } from './command';
 /**
  * An abstract implementation for {@link Command} that should records changes made to a JSON object during execution.

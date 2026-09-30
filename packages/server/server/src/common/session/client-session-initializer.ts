@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Args } from '@eclipse-glsp/protocol';
+import { interfaces } from 'inversify';
 
 export const ClientSessionInitializer = Symbol('ClientSessionInitializer');
 
@@ -23,5 +24,24 @@ export const ClientSessionInitializer = Symbol('ClientSessionInitializer');
  *  {@link ClientSessionFactory.create} method.
  */
 export interface ClientSessionInitializer {
+    /**
+     * Optional execution priority. Initializers with a higher priority are executed first (default: `0`).
+     * Initializers with the same priority are executed in binding order.
+     */
+    readonly priority?: number;
     initialize(args?: Args): void;
+}
+
+/**
+ * Retrieves all {@link ClientSessionInitializer}s from the given (fully loaded) client session container
+ * and executes them ordered by their {@link ClientSessionInitializer.priority}.
+ *
+ * @param container The client session container.
+ * @param args The (optional) client session args.
+ */
+export function runClientSessionInitializers(container: interfaces.Container, args?: Args): void {
+    const initializers = container.isBound(ClientSessionInitializer)
+        ? container.getAll<ClientSessionInitializer>(ClientSessionInitializer)
+        : [];
+    initializers.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)).forEach(initializer => initializer.initialize(args));
 }

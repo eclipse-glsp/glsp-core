@@ -14,25 +14,20 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action, MarkersReason, RequestMarkersAction, SetMarkersAction } from '@eclipse-glsp/protocol';
-import { inject, injectable, optional } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { GLSPServerError } from '../../utils/glsp-server-error';
-import { ModelState } from '../model/model-state';
+import { ModelState } from '../../model/model-state';
 import { ModelValidator } from './model-validator';
 
 @injectable()
 export class RequestMarkersHandler implements ActionHandler {
     actionKinds = [RequestMarkersAction.KIND];
 
-    @inject(ModelValidator) @optional() validator: ModelValidator;
+    @inject(ModelValidator) validator: ModelValidator;
     @inject(ModelState) modelState: ModelState;
 
     async execute(action: RequestMarkersAction): Promise<Action[]> {
         let elementIDs = action.elementsIDs;
-        if (!this.validator) {
-            throw new GLSPServerError('Cannot compute markers! No implementation for ModelValidator has been bound');
-        }
-
         if (!elementIDs || elementIDs.length === 0 || (elementIDs.length === 1 && elementIDs[0] === 'EMPTY')) {
             elementIDs = [this.modelState.root.id];
         }

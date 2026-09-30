@@ -23,7 +23,7 @@ pnpm add @eclipse-glsp/server-mcp
 Load the MCP container modules in your GLSP server's DI configuration:
 
 ```typescript
-import { GModelStorage, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
+import { GModelStorage, WebSocketServerLauncher, createAppModule, createGModelDiagramSetup } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 import { DefaultMcpDiagramModule } from '@eclipse-glsp/server-mcp';
 import { NodeMcpServerModule } from '@eclipse-glsp/server-mcp/node';
@@ -31,12 +31,14 @@ import { NodeMcpServerModule } from '@eclipse-glsp/server-mcp/node';
 const appContainer = new Container();
 appContainer.load(createAppModule(options));
 
-// Per-session bindings — must be part of `configureDiagramModule`.
+// Per-session bindings — must be part of the diagram setup.
 const mcpDiagramModule = new DefaultMcpDiagramModule();
-const serverModule = new MyServerModule().configureDiagramModule(new MyDiagramModule(() => GModelStorage), mcpDiagramModule);
+const serverModule = new MyServerModule().configureDiagram(
+    createGModelDiagramSetup(new MyModelModule(() => GModelStorage), { add: [mcpDiagramModule] })
+);
 
 const launcher = appContainer.resolve(WebSocketServerLauncher);
-// Launcher-level bindings — must not be part of `configureDiagramModule`.
+// Launcher-level bindings — must not be part of the diagram setup.
 launcher.configure(serverModule, new NodeMcpServerModule());
 ```
 

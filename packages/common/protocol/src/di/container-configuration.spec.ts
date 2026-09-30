@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { describe, expect, it } from 'vitest';
-import { Container } from 'inversify';
+import { Container, ContainerModule } from 'inversify';
 import { resolveContainerConfiguration } from './container-configuration';
 import { FeatureModule } from './feature-module';
 
@@ -61,6 +61,17 @@ describe('Container configuration', () => {
             const replaceModule = new FeatureModule(() => {}, { featureId: Symbol('replaceModule') });
             const result = resolveContainerConfiguration(moduleA, moduleB, { replace: replaceModule });
             expect(result).toEqual([moduleA, moduleB, replaceModule]);
+        });
+        it('should remove a replaced module via a remove configuration with a module that has the same feature id', () => {
+            const replaceModule = new FeatureModule(() => {}, { featureId: moduleA.featureId });
+            const result = resolveContainerConfiguration(moduleA, moduleB, { replace: replaceModule }, { remove: moduleA });
+            expect(result).toEqual([moduleB]);
+        });
+        it('should remove plain container modules by identity', () => {
+            const plainModule = new ContainerModule(() => {});
+            const otherPlainModule = new ContainerModule(() => {});
+            const result = resolveContainerConfiguration(plainModule, otherPlainModule, { remove: plainModule });
+            expect(result).toEqual([otherPlainModule]);
         });
         it('should throw an error for a configuration that resolves to multiple feature modules with the same featureId', () => {
             const duplicateModule = new FeatureModule(() => {}, { featureId: moduleA.featureId });
