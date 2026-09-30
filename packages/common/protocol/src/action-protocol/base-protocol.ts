@@ -112,6 +112,18 @@ export namespace RequestAction {
     export function generateRequestId(): string {
         return sprotty.generateRequestId();
     }
+
+    /**
+     * Typeguard function to check wether the given object is a {@link RequestAction} with a non-empty request id, i.e. an action
+     * that has actually been dispatched as request and expects a response. Counterpart of {@link ResponseAction.hasValidResponseId}.
+     * Request actions with an empty request id (e.g. operations that are dispatched as plain actions) are processed like any
+     * other action.
+     * @param object The object to check.
+     * @returns A type literal indicating wether the given object is a request action with a non-empty request id.
+     */
+    export function hasValidRequestId(object: unknown): object is RequestAction<ResponseAction> {
+        return RequestAction.is(object) && object.requestId !== '';
+    }
 }
 
 /**
@@ -183,13 +195,46 @@ export namespace RejectAction {
 }
 
 /**
+ * The error a request is rejected with if the receiving party answered the request with a {@link RejectAction}.
+ * Used by the action dispatchers of both, client and server, so that the reject reason and its details are available in a
+ * structured way.
+ */
+export class RequestRejectedError extends Error {
+    constructor(readonly rejectAction: RejectAction) {
+        super(rejectAction.message);
+        this.name = 'RequestRejectedError';
+    }
+
+    /**
+     * Optional additional details about the rejection reason.
+     */
+    get detail(): string | undefined {
+        return this.rejectAction.detail;
+    }
+}
+
+/**
  * Operations are actions that denote requests from the client to _modify_ the model. Model modifications are always performed by the
  * server. After a successful modification, the server sends the updated model back to the client using the `UpdateModelAction`.
  * An operation contains a dedicated `isOperation` property that is used as a discriminator. This is necessary so that the server
  * can distinguish between plain actions and operations.
+ *
+ * Every operation is a {@link RequestAction}. Once the server has processed the operation it answers with an {@link OperationResponseAction}.
+ * If the execution fails, the server answers with a {@link RejectAction} instead. This allows the dispatching party to await the operation
+ * and react to failures, e.g. via `actionDispatcher.request(operation)`.
+ * The type parameter declares the response of the operation. By default an operation is answered with a plain acknowledgement, operations
+ * that report additional results (e.g. the ids of created elements) declare a dedicated subtype of {@link OperationResponseAction}.
+ * Operations that are nested in a {@link CompoundOperation} are not answered individually, only the compound operation itself.
+ * Operations handled by a plain action handler instead of an operation handler are answered with a plain acknowledgement once their
+ * dispatch has completed. Answering operations is mandatory for servers since protocol version `2.0.0`.
+ * An awaited operation completes only once the client model has been updated to the revision of the response. If that model
+ * update never arrives (e.g. because the client-side layout fails), an operation dispatched via `request` never settles. Prefer
+ * `requestUntil` to await operations with a bounded wait.
+ * Operations dispatched as plain actions (i.e. with an empty `requestId`) are processed like any other action and are not answered.
+ *
  * The corresponding namespace offers a helper function for type guard checks.
  */
-export interface Operation extends Action {
+export interface Operation<Res extends OperationResponseAction = OperationResponseAction> extends RequestAction<Res> {
     /**
      * Discriminator property to make operations distinguishable from plain {@link Action}s.
      */
@@ -218,6 +263,50 @@ export namespace Operation {
 }
 
 /**
+ * Sent from the server to the client to acknowledge that an {@link Operation} has been processed successfully.
+ * Failed operations are answered with a {@link RejectAction} instead.
+ *
+ * This is the base type of all operation responses. The default response (created via {@link OperationResponseAction.create}) is a plain
+ * acknowledgement. Operations that report additional results declare a subtype with a dedicated `kind` as their response type
+ * (see {@link Operation}). An operation response contains a dedicated `isOperationResponse` property that is used as a discriminator,
+ * so that operation responses of any kind can be recognized.
+ *
+ * The corresponding namespace declares the kind of the default response as constant and offers helper functions for type guard checks
+ * and creating new `OperationResponseActions`.
+ */
+export interface OperationResponseAction extends ResponseAction {
+    /**
+     * Discriminator property to make operation responses distinguishable from other {@link ResponseAction}s.
+     */
+    isOperationResponse: true;
+
+    /**
+     * The revision of the model after the operation has been processed.
+     * With client-side layout, the resulting model update is sent only after the client has returned the computed bounds, i.e. it
+     * may arrive after this response. The revision allows the client to defer the completion of the operation until its model has
+     * been updated to (at least) this revision.
+     */
+    revision?: number;
+}
+
+export namespace OperationResponseAction {
+    export const KIND = 'operationResponse';
+
+    export function is(object: unknown): object is OperationResponseAction {
+        return ResponseAction.is(object) && 'isOperationResponse' in object && object.isOperationResponse === true;
+    }
+
+    export function create(options: { responseId?: string; revision?: number } = {}): OperationResponseAction {
+        return {
+            kind: KIND,
+            isOperationResponse: true,
+            responseId: '',
+            ...options
+        };
+    }
+}
+
+/**
  * An operation that executes a list of sub-operations.
  * The corresponding namespace declares the action kind as constant and offers helper functions for type guard checks
  * and creating new `CompoundOperations`.
@@ -241,6 +330,7 @@ export namespace CompoundOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             operationList,
             ...options
         };

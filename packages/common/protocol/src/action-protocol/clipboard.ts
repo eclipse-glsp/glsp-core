@@ -100,6 +100,7 @@ export namespace CutOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             editorContext,
             ...options
         };
@@ -134,6 +135,7 @@ export namespace PasteOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }

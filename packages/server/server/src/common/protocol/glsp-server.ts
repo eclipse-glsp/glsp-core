@@ -27,6 +27,7 @@ import {
     InitializeResult,
     MaybePromise,
     MessageAction,
+    Operation,
     RejectAction,
     RequestAction,
     ResponseAction,
@@ -47,7 +48,7 @@ import { ClientAction } from './client-action';
 
 @injectable()
 export class DefaultGLSPServer implements GLSPServer {
-    public static readonly PROTOCOL_VERSION = '1.0.0';
+    public static readonly PROTOCOL_VERSION = '2.0.0';
 
     @inject(Logger)
     protected logger: Logger;
@@ -213,7 +214,8 @@ export class DefaultGLSPServer implements GLSPServer {
         }
         const action = message.action;
         ClientAction.mark(action);
-        if (RequestAction.is(action)) {
+        // Operations without a request id have not been dispatched as request => no response is expected
+        if (RequestAction.is(action) && (!Operation.is(action) || RequestAction.hasValidRequestId(action))) {
             this.handleClientRequest(clientSession, action, message.clientId);
             return;
         }
@@ -235,18 +237,28 @@ export class DefaultGLSPServer implements GLSPServer {
                 this.sendResponseToClient(clientId, response);
             }
         } catch (error) {
-            const detail = error instanceof GLSPServerError ? error.cause?.toString?.() : error?.toString?.();
-            this.logger.error(`Failed to handle request '${action.kind}' (${action.requestId}):`, detail);
+            this.logger.error(`Failed to handle request '${action.kind}' (${action.requestId}):`, error);
             try {
-                const reject = RejectAction.create(`Failed to handle request '${action.kind}' (${action.requestId})`, {
-                    responseId: action.requestId,
-                    detail
-                });
+                const reject = this.createRejectAction(action, error);
                 this.sendResponseToClient(clientId, reject);
             } catch (sendError) {
                 this.logger.error(`Failed to send rejection for request '${action.requestId}':`, sendError);
             }
         }
+    }
+
+    /**
+     * Creates the {@link RejectAction} that is sent to the client if the given request could not be handled.
+     * The message contains the reason of the failure so that the requesting party can react to it (e.g. show it to the user).
+     */
+    protected createRejectAction(action: RequestAction<ResponseAction>, error: unknown): RejectAction {
+        const prefix = Operation.is(action)
+            ? `Failed to execute operation '${action.kind}'`
+            : `Failed to handle request '${action.kind}' (${action.requestId})`;
+        const reason = error instanceof Error ? error.message : String(error);
+        const cause = error instanceof Error ? error.cause : undefined;
+        const detail = cause !== undefined ? String(cause) : undefined;
+        return RejectAction.create(`${prefix}: ${reason}`, { responseId: action.requestId, detail });
     }
 
     protected sendResponseToClient(clientId: string, response: ResponseAction): void {

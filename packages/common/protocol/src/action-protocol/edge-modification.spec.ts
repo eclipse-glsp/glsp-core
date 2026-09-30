@@ -29,6 +29,7 @@ describe('Edge modification operations', () => {
                 const operation: ReconnectEdgeOperation = {
                     kind: 'reconnectEdge',
                     isOperation: true,
+                    requestId: '',
                     edgeElementId: '1',
                     sourceElementId: '2',
                     targetElementId: '3'
@@ -48,6 +49,7 @@ describe('Edge modification operations', () => {
                 const expected: ReconnectEdgeOperation = {
                     kind: 'reconnectEdge',
                     isOperation: true,
+                    requestId: '',
                     edgeElementId: 'edgeElement',
                     sourceElementId: 'source',
                     targetElementId: 'target'
@@ -59,6 +61,7 @@ describe('Edge modification operations', () => {
                 const expected: ReconnectEdgeOperation = {
                     kind: 'reconnectEdge',
                     isOperation: true,
+                    requestId: '',
                     edgeElementId: 'edgeElement',
                     sourceElementId: 'source',
                     targetElementId: 'target',
@@ -76,6 +79,7 @@ describe('Edge modification operations', () => {
                 const operation: ChangeRoutingPointsOperation = {
                     kind: 'changeRoutingPoints',
                     isOperation: true,
+                    requestId: '',
                     newRoutingPoints: []
                 };
                 expect(ChangeRoutingPointsOperation.is(operation)).toBe(true);
@@ -93,6 +97,7 @@ describe('Edge modification operations', () => {
                 const expected: ChangeRoutingPointsOperation = {
                     kind: 'changeRoutingPoints',
                     isOperation: true,
+                    requestId: '',
                     newRoutingPoints: [{ elementId: 'element', newRoutingPoints: [Point.ORIGIN] }]
                 };
                 const { newRoutingPoints } = expected;
@@ -102,6 +107,7 @@ describe('Edge modification operations', () => {
                 const expected: ChangeRoutingPointsOperation = {
                     kind: 'changeRoutingPoints',
                     isOperation: true,
+                    requestId: '',
                     newRoutingPoints: [{ elementId: 'element', newRoutingPoints: [Point.ORIGIN] }],
                     args: { some: 'args' }
                 };

@@ -29,11 +29,40 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
 
     async execute(): Promise<void> {
         const beforeState = this.deepClone(await this.getJsonObject());
-        await this.doExecute();
+        try {
+            await this.doExecute();
+        } catch (error) {
+            try {
+                await this.rollback(beforeState);
+            } catch (rollbackError) {
+                this.handleRollbackError(rollbackError);
+            }
+            throw error;
+        }
         const afterState = await this.getJsonObject();
         this.undoPatch = jsonPatch.compare(afterState, beforeState);
         this.redoPatch = jsonPatch.compare(beforeState, afterState);
         await this.postChange?.(afterState);
+    }
+
+    /**
+     * Restores the given state if {@link AbstractRecordingCommand.doExecute} failed. This ensures that
+     * changes that have been applied before the failure do not remain in the JSON object.
+     * @param beforeState The state of the JSON object before the command execution
+     */
+    protected async rollback(beforeState: JsonObject): Promise<void> {
+        const currentState = await this.getJsonObject();
+        const result = this.applyPatch(currentState, jsonPatch.compare(currentState, beforeState));
+        await this.postChange?.(result.newDocument);
+    }
+
+    /**
+     * Invoked if {@link AbstractRecordingCommand.rollback} failed. The rollback error is only reported, the original
+     * execution error is still propagated to the caller so that the actual cause of the failure is not masked.
+     * @param error The error thrown by the rollback
+     */
+    protected handleRollbackError(error: unknown): void {
+        console.error('Failed to roll back the changes of the failed command execution', error);
     }
 
     /**

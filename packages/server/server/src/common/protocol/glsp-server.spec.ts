@@ -15,20 +15,27 @@
  ********************************************************************************/
 import {
     DiagramCapabilities,
+    ActionMessage,
+    ChangeBoundsOperation,
     DisposeClientSessionParameters,
     GLSPCapability,
     GLSPClientProxy,
     GLSPServerListener,
     InitializeClientSessionParameters,
-    InitializeParameters
+    InitializeParameters,
+    MessageAction,
+    OperationResponseAction,
+    RejectAction
 } from '@eclipse-glsp/protocol';
 import * as assert from 'assert';
 import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { GlobalActionProvider } from '../actions/global-action-provider';
 import { SessionCapabilityProvider } from '../capabilities/session-capability-provider';
+import { ClientSession } from '../session/client-session';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
+import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { DefaultGLSPServer } from './glsp-server';
 
@@ -37,7 +44,7 @@ describe('test DefaultGLSPServer', () => {
     const clientSessionId = 'myClientSession';
     const diagramType = 'myDiagram';
     const applicationId = 'Test';
-    const protocolVersion = '1.0.0';
+    const protocolVersion = '2.0.0';
     const actionKinds = new Map<string, string[]>();
     actionKinds.set(diagramType, ['A1', 'A2']);
     const diagramCapabilities = new Map<string, DiagramCapabilities>();
@@ -177,5 +184,75 @@ describe('test DefaultGLSPServer', () => {
         glspServer.shutdown();
         expect(spy_listener1_shutdown).toHaveBeenCalledWith(glspServer);
         expect(spy_listener2_shutdown).not.toHaveBeenCalled();
+    });
+});
+
+describe('test DefaultGLSPServer operation processing', () => {
+    const clientId = 'myClientSession';
+    let clientProxy: mock.StubGLSPClientProxy;
+    let actionDispatcher: mock.StubActionDispatcher;
+    let glspServer: DefaultGLSPServer;
+
+    function sentActions(): unknown[] {
+        return vi.mocked(clientProxy.process).mock.calls.map(([message]: [ActionMessage]) => message.action);
+    }
+
+    beforeEach(async () => {
+        clientProxy = new mock.StubGLSPClientProxy();
+        vi.spyOn(clientProxy, 'process');
+        actionDispatcher = new mock.StubActionDispatcher();
+        const container = new Container();
+        container.load(
+            new ContainerModule(bind => {
+                bind(Logger).toConstantValue(new mock.StubLogger());
+                bind(GLSPClientProxy).toConstantValue(clientProxy);
+                bind(ClientSessionManager).toConstantValue(new mock.StubClientSessionManager());
+                bind(GlobalActionProvider).toConstantValue(<GlobalActionProvider>{
+                    actionKinds: new Map(),
+                    getDiagramCapabilities: async () => new Map()
+                });
+            })
+        );
+        glspServer = container.resolve(DefaultGLSPServer);
+        await glspServer.initialize({ applicationId: 'Test', protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION });
+        glspServer['clientSessions'].set(clientId, { id: clientId, actionDispatcher } as unknown as ClientSession);
+    });
+
+    it('should send the operation response to the client', async () => {
+        const response = OperationResponseAction.create({ responseId: 'request_1' });
+        vi.spyOn(actionDispatcher, 'request').mockResolvedValue(response);
+
+        const operation = ChangeBoundsOperation.create([]);
+        operation.requestId = 'request_1';
+        glspServer.process({ clientId, action: operation });
+
+        await vi.waitFor(() => expect(sentActions()).toEqual([response]));
+    });
+
+    it('should reject a failed operation with the error message', async () => {
+        vi.spyOn(actionDispatcher, 'request').mockRejectedValue(new GLSPServerError('Element not found', 'some cause'));
+
+        const operation = ChangeBoundsOperation.create([]);
+        operation.requestId = 'request_1';
+        glspServer.process({ clientId, action: operation });
+
+        await vi.waitFor(() =>
+            expect(sentActions()).toEqual([
+                RejectAction.create(`Failed to execute operation 'changeBounds': Element not found`, {
+                    responseId: 'request_1',
+                    detail: 'some cause'
+                })
+            ])
+        );
+    });
+
+    it('should dispatch an operation without request id as plain action and report errors via message', async () => {
+        const requestSpy = vi.spyOn(actionDispatcher, 'request');
+        vi.spyOn(actionDispatcher, 'dispatch').mockRejectedValue(new GLSPServerError('Element not found'));
+
+        glspServer.process({ clientId, action: ChangeBoundsOperation.create([]) });
+
+        await vi.waitFor(() => expect(sentActions()).toEqual([expect.objectContaining({ kind: MessageAction.KIND, severity: 'ERROR' })]));
+        expect(requestSpy).not.toHaveBeenCalled();
     });
 });

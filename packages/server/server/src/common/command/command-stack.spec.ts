@@ -97,6 +97,21 @@ describe('test DefaultCommandStack', () => {
             expect(command2.execute).toHaveBeenCalledOnce();
             expect(flushSpy).toHaveBeenCalledOnce();
         });
+
+        it('should stay dirty after an execution error if it was dirty before', async () => {
+            await commandStack.execute(command1);
+            command2.execute.mockRejectedValue(new Error('error'));
+
+            await expect(commandStack.execute(command2)).rejects.toThrow();
+            expect(commandStack.isDirty).toBe(true);
+        });
+
+        it('should stay clean after an execution error if it was clean before', async () => {
+            command2.execute.mockRejectedValue(new Error('error'));
+
+            await expect(commandStack.execute(command2)).rejects.toThrow();
+            expect(commandStack.isDirty).toBe(false);
+        });
     });
 
     describe('undo', () => {

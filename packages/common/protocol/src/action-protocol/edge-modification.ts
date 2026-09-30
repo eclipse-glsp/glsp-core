@@ -63,6 +63,7 @@ export namespace ReconnectEdgeOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }
@@ -94,6 +95,7 @@ export namespace ChangeRoutingPointsOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             newRoutingPoints,
             ...options
         };

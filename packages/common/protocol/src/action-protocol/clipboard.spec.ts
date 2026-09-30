@@ -108,6 +108,7 @@ describe('Clipboard actions', () => {
                 const operation: CutOperation = {
                     kind: 'cut',
                     isOperation: true,
+                    requestId: '',
                     editorContext: { selectedElementIds: [] }
                 };
                 expect(CutOperation.is(operation)).toBe(true);
@@ -125,6 +126,7 @@ describe('Clipboard actions', () => {
                 const expected: CutOperation = {
                     kind: 'cut',
                     isOperation: true,
+                    requestId: '',
                     editorContext: { selectedElementIds: ['element1'] }
                 };
                 const { editorContext } = expected;
@@ -139,6 +141,7 @@ describe('Clipboard actions', () => {
                 const operation: PasteOperation = {
                     kind: 'paste',
                     isOperation: true,
+                    requestId: '',
                     editorContext: { selectedElementIds: [] },
                     clipboardData: { format: '' }
                 };
@@ -157,6 +160,7 @@ describe('Clipboard actions', () => {
                 const expected: PasteOperation = {
                     kind: 'paste',
                     isOperation: true,
+                    requestId: '',
                     clipboardData: { format: 'string' },
                     editorContext: { selectedElementIds: ['element1'] }
                 };

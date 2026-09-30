@@ -13,7 +13,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Deferred, RejectAction, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import {
+    Action,
+    Deferred,
+    Operation,
+    OperationResponseAction,
+    RejectAction,
+    RequestAction,
+    RequestRejectedError,
+    ResponseAction,
+    UpdateModelAction
+} from '@eclipse-glsp/protocol';
 import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { ActionDispatchScope, DefaultActionDispatcher } from '../../common/actions/action-dispatcher';
@@ -468,6 +478,47 @@ describe('test DefaultActionDispatcher', () => {
 
             const result = await responsePromise;
             expect(result).toBeDefined();
+        });
+
+        it('request - acknowledges an operation that is handled without response', async () => {
+            const operationKind = 'plainOperation';
+            const handler = new mock.StubActionHandler([operationKind]);
+            vi.spyOn(handler, 'execute').mockReturnValue([]);
+            registry_get_stub.mockImplementation((kind: string) => (kind === operationKind ? [handler] : []));
+
+            const operation: Operation = { kind: operationKind, isOperation: true, requestId: 'op_1' };
+
+            const result = await actionDispatcher.request(operation);
+            expect(OperationResponseAction.is(result)).toBe(true);
+            expect(result.responseId).toBe('op_1');
+            expect(result.revision).toBeUndefined();
+        });
+
+        it('request - does not answer an operation with another response action of its results', async () => {
+            const operationKind = 'deleteOperation';
+            const markersResponse: ResponseAction = { kind: 'setMarkers', responseId: '' };
+            const handler = new mock.StubActionHandler([operationKind]);
+            vi.spyOn(handler, 'execute').mockReturnValue([markersResponse, OperationResponseAction.create()]);
+            registry_get_stub.mockImplementation((kind: string) => (kind === operationKind ? [handler] : []));
+
+            const operation: Operation = { kind: operationKind, isOperation: true, requestId: 'op_2' };
+
+            const result = await actionDispatcher.request(operation);
+            expect(OperationResponseAction.is(result)).toBe(true);
+            expect(result.responseId).toBe('op_2');
+            expect(markersResponse.responseId, 'only the operation response answers the operation').toBe('');
+        });
+
+        it('request - rejects with a `RequestRejectedError` if the request is answered with a `RejectAction`', async () => {
+            const requestKind = 'rejectedRequest';
+            const handler = new mock.StubActionHandler([requestKind]);
+            vi.spyOn(handler, 'execute').mockReturnValue([RejectAction.create('Request failed', { detail: 'some detail' })]);
+            registry_get_stub.mockImplementation((kind: string) => (kind === requestKind ? [handler] : []));
+
+            const error = await actionDispatcher.request({ kind: requestKind, requestId: '' }).catch(err => err);
+            expect(error).toBeInstanceOf(RequestRejectedError);
+            expect(error.message).toBe('Request failed');
+            expect(error.detail).toBe('some detail');
         });
 
         it('request - rejects when dispatch fails (no handler, not a client action)', async () => {

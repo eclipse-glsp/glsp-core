@@ -57,6 +57,7 @@ export namespace EditTaskOperation {
         return {
             kind: KIND,
             isOperation: true,
+            requestId: '',
             ...options
         };
     }

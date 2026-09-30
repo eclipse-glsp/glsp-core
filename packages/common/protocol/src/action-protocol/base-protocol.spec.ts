@@ -15,7 +15,17 @@
  ********************************************************************************/
 
 import { describe, expect, it } from 'vitest';
-import { Action, ActionMessage, CompoundOperation, Operation, RejectAction, RequestAction, ResponseAction } from './base-protocol';
+import {
+    Action,
+    ActionMessage,
+    CompoundOperation,
+    Operation,
+    OperationResponseAction,
+    RejectAction,
+    RequestAction,
+    RequestRejectedError,
+    ResponseAction
+} from './base-protocol';
 import { AnyObject } from '../utils/type-util';
 
 /**
@@ -110,6 +120,18 @@ describe('Base Protocol Actions', () => {
                 expect(RequestAction.hasKind({ I: 'm not an action' }, '')).toBe(false);
             });
         });
+
+        describe('hasValidRequestId', () => {
+            it('should return true for a request action with a non-empty `requestId`', () => {
+                expect(RequestAction.hasValidRequestId({ ...requestAction, requestId: 'nonempty' })).toBe(true);
+            });
+            it('should return false for a request action with an empty `requestId`', () => {
+                expect(RequestAction.hasValidRequestId(requestAction)).toBe(false);
+            });
+            it('should return false for `undefined`', () => {
+                expect(RequestAction.hasValidRequestId(undefined)).toBe(false);
+            });
+        });
     });
 
     const responseAction: SomeResponseAction = { kind: 'someResponse', responseId: '' };
@@ -137,6 +159,17 @@ describe('Base Protocol Actions', () => {
             it('should return false for `undefined`', () => {
                 expect(ResponseAction.hasValidResponseId(undefined)).toBe(false);
             });
+        });
+    });
+
+    describe('RequestRejectedError', () => {
+        it('should expose the message and the details of the reject action', () => {
+            const reject = RejectAction.create('Request failed', { responseId: 'request_1', detail: 'some detail' });
+            const error = new RequestRejectedError(reject);
+            expect(error).toBeInstanceOf(Error);
+            expect(error.message).toBe('Request failed');
+            expect(error.detail).toBe('some detail');
+            expect(error.rejectAction).toBe(reject);
         });
     });
 
@@ -168,7 +201,7 @@ describe('Base Protocol Actions', () => {
         });
     });
 
-    const operation: Operation = { kind: 'someOperation', isOperation: true };
+    const operation: Operation = { kind: 'someOperation', isOperation: true, requestId: '' };
     describe('Operation', () => {
         describe('is', () => {
             it('should return true for an object having the correct type and a value for all required interface properties', () => {
@@ -198,7 +231,40 @@ describe('Base Protocol Actions', () => {
         });
     });
 
-    const compoundOperation: CompoundOperation = { kind: 'compound', isOperation: true, operationList: [] };
+    const operationResponse: OperationResponseAction = { kind: 'operationResponse', isOperationResponse: true, responseId: '' };
+    describe('OperationResponseAction', () => {
+        describe('is', () => {
+            it('should return true for an object having the correct type and a value for all required interface properties', () => {
+                expect(OperationResponseAction.is(operationResponse)).toBe(true);
+            });
+            it('should return false for undefined', () => {
+                expect(OperationResponseAction.is(undefined)).toBe(false);
+            });
+            it('should return true for an operation response with a custom kind', () => {
+                expect(OperationResponseAction.is({ ...operationResponse, kind: 'createNodeResponse' })).toBe(true);
+            });
+            it('should return false for an object that does not have all required interface properties', () => {
+                expect(OperationResponseAction.is(customAction)).toBe(false);
+                expect(OperationResponseAction.is({ kind: 'operationResponse', responseId: '' })).toBe(false);
+            });
+        });
+        describe('create', () => {
+            it('should return an object conforming to the interface with matching properties for the given required arguments', () => {
+                expect(OperationResponseAction.create()).toEqual(operationResponse);
+            });
+            it('should return an object conforming to the interface with matching properties for the given required and optional arguments', () => {
+                const expected: OperationResponseAction = {
+                    kind: OperationResponseAction.KIND,
+                    isOperationResponse: true,
+                    responseId: 'someId',
+                    revision: 3
+                };
+                expect(OperationResponseAction.create({ responseId: 'someId', revision: 3 })).toEqual(expected);
+            });
+        });
+    });
+
+    const compoundOperation: CompoundOperation = { kind: 'compound', isOperation: true, requestId: '', operationList: [] };
     describe('CompoundOperation', () => {
         describe('is', () => {
             it('should return true for an object having the correct type and a value for all required interface properties', () => {
@@ -214,7 +280,7 @@ describe('Base Protocol Actions', () => {
         describe('create', () => {
             it('should return an object conforming to the interface with matching properties for the given required arguments', () => {
                 const operationList = [operation];
-                const expected = { kind: CompoundOperation.KIND, isOperation: true, operationList };
+                const expected = { kind: CompoundOperation.KIND, isOperation: true, requestId: '', operationList };
                 expect(CompoundOperation.create(operationList)).toEqual(expected);
             });
         });

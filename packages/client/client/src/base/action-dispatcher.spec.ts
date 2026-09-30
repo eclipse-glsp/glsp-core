@@ -13,8 +13,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ActionHandlerRegistry, Deferred, IActionHandler, RequestAction, ResponseAction, TYPES } from '@eclipse-glsp/sprotty';
-import { describe, expect, it } from 'vitest';
+import {
+    ActionHandlerRegistry,
+    Deferred,
+    GModelRoot,
+    IActionHandler,
+    MessageAction,
+    Operation,
+    OperationResponseAction,
+    RejectAction,
+    RequestAction,
+    RequestRejectedError,
+    ResponseAction,
+    TYPES
+} from '@eclipse-glsp/sprotty';
+import { describe, expect, it, vi } from 'vitest';
 import { Container } from 'inversify';
 
 /** Yields to the event loop long enough for pending microtasks (and already-queued timers) to run. */
@@ -49,6 +62,24 @@ const testHandler: IActionHandler = {
 registry.register('request', testHandler);
 
 registry.register('response', { handle: () => {} });
+
+/** Simulates the server: answers `testOperation`s with an ok response, or rejects them if `args.fail` is set. */
+registry.register('testOperation', {
+    handle: action => {
+        const operation = action as Operation;
+        setTimeout(() =>
+            actionDispatcher.dispatch(
+                operation.args?.fail
+                    ? RejectAction.create('Operation failed', { responseId: operation.requestId, detail: 'some detail' })
+                    : OperationResponseAction.create({ responseId: operation.requestId })
+            )
+        );
+    }
+});
+
+function createTestOperation(fail = false): Operation {
+    return { kind: 'testOperation', isOperation: true, requestId: '', args: { fail } };
+}
 actionDispatcher.initialize().then(() => {
     actionDispatcher['blockUntil'] = undefined;
 });
@@ -101,6 +132,120 @@ describe('GLSPActionDispatcher', () => {
                 err => false
             );
             expect(dispatchSuccessful, 'Promise of re-dispatch should resolve successfully').toBe(true);
+        });
+    });
+    describe('operations', () => {
+        it('should resolve with the operation response if the operation is dispatched as request', async () => {
+            const operation = createTestOperation();
+            const response = await actionDispatcher.request(operation);
+            expect(response).toEqual(OperationResponseAction.create({ responseId: operation.requestId }));
+        });
+        it('should reject with a `RequestRejectedError` if the operation dispatched as request fails', async () => {
+            const error = await actionDispatcher.request(createTestOperation(true)).catch(err => err);
+            expect(error).toBeInstanceOf(RequestRejectedError);
+            expect(error.message).toBe('Operation failed');
+            expect(error.detail).toBe('some detail');
+        });
+        it('should not track an operation that is dispatched as plain action', async () => {
+            const operation: Operation = { kind: 'plainOperation', isOperation: true, requestId: '' };
+            registry.register(operation.kind, { handle: () => {} });
+            const sizes = (): number[] => [
+                actionDispatcher['requests'].size,
+                actionDispatcher['deferredOperations'].size,
+                actionDispatcher['timeouts'].size
+            ];
+            const sizesBefore = sizes();
+            await actionDispatcher.dispatch(operation);
+            expect(operation.requestId, 'the server processes the operation as plain action').toBe('');
+            expect(sizes()).toEqual(sizesBefore);
+        });
+    });
+    describe('operation responses and model revision', () => {
+        /** Answers `revisionOperation`s with an ok response for the model revision given in `args.revision`. */
+        registry.register('revisionOperation', {
+            handle: action => {
+                const operation = action as Operation;
+                const revision = operation.args?.revision as number;
+                setTimeout(() => actionDispatcher.dispatch(OperationResponseAction.create({ responseId: operation.requestId, revision })));
+            }
+        });
+
+        function setModelRevision(revision: number | undefined): void {
+            actionDispatcher.modelRootChanged({ revision } as unknown as GModelRoot);
+        }
+
+        function createRevisionOperation(revision: number): Operation {
+            return { kind: 'revisionOperation', isOperation: true, requestId: '', args: { revision } };
+        }
+
+        /** Waits until the response of the given operation has been received, i.e. it has been completed or deferred. */
+        async function waitForResponse(operation: Operation, settled: () => boolean): Promise<void> {
+            const deferredOperations = actionDispatcher['deferredOperations'];
+            await vi.waitFor(() => expect(settled() || deferredOperations.has(operation.requestId)).toBe(true));
+            await flushMicrotasks();
+        }
+
+        async function requestOperation(revision: number): Promise<{ settled: () => boolean; response: Promise<unknown> }> {
+            const operation = createRevisionOperation(revision);
+            let settled = false;
+            const response = actionDispatcher.request(operation).finally(() => (settled = true));
+            await waitForResponse(operation, () => settled);
+            return { settled: () => settled, response };
+        }
+
+        it('should resolve immediately if the model has already reached the response revision', async () => {
+            setModelRevision(3);
+            const { settled } = await requestOperation(3);
+            expect(settled()).toBe(true);
+        });
+        it('should defer the response until the model has been updated to the response revision', async () => {
+            setModelRevision(3);
+            const { settled, response } = await requestOperation(4);
+            expect(settled(), 'the model update has not arrived yet').toBe(false);
+
+            setModelRevision(4);
+            await expect(response).resolves.toMatchObject({ revision: 4 });
+        });
+        it('should resume deferred responses if the model has been reset', async () => {
+            setModelRevision(3);
+            const { settled, response } = await requestOperation(4);
+            expect(settled()).toBe(false);
+
+            setModelRevision(0);
+            await expect(response).resolves.toMatchObject({ revision: 4 });
+        });
+        it('should apply the `requestUntil` timeout while the completion is deferred', async () => {
+            setModelRevision(3);
+            const operation = createRevisionOperation(10);
+            const response = actionDispatcher.requestUntil(operation, 20, true);
+            await expect(response).rejects.toBeDefined();
+            expect(actionDispatcher['deferredOperations'].has(operation.requestId)).toBe(false);
+            expect(actionDispatcher['timeouts'].has(operation.requestId)).toBe(false);
+        });
+    });
+    describe('responses without pending request', () => {
+        it('should not notify the user about a rejection without pending request', async () => {
+            const messages: MessageAction[] = [];
+            registry.register(MessageAction.KIND, { handle: action => void messages.push(action as MessageAction) });
+
+            await actionDispatcher.dispatch(RejectAction.create('Request failed', { responseId: 'unknownRequest', detail: 'some detail' }));
+            await flushMicrotasks();
+
+            expect(messages).toEqual([]);
+        });
+        it('should silently drop an operation response without pending request', async () => {
+            await expect(
+                actionDispatcher.dispatch(OperationResponseAction.create({ responseId: 'unknownRequest' }))
+            ).resolves.toBeUndefined();
+        });
+        it('should dispatch a custom operation response without pending request to its handler', async () => {
+            const handled: unknown[] = [];
+            registry.register('customOperationResponse', { handle: action => void handled.push(action) });
+            const response = { ...OperationResponseAction.create({ responseId: 'unknownRequest' }), kind: 'customOperationResponse' };
+
+            await actionDispatcher.dispatch(response);
+
+            expect(handled).toEqual([expect.objectContaining({ kind: 'customOperationResponse', responseId: '' })]);
         });
     });
     describe('async action handlers', () => {
