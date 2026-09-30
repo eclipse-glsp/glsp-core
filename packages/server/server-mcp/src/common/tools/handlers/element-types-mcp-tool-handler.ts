@@ -15,11 +15,11 @@
  ********************************************************************************/
 
 import {
-    ClientSessionInitializer,
     ClientSessionManager,
     DiagramModules,
     InjectionContainer,
-    createClientSessionModule
+    createClientSessionModule,
+    runClientSessionInitializers
 } from '@eclipse-glsp/server';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -145,8 +145,8 @@ export class ElementTypesMcpToolHandler extends AbstractMcpToolHandler<ElementTy
                 clientActionKinds: []
             });
             tempContainer.load(...modules, placeholderSessionModule);
-            const initializers = tempContainer.getAll<ClientSessionInitializer>(ClientSessionInitializer);
-            initializers.forEach(initializer => initializer.initialize());
+            // Respect the initializer priorities, e.g. the operation handler registry has to be populated first.
+            runClientSessionInitializers(tempContainer);
             return tempContainer.get<ElementTypesProvider>(ElementTypesProvider).get();
         } finally {
             tempContainer.unbindAll();

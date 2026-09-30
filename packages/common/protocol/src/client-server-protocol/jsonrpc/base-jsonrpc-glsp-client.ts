@@ -19,7 +19,13 @@ import { ActionMessage } from '../../action-protocol/base-protocol';
 import { Emitter, Event } from '../../utils/event';
 import { ActionMessageHandler, ClientState, GLSPClient } from '../glsp-client';
 import { GLSPClientProxy } from '../glsp-server';
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from '../types';
+import {
+    DisposeClientSessionParameters,
+    InitializeClientSessionParameters,
+    InitializeClientSessionResult,
+    InitializeParameters,
+    InitializeResult
+} from '../types';
 import { ConnectionProvider, JsonrpcGLSPClient } from './glsp-jsonrpc-client';
 
 export class BaseJsonrpcGLSPClient implements GLSPClient {
@@ -105,8 +111,11 @@ export class BaseJsonrpcGLSPClient implements GLSPClient {
         return initializeDeferred.promise;
     }
 
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {
-        return this.checkedConnection.sendRequest(JsonrpcGLSPClient.InitializeClientSessionRequest, params);
+    initializeClientSession(params: InitializeClientSessionParameters): Promise<InitializeClientSessionResult | undefined> {
+        // Servers that predate the capability protocol send no result, which is received as `null` via JSON-RPC.
+        return this.checkedConnection
+            .sendRequest(JsonrpcGLSPClient.InitializeClientSessionRequest, params)
+            .then(result => result ?? undefined);
     }
 
     disposeClientSession(params: DisposeClientSessionParameters): Promise<void> {

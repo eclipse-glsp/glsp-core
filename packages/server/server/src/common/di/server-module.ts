@@ -20,7 +20,7 @@ import { DefaultGLSPServer } from '../protocol/glsp-server';
 import { ClientSessionFactory, DefaultClientSessionFactory } from '../session/client-session-factory';
 import { ClientSessionManager, DefaultClientSessionManager } from '../session/client-session-manager';
 import { BindingTarget, applyBindingTarget } from './binding-target';
-import { DiagramModule } from './diagram-module';
+import { DiagramSetup } from './diagram-setup';
 import { GLSPModule } from './glsp-module';
 import { MultiBinding } from './multi-binding';
 import { DiagramModules, InjectionContainer } from './service-identifiers';
@@ -29,14 +29,14 @@ import { DiagramModules, InjectionContainer } from './service-identifiers';
  * The server module is the central configuration artifact for configuring the server container (i.e. main container). For
  * each application connecting to the server process a new server container is created. The server module provides the
  * base bindings necessary for setting up the base {@link GLSPServer} infrastructure. In addition, it is used to
- * configure the set of {@link DiagramModule}s. Diagram modules are used to create the diagram-session-specific child
- * container when the
+ * configure the set of {@link DiagramSetup}s. The modules of a diagram setup are used to create the
+ * diagram-session-specific child container when the
  * {@link GLSPServer.initializeClientSession()}
  * method is called.
  *
  * The following bindings are provided:
  *
- * * {@link Map<String, Module>} annotated with `@named("Diagram_Modules")`
+ * * {@link DiagramModules} (the modules of each configured diagram type)
  * * {@link GLSPServer}
  * * {@link ClientSessionFactory}
  * * {@link ClientSessionManager}
@@ -48,22 +48,21 @@ export class ServerModule extends GLSPModule {
     protected readonly diagramModules: Map<string, ContainerModule[]> = new Map();
 
     /**
-     * Configure a new {@link DiagramModule} for this server. A diagram module represents the base configuration artifact
-     * for configuring a diagram-language-specific client session container. The diagram type provided
-     * {@link DiagramModule.diagramType} is used to retrieve the correct diagram module when the {@link GLSPServer}
-     * initializes a new client session.
+     * Configure a new diagram type for this server. The {@link DiagramSetup} (typically created with
+     * {@link createDiagramSetup} or `createGModelDiagramSetup`) represents the resolved module configuration for
+     * the diagram-language-specific client session containers. Its {@link DiagramSetup.diagramType} is used to retrieve
+     * the correct modules when the {@link GLSPServer} initializes a new client session.
      *
-     * @param diagramModule The base diagram module
-     * @param additionalModules Additional modules
+     * @param setup The diagram setup.
      * @returns The server module itself. This enables a builder-pattern like chaining of multiple diagram configuration
      *         calls.
      */
-    configureDiagramModule(diagramModule: DiagramModule, ...additionalModules: ContainerModule[]): ServerModule {
-        const diagramType = diagramModule.diagramType;
+    configureDiagram(setup: DiagramSetup): this {
+        const { diagramType, modules } = setup;
         if (this.diagramModules.has(diagramType)) {
             throw new Error(`A module configuration is already present for diagram type: '${diagramType}'`);
         }
-        this.diagramModules.set(diagramType, [diagramModule, ...additionalModules]);
+        this.diagramModules.set(diagramType, [...modules]);
         return this;
     }
 

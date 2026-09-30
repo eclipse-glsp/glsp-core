@@ -51,7 +51,7 @@ export class McpDiagramPromptHandlerRegistryInitializer implements ClientSession
             } catch (err: unknown) {
                 throw new Error(
                     `Failed to instantiate MCP diagram prompt handler '${constructor.name}': ${(err as Error).message}. ` +
-                        'Check your DiagramModule bindings.'
+                        'Check your diagram setup bindings.'
                 );
             }
         }

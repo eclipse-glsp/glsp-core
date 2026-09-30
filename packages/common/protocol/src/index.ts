@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 export * from './action-protocol/base-protocol';
+export * from './action-protocol/capabilities';
 export * from './action-protocol/client-notification';
 export * from './action-protocol/clipboard';
 export * from './action-protocol/contexts';
@@ -35,6 +36,13 @@ export * from './action-protocol/types';
 export * from './action-protocol/undo-redo';
 export * from './action-protocol/viewport';
 export * from './client-server-protocol/base-glsp-client';
+export * from './client-server-protocol/capabilities/capability';
+export * from './client-server-protocol/capabilities/diagram-capabilities';
+export * from './client-server-protocol/capabilities/glsp-capability';
+export * from './client-server-protocol/capabilities/label-edit-capability';
+export * from './client-server-protocol/capabilities/layout-capability';
+export * from './client-server-protocol/capabilities/server-capabilities';
+export * from './client-server-protocol/capabilities/session-capabilities';
 export * from './client-server-protocol/glsp-client';
 export * from './client-server-protocol/glsp-server';
 export * from './client-server-protocol/jsonrpc/base-jsonrpc-glsp-client';

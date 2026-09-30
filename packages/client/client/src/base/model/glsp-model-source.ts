@@ -137,7 +137,7 @@ export class GLSPModelSource extends ModelSource implements Disposable {
             Disposable.create(() => glspClient.disposeClientSession(this.createDisposeClientSessionParameters()))
         );
 
-        return glspClient!.initializeClientSession(initializeParams);
+        return glspClient.initializeClientSession(initializeParams).then(() => undefined);
     }
 
     protected createInitializeClientSessionParameters(_initializeResult: InitializeResult): InitializeClientSessionParameters {

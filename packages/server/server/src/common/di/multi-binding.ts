@@ -18,6 +18,20 @@ import { BindingContext } from '@eclipse-glsp/protocol/di';
 import { applyBindingTarget, BindingTarget } from './binding-target';
 
 /**
+ * Passes the given multi binding to the configurator (typically an overridable `configureXxx()` hook of a module, which
+ * gives subclasses the chance to customize the binding) and applies the configured bindings afterwards.
+ * Shared implementation of `GLSPModule.configureMultiBinding` and `ServerFeatureModule.configureMultiBinding`.
+ */
+export function configureMultiBinding<T>(
+    context: BindingContext,
+    binding: AbstractMultiBinding<T>,
+    configurator: (binding: AbstractMultiBinding<T>) => void
+): void {
+    configurator(binding);
+    binding.applyBindings(context);
+}
+
+/**
  * A helper class used in `GLSPModules` to ease the configuration of multi-injected service identifiers.
  * Instead of directly binding to the service identifier a new multi binding object can be created. This object
  * should then be passed to a overridable configuration-function (i.e. configure(binding:V)=>void). This gives subclasses of the
@@ -80,7 +94,11 @@ export class MultiBinding<T> extends AbstractMultiBinding<BindingTarget<T>> {
  * Implementation of {@link AbstractMultiBinding} for multi-injected values that should be bound to concrete instance using the
  * `bind(serviceIdentifier).toConstantValue(MyCustomBinding) syntax.
  *
- * * @typeparam T the type of the instances
+ * All values of one multi binding are bound as a single array constant. Several modules can contribute to the
+ * same service identifier (e.g. `ActionHandlerConstructor`, `OperationHandlerConstructor`), so consumers should use
+ * `@multiInject` and flatten the injected contributions.
+ *
+ * @typeparam T the type of the instances
  */
 export class InstanceMultiBinding<T> extends AbstractMultiBinding<T> {
     applyBindings(context: BindingContext): void {

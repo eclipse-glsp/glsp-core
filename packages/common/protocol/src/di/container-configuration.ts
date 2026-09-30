@@ -15,9 +15,9 @@
  ********************************************************************************/
 
 import { Container, ContainerModule } from 'inversify';
-import { MaybeArray, asArray, distinctAdd, remove } from '../utils/array-util';
+import { MaybeArray, asArray, distinctAdd } from '../utils/array-util';
 import { hasFunctionProp, hasNumberProp } from '../utils/type-util';
-import { FeatureModule } from './feature-module';
+import { FeatureModule, isFeatureModule } from './feature-module';
 
 /**
  * Initializes a container with the given {@link ContainerConfiguration}. The container configuration
@@ -39,6 +39,8 @@ export function initializeContainer(container: Container, ...containerConfigurat
  * Container configurations are processed in the order they are passed. If a module is configured to be removed
  * it can be added again in a later configuration. This also means in case of `replace` configurations that affect the same feature id
  * the last configuration wins.
+ * Feature modules are removed by feature id, i.e. `remove: [new MyFeatureModule()]` also removes a module with the same
+ * feature id that was configured via `replace` (e.g. a subclass of `MyFeatureModule` that shares its feature id).
  * @param containerConfigurations The container configurations to resolve
  * @throws An error if featureModule ids are not unique in the resolved module array
  * @returns an Array of resolved container modules
@@ -50,14 +52,14 @@ export function resolveContainerConfiguration(...containerConfigurations: Contai
             distinctAdd(modules, config);
         } else {
             if (config.remove) {
-                remove(modules, ...asArray(config.remove));
+                removeModules(modules, asArray(config.remove));
             }
             if (config.add) {
                 distinctAdd(modules, ...asArray(config.add));
             }
             if (config.replace) {
                 asArray(config.replace).forEach(replace => {
-                    const existingIndex = modules.findIndex(m => m instanceof FeatureModule && m.featureId === replace.featureId);
+                    const existingIndex = modules.findIndex(m => isFeatureModule(m) && m.featureId === replace.featureId);
                     if (existingIndex >= 0) {
                         modules[existingIndex] = replace;
                     } else {
@@ -76,7 +78,7 @@ export function resolveContainerConfiguration(...containerConfigurations: Contai
     const featureIds = new Set<symbol>();
     const duplicates: FeatureModule[] = [];
     modules.forEach(module => {
-        if (module instanceof FeatureModule) {
+        if (isFeatureModule(module)) {
             if (featureIds.has(module.featureId)) {
                 duplicates.push(module);
             } else {
@@ -90,6 +92,23 @@ export function resolveContainerConfiguration(...containerConfigurations: Contai
     }
     return modules;
 }
+/**
+ * Removes the given modules from the resolved modules. Feature modules are matched by feature id, plain container modules
+ * by identity.
+ */
+function removeModules(modules: ContainerModule[], toRemove: ContainerModule[]): void {
+    for (let i = modules.length - 1; i >= 0; i--) {
+        const module = modules[i];
+        const matches = toRemove.some(
+            candidate =>
+                candidate === module || (isFeatureModule(candidate) && isFeatureModule(module) && candidate.featureId === module.featureId)
+        );
+        if (matches) {
+            modules.splice(i, 1);
+        }
+    }
+}
+
 /**
  * The container modules might originate form different inversify contexts (e.g. `inversify` vs. `@theia/core/shared/inversify`).
  * If this is the case an instanceof check can return  false negative.

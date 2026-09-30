@@ -21,7 +21,8 @@ import { Container } from 'inversify';
 
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowMcpDiagramModule } from '../common/mcp/workflow-mcp-diagram-module';
-import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
+import { createWorkflowDiagramSetup } from '../common/workflow-diagram-setup';
+import { WorkflowServerModule } from '../common/workflow-server-module';
 import { WorkflowMcpServerModule } from './mcp/workflow-mcp-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
@@ -40,10 +41,13 @@ async function launch(argv?: string[]): Promise<void> {
         logger.error('Uncaught exception:', error);
     });
 
-    const serverModule = new WorkflowServerModule().configureDiagramModule(
-        new WorkflowDiagramModule(() => GModelStorage),
-        new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator }),
-        new WorkflowMcpDiagramModule()
+    const serverModule = new WorkflowServerModule().configureDiagram(
+        createWorkflowDiagramSetup(() => GModelStorage, {
+            add: [
+                new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator }),
+                new WorkflowMcpDiagramModule()
+            ]
+        })
     );
     const mcpServerModule = new WorkflowMcpServerModule();
     if (options.webSocket) {

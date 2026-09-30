@@ -17,7 +17,7 @@
 import { inject, injectable } from 'inversify';
 import { Command } from '../command/command';
 import { GModelRecordingCommand } from '../command/recording-command';
-import { GModelSerializer } from '../features/model/gmodel-serializer';
+import { GModelSerializer } from '../model/gmodel-serializer';
 import { OperationHandler } from '../operations/operation-handler';
 
 injectable();

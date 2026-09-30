@@ -18,8 +18,8 @@ import * as fs from 'fs';
 import { inject, injectable } from 'inversify';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
-import { ModelState, SOURCE_URI_ARG } from '../common/features/model/model-state';
-import { SourceModelStorage } from '../common/features/model/source-model-storage';
+import { ModelState, SOURCE_URI_ARG } from '../common/model/model-state';
+import { SourceModelStorage } from '../common/model/source-model-storage';
 import { GLSPServerError } from '../common/utils/glsp-server-error';
 
 /**

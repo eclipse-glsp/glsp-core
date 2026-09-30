@@ -59,7 +59,7 @@ import { AbstractMcpDiagramResourceHandler, McpDiagramResourceHandlerConstructor
 import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from '../server/mcp-tool-handler';
 
 /**
- * Per-GLSP-client-session DI module for the MCP server. Loaded inside `configureDiagramModule`
+ * Per-GLSP-client-session DI module for the MCP server. Added to the diagram setup (see `createDiagramSetup`)
  * so each `ClientSession.container` gets its own instance of session-scoped services.
  *
  * Binds the {@link McpIdAliasService}, the {@link McpModelSerializer}, the
@@ -81,10 +81,8 @@ import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from '../
  *         binding.rebind(CreateNodesMcpToolHandler, WorkflowCreateNodesMcpToolHandler);
  *     }
  * }
- * new WorkflowServerModule().configureDiagramModule(
- *     new WorkflowDiagramModule(...),
- *     elkLayoutModule,
- *     new WorkflowMcpDiagramModule()
+ * new WorkflowServerModule().configureDiagram(
+ *     createGModelDiagramSetup(new WorkflowModelModule(...), { add: [elkLayoutModule, new WorkflowMcpDiagramModule()] })
  * );
  * ```
  */
