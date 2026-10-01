@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { BrowserMessageReader, BrowserMessageWriter, createMessageConnection } from 'vscode-jsonrpc/browser';
 
-const GLSP_PROTOCOL_VERSION = '1.0.0';
+const GLSP_PROTOCOL_VERSION = '2.0.0';
 const MCP_PROTOCOL_VERSION = '2025-03-26';
 const MCP_URL = '/mcp';
 const DIAGRAM_TYPE = 'workflow-diagram';

@@ -17,6 +17,7 @@ import {
     ActionMessage,
     Args,
     DisposeClientSessionParameters,
+    GLSP_PROTOCOL_VERSION,
     GLSPClientProxy,
     GLSPServer,
     GLSPServerInitializer,
@@ -26,6 +27,7 @@ import {
     InitializeResult,
     MaybePromise,
     MessageAction,
+    ProtocolVersion,
     RejectAction,
     RequestAction,
     ResponseAction,
@@ -43,7 +45,7 @@ import { ClientAction } from './client-action';
 
 @injectable()
 export class DefaultGLSPServer implements GLSPServer {
-    public static readonly PROTOCOL_VERSION = '1.0.0';
+    public static readonly PROTOCOL_VERSION = GLSP_PROTOCOL_VERSION;
 
     @inject(Logger)
     protected logger: Logger;
@@ -72,12 +74,12 @@ export class DefaultGLSPServer implements GLSPServer {
         serverListeners.forEach(listener => this.addListener(listener));
     }
 
+    /**
+     * Rejects clients whose protocol version is incompatible with {@link DefaultGLSPServer.PROTOCOL_VERSION}
+     * and logs a warning for compatible versions that differ. See {@link ProtocolVersion.checkCompatibility}.
+     */
     protected validateProtocolVersion(params: InitializeParameters): void {
-        if (params.protocolVersion !== DefaultGLSPServer.PROTOCOL_VERSION) {
-            throw new Error(
-                `Protocol version mismatch! The client protocol version ${params.protocolVersion} is not compatible with the server protocol version ${DefaultGLSPServer.PROTOCOL_VERSION}!`
-            );
-        }
+        ProtocolVersion.validate(params.protocolVersion, DefaultGLSPServer.PROTOCOL_VERSION, warning => this.logger.warn(warning));
     }
 
     protected validateServerInitialized(): void {
