@@ -21,7 +21,6 @@ import { distinctAdd, remove } from '../utils/array-util';
 import { Emitter, Event } from '../utils/event';
 import { ActionMessageHandler, ClientState, GLSPClient } from './glsp-client';
 import { GLSPClientProxy, GLSPServer } from './glsp-server';
-import { ProtocolVersion } from './protocol-version';
 import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
 
 export const GLOBAL_HANDLER_ID = '*';
@@ -134,9 +133,7 @@ export class BaseGLSPClient implements GLSPClient {
         const initializeDeferred = new Deferred<InitializeResult>();
         try {
             this.pendingServerInitialize = initializeDeferred.promise;
-            const result = await this.checkedServer.initialize(params);
-            this.validateProtocolVersion(params, result);
-            this._initializeResult = result;
+            this._initializeResult = await this.checkedServer.initialize(params);
             this.onServerInitializedEmitter.fire(this._initializeResult);
             initializeDeferred.resolve(this._initializeResult);
             this.pendingServerInitialize = undefined;
@@ -146,14 +143,6 @@ export class BaseGLSPClient implements GLSPClient {
             this.pendingServerInitialize = undefined;
         }
         return initializeDeferred.promise;
-    }
-
-    /**
-     * Rejects server protocol versions that are incompatible with the version the client requested
-     * and logs a warning for compatible versions that differ. See {@link ProtocolVersion.checkCompatibility}.
-     */
-    protected validateProtocolVersion(params: InitializeParameters, result: InitializeResult): void {
-        ProtocolVersion.validate(params.protocolVersion, result.protocolVersion, warning => console.warn(warning));
     }
 
     initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {

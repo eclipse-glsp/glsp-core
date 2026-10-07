@@ -18,30 +18,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { GLSP_PROTOCOL_VERSION, ProtocolVersion } from './protocol-version';
 
 describe('ProtocolVersion', () => {
-    describe('parse', () => {
-        it('should parse a MAJOR.MINOR.PATCH version', () => {
-            expect(ProtocolVersion.parse('2.10.3')).toEqual({ major: 2, minor: 10, patch: 3 });
-        });
-        it.each(['', 'abc', '2', '2.0', '2.0.0.0', '02.0.0', '2.0.0-next', 'v2.0.0', ' 2.0.0', undefined, 2])(
-            'should reject %j',
-            version => {
-                expect(ProtocolVersion.parse(version)).toBeUndefined();
-            }
-        );
-        it('should accept the current protocol version', () => {
-            expect(ProtocolVersion.parse(GLSP_PROTOCOL_VERSION)).toBeDefined();
-        });
-    });
-
-    describe('supportedRange', () => {
-        it('should span the MAJOR version', () => {
-            expect(ProtocolVersion.supportedRange('2.3.1')).toBe('>=2.0.0 <3.0.0');
-        });
-        it('should throw for a malformed version', () => {
-            expect(() => ProtocolVersion.supportedRange('abc')).toThrow();
-        });
-    });
-
     describe('checkCompatibility', () => {
         it.each([
             { client: '2.0.0', server: '2.0.0', compatible: true, warning: false },
@@ -58,6 +34,21 @@ describe('ProtocolVersion', () => {
             const result = ProtocolVersion.checkCompatibility(client, server);
             expect(result.compatible).toBe(compatible);
             expect(result.compatible && !!result.warning).toBe(warning);
+        });
+
+        it.each(['', 'abc', '2', '2.0', '2.0.0.0', '02.0.0', '2.0.0-next', 'v2.0.0', ' 2.0.0', undefined, 2])(
+            'should reject the malformed client version %j',
+            version => {
+                expect(ProtocolVersion.checkCompatibility(version, '2.0.0').compatible).toBe(false);
+            }
+        );
+
+        it('should accept the current protocol version', () => {
+            expect(ProtocolVersion.checkCompatibility(GLSP_PROTOCOL_VERSION, GLSP_PROTOCOL_VERSION)).toEqual({ compatible: true });
+        });
+
+        it('should parse multi-digit versions', () => {
+            expect(ProtocolVersion.checkCompatibility('2.10.3', '2.10.0')).toEqual({ compatible: true });
         });
 
         it('should name both versions and the supported range for a MAJOR mismatch', () => {

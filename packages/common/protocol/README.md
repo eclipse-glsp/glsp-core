@@ -19,22 +19,20 @@ The protocol has its own [semantic version](https://semver.org/), `GLSP_PROTOCOL
 | Component | Incremented for                                                                                                       |
 | --------- | --------------------------------------------------------------------------------------------------------------------- |
 | MAJOR     | Breaking wire changes: removed or renamed actions, requests or properties, new required properties, changed semantics |
-| MINOR     | Backwards-compatible additions: new actions, optional properties or capabilities                                      |
+| MINOR     | Backwards-compatible additions: new actions or optional properties                                                    |
 | PATCH     | Clarifications of the specification that do not affect the wire format                                                |
 
-Both sides check compatibility with `ProtocolVersion.checkCompatibility`.
-The server validates the version sent by the client, and the client validates the version returned by the server.
+The server validates the version sent by the client with `ProtocolVersion.checkCompatibility` and rejects the `initialize` request if the versions are incompatible.
 
 | Client vs. server                           | Result                                                            |
 | ------------------------------------------- | ----------------------------------------------------------------- |
 | Equal versions                              | Compatible                                                        |
-| Same MAJOR, different MINOR                 | Compatible, both sides log a warning                              |
+| Same MAJOR, different MINOR                 | Compatible, the server logs a warning                             |
 | Same MAJOR and MINOR, different PATCH       | Compatible                                                        |
 | Different MAJOR                             | Initialization fails, naming both versions and the server's range |
 | Malformed version (not `MAJOR.MINOR.PATCH`) | Initialization fails                                              |
 
 A compatible difference is accepted regardless of which side is newer.
-Features that only one side supports are negotiated via capabilities, not via the protocol version.
 
 ### Release process
 

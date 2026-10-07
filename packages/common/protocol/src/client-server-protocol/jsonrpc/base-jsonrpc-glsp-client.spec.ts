@@ -229,24 +229,6 @@ describe('Base JSON-RPC GLSP Client', () => {
             await client.initializeServer(params);
             expect(eventHandlerSpy).toHaveBeenCalledExactlyOnceWith(expectedResult);
         });
-        it('should reject an incompatible server protocol version', async () => {
-            await resetClient();
-            vi.mocked(connection.sendRequest).mockReturnValue({ protocolVersion: '1.0.0', serverActions: {} } as any);
-            await expect(client.initializeServer({ applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION })).rejects.toThrow(
-                /not compatible with server protocol version 1.0.0/
-            );
-            expect(client.initializeResult).toBeUndefined();
-        });
-        it('should warn about a compatible server protocol version difference', async () => {
-            await resetClient();
-            const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-            const expectedResult = { protocolVersion: '2.1.0', serverActions: {} };
-            vi.mocked(connection.sendRequest).mockReturnValue(expectedResult as any);
-            const result = await client.initializeServer({ applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION });
-            expect(result).toEqual(expectedResult);
-            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('differs from server protocol version 2.1.0'));
-            warnSpy.mockRestore();
-        });
         it('should not use cached result on consecutive invocation if previous invocation errored', async () => {
             await resetClient();
             const expectedResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} };

@@ -109,7 +109,7 @@ describe('test DefaultGLSPServer', () => {
     it('initialize - with incompatible major protocol version', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion: '1.0.0' };
         await expect(glspServer.initialize(initializeParameters)).rejects.toThrow(
-            `Client protocol version 1.0.0 is not compatible with server protocol version ${protocolVersion} (server supports: >=2.0.0 <3.0.0).`
+            `Client protocol version 1.0.0 is not compatible with server protocol version ${protocolVersion} (server supports: >=3.0.0 <4.0.0).`
         );
     });
 
@@ -125,9 +125,9 @@ describe('test DefaultGLSPServer', () => {
 
     it('initialize - with compatible minor protocol version difference', async () => {
         const spy_logger_warn = vi.spyOn(container.get(Logger), 'warn');
-        const result = await glspServer.initialize({ applicationId, protocolVersion: '2.1.0' });
+        const result = await glspServer.initialize({ applicationId, protocolVersion: '3.1.0' });
         expect(result.protocolVersion).toBe(protocolVersion);
-        expect(spy_logger_warn).toHaveBeenCalledWith(expect.stringContaining('Client protocol version 2.1.0 differs'));
+        expect(spy_logger_warn).toHaveBeenCalledWith(expect.stringContaining('Client protocol version 3.1.0 differs'));
     });
 
     it('initialize - subsequent call with same parameters', async () => {

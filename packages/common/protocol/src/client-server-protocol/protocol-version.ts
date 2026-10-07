@@ -21,22 +21,12 @@
  * The protocol version follows semantic versioning independently of the package versions:
  * - MAJOR: breaking wire changes, e.g. a removed or renamed action, request or property,
  *   a new required property, or changed semantics of an existing message.
- * - MINOR: backwards-compatible additions, e.g. new actions, optional properties or capabilities.
+ * - MINOR: backwards-compatible additions, e.g. new actions or optional properties.
  * - PATCH: clarifications of the specification that do not affect the wire format.
  *
- * Peers with the same MAJOR version are compatible. Feature-level differences between compatible
- * peers are negotiated via capabilities. See {@link ProtocolVersion.checkCompatibility}.
+ * Peers with the same MAJOR version are compatible. See {@link ProtocolVersion.checkCompatibility}.
  */
-export const GLSP_PROTOCOL_VERSION = '2.0.0';
-
-/**
- * A parsed `MAJOR.MINOR.PATCH` GLSP protocol version.
- */
-export interface ProtocolVersion {
-    major: number;
-    minor: number;
-    patch: number;
-}
+export const GLSP_PROTOCOL_VERSION = '3.0.0';
 
 /**
  * The result of a protocol version compatibility check.
@@ -44,40 +34,40 @@ export interface ProtocolVersion {
  */
 export type ProtocolCompatibility = { compatible: true; warning?: string } | { compatible: false; message: string };
 
+/** A parsed `MAJOR.MINOR.PATCH` GLSP protocol version. */
+interface ParsedProtocolVersion {
+    major: number;
+    minor: number;
+    patch: number;
+}
+
+const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+
+/**
+ * Parses a strict `MAJOR.MINOR.PATCH` version string.
+ * Pre-release or build suffixes are not part of the protocol versioning scheme and are rejected.
+ */
+function parse(version: unknown): ParsedProtocolVersion | undefined {
+    if (typeof version !== 'string') {
+        return undefined;
+    }
+    const match = VERSION_PATTERN.exec(version);
+    return match ? { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) } : undefined;
+}
+
+/** Returns the range of protocol versions that are compatible with the given version, e.g. `>=3.0.0 <4.0.0`. */
+function supportedRange(version: ParsedProtocolVersion): string {
+    return `>=${version.major}.0.0 <${version.major + 1}.0.0`;
+}
+
 export namespace ProtocolVersion {
-    const VERSION_PATTERN = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-
-    /**
-     * Parses a strict `MAJOR.MINOR.PATCH` version string.
-     * Pre-release or build suffixes are not part of the protocol versioning scheme and are rejected.
-     * @returns The parsed version, or `undefined` if the input is not a valid protocol version.
-     */
-    export function parse(version: unknown): ProtocolVersion | undefined {
-        if (typeof version !== 'string') {
-            return undefined;
-        }
-        const match = VERSION_PATTERN.exec(version);
-        return match ? { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) } : undefined;
-    }
-
-    /**
-     * Returns the range of protocol versions that are compatible with the given version, e.g. `>=2.0.0 <3.0.0`.
-     */
-    export function supportedRange(version: ProtocolVersion | string): string {
-        const parsed = typeof version === 'string' ? parse(version) : version;
-        if (!parsed) {
-            throw new Error(`Invalid protocol version '${version}'`);
-        }
-        return `>=${parsed.major}.0.0 <${parsed.major + 1}.0.0`;
-    }
-
     /**
      * Checks whether a client and a server implementing the given protocol versions can communicate.
      *
      * Versions with the same MAJOR are compatible, regardless of which side is newer. A MINOR difference yields a
-     * warning because features of the newer version may be unavailable; those are expected to be detected via
-     * capabilities. A PATCH difference is compatible without a warning. Different MAJOR versions and malformed
-     * versions are incompatible. The supported range in error messages always refers to the server.
+     * warning because features of the newer version may be unavailable. A PATCH difference is compatible without a
+     * warning. Different MAJOR versions and malformed versions are incompatible. The supported range in error messages
+     * always refers to the server.
      */
     export function checkCompatibility(clientVersion: unknown, serverVersion: unknown): ProtocolCompatibility {
         const client = parse(clientVersion);

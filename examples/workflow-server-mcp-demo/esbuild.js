@@ -42,7 +42,7 @@ const esbuildProblemMatcherPlugin = {
     }
 };
 
-// Bundle `vscode-jsonrpc/browser` plus the page-side script into a single file emitted into
+// Bundle `vscode-jsonrpc/browser`, the GLSP protocol version constant and the page-side script into a single file emitted into
 // `dist/`, alongside the verbatim assets copied from `public/` and the worker bundle synced
 // from `@eclipse-glsp-examples/workflow-server-bundled-web` by `scripts/prepare-dist.mjs`.
 /** @type {import('esbuild').BuildOptions} */
