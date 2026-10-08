@@ -397,6 +397,9 @@ importers:
       '@eclipse-glsp-examples/workflow-server-bundled-web':
         specifier: workspace:*
         version: link:../workflow-server-bundled-web
+      '@eclipse-glsp/protocol':
+        specifier: workspace:*
+        version: link:../../packages/common/protocol
     devDependencies:
       esbuild:
         specifier: ~0.28.0

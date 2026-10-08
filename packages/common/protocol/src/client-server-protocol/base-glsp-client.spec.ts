@@ -20,11 +20,12 @@ import { Action, ActionMessage } from '../action-protocol/base-protocol';
 import { BaseGLSPClient, GLOBAL_HANDLER_ID } from './base-glsp-client';
 import { ClientState } from './glsp-client';
 import { GLSPServer, GLSPServerListener } from './glsp-server';
+import { GLSP_PROTOCOL_VERSION } from './protocol-version';
 import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
 
 class StubGLSPServer implements GLSPServer {
     initialize(params: InitializeParameters): Promise<InitializeResult> {
-        return Promise.resolve({ protocolVersion: '1.0.0', serverActions: {} });
+        return Promise.resolve({ protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} });
     }
     initializeClientSession(params: InitializeClientSessionParameters): Promise<void> {
         return Promise.resolve();
@@ -158,18 +159,18 @@ describe('Node GLSP Client', () => {
         });
         it('should invoke the corresponding server method', async () => {
             resetClient();
-            const expectedResult = { protocolVersion: '1.0.0', serverActions: {} };
+            const expectedResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} };
             vi.mocked(server.initialize).mockReturnValue(Promise.resolve(expectedResult));
             expect(client.initializeResult).toBeUndefined();
-            const result = await client.initializeServer({ applicationId: 'id', protocolVersion: '1.0.0' });
+            const result = await client.initializeServer({ applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION });
             expect(result).toEqual(expectedResult);
             expect(server.initialize).toHaveBeenCalledOnce();
             expect(client.initializeResult).toBe(result);
         });
         it('should return cached result on consecutive invocation', async () => {
             resetClient();
-            const expectedResult = { protocolVersion: '1.0.0', serverActions: {} };
-            const params = { applicationId: 'id', protocolVersion: '1.0.0' };
+            const expectedResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} };
+            const params = { applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION };
             vi.mocked(server.initialize).mockReturnValue(Promise.resolve(expectedResult));
             client.initializeServer(params);
             const result = await client.initializeServer(params);
@@ -178,8 +179,8 @@ describe('Node GLSP Client', () => {
         });
         it('should fire event on first invocation', async () => {
             resetClient();
-            const expectedResult = { protocolVersion: '1.0.0', serverActions: {} };
-            const params = { applicationId: 'id', protocolVersion: '1.0.0' };
+            const expectedResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} };
+            const params = { applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION };
             vi.mocked(server.initialize).mockReturnValue(Promise.resolve(expectedResult));
 
             const eventHandlerSpy = vi.fn((result: InitializeResult): void => {});
@@ -190,8 +191,8 @@ describe('Node GLSP Client', () => {
         });
         it('should not use cached result on consecutive invocation if previous invocation errored', async () => {
             resetClient();
-            const expectedResult = { protocolVersion: '1.0.0', serverActions: {} };
-            const params = { applicationId: 'id', protocolVersion: '1.0.0' };
+            const expectedResult = { protocolVersion: GLSP_PROTOCOL_VERSION, serverActions: {} };
+            const params = { applicationId: 'id', protocolVersion: GLSP_PROTOCOL_VERSION };
             vi.mocked(server.initialize).mockImplementation(() => {
                 throw new Error('error');
             });

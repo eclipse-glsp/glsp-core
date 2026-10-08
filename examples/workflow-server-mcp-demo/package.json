@@ -36,7 +36,8 @@
     "start": "npx -y serve -l 8000 ./dist"
   },
   "dependencies": {
-    "@eclipse-glsp-examples/workflow-server-bundled-web": "workspace:*"
+    "@eclipse-glsp-examples/workflow-server-bundled-web": "workspace:*",
+    "@eclipse-glsp/protocol": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "~0.28.0",

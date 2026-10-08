@@ -19,6 +19,7 @@ import {
     ApplicationIdProvider,
     Args,
     GLSPClient,
+    GLSP_PROTOCOL_VERSION,
     IActionDispatcher,
     InitializeParameters,
     LazyInjector,
@@ -184,7 +185,7 @@ export class DiagramLoader {
             },
             initializeParameters: {
                 applicationId: ApplicationIdProvider.get(),
-                protocolVersion: GLSPClient.protocolVersion,
+                protocolVersion: GLSP_PROTOCOL_VERSION,
                 ...options.initializeParameters
             },
             enableNotifications: options.enableNotifications ?? true

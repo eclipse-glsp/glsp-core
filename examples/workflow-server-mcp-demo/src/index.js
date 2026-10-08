@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+// Deep import to only bundle the version constant instead of the whole protocol package.
+import { GLSP_PROTOCOL_VERSION } from '@eclipse-glsp/protocol/lib/client-server-protocol/protocol-version';
 import { BrowserMessageReader, BrowserMessageWriter, createMessageConnection } from 'vscode-jsonrpc/browser';
 
-const GLSP_PROTOCOL_VERSION = '1.0.0';
 const MCP_PROTOCOL_VERSION = '2025-03-26';
 const MCP_URL = '/mcp';
 const DIAGRAM_TYPE = 'workflow-diagram';

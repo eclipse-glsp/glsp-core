@@ -16,6 +16,7 @@
 import {
     DisposeClientSessionParameters,
     GLSPClientProxy,
+    GLSP_PROTOCOL_VERSION,
     GLSPServerListener,
     InitializeClientSessionParameters,
     InitializeParameters
@@ -34,7 +35,7 @@ describe('test DefaultGLSPServer', () => {
     const clientSessionId = 'myClientSession';
     const diagramType = 'myDiagram';
     const applicationId = 'Test';
-    const protocolVersion = '1.0.0';
+    const protocolVersion = GLSP_PROTOCOL_VERSION;
     const actionKinds = new Map<string, string[]>();
     actionKinds.set(diagramType, ['A1', 'A2']);
     const sessionManager = new mock.StubClientSessionManager();
@@ -100,9 +101,16 @@ describe('test DefaultGLSPServer', () => {
         expect(glspServer['serverListeners'].length).toBe(originalSize - 1);
     });
 
-    it('initialize - with wrong protocol version', async () => {
+    it('initialize - with malformed protocol version', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion: 'abc' };
-        assert.rejects(glspServer.initialize(initializeParameters));
+        await expect(glspServer.initialize(initializeParameters)).rejects.toThrow(/Invalid client protocol version 'abc'/);
+    });
+
+    it('initialize - with incompatible major protocol version', async () => {
+        const initializeParameters: InitializeParameters = { applicationId, protocolVersion: '1.0.0' };
+        await expect(glspServer.initialize(initializeParameters)).rejects.toThrow(
+            `Client protocol version 1.0.0 is not compatible with server protocol version ${protocolVersion} (server supports: >=3.0.0 <4.0.0).`
+        );
     });
 
     it('initialize - with correct parameters', async () => {
@@ -115,6 +123,13 @@ describe('test DefaultGLSPServer', () => {
         expect(spy_listener2_initialize).not.toHaveBeenCalled();
     });
 
+    it('initialize - with compatible minor protocol version difference', async () => {
+        const spy_logger_warn = vi.spyOn(container.get(Logger), 'warn');
+        const result = await glspServer.initialize({ applicationId, protocolVersion: '3.1.0' });
+        expect(result.protocolVersion).toBe(protocolVersion);
+        expect(spy_logger_warn).toHaveBeenCalledWith(expect.stringContaining('Client protocol version 3.1.0 differs'));
+    });
+
     it('initialize - subsequent call with same parameters', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion };
         const result = await glspServer.initialize(initializeParameters);
@@ -123,9 +138,9 @@ describe('test DefaultGLSPServer', () => {
         expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
     });
 
-    it('initialize -  subsequent call with other parameters', async () => {
-        const initializeParameters = { applicationId: 'someOtherApp', protocolVersion: 'AnotherProtocolVersion' };
-        await assert.rejects(() => glspServer.initialize(initializeParameters));
+    it('initialize - subsequent call with other application id', async () => {
+        const initializeParameters: InitializeParameters = { applicationId: 'someOtherApp', protocolVersion };
+        await expect(glspServer.initialize(initializeParameters)).rejects.toThrow(/already been initialized for different application/);
     });
 
     it('initialize client session', async () => {

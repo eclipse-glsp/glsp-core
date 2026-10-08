@@ -18,6 +18,7 @@ import { Disposable } from '../utils/disposable';
 import { Event } from '../utils/event';
 import { AnyObject, MaybePromise, hasStringProp } from '../utils/type-util';
 import { generateUuid } from '../utils/uuid';
+import { GLSP_PROTOCOL_VERSION } from './protocol-version';
 import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters, InitializeResult } from './types';
 
 export class ApplicationIdProvider {
@@ -173,5 +174,9 @@ export namespace GLSPClient {
         return AnyObject.is(object) && hasStringProp(object, 'id');
     }
 
-    export const protocolVersion = '1.0.0';
+    /**
+     * The GLSP protocol version implemented by this client.
+     * @deprecated Use {@link GLSP_PROTOCOL_VERSION} instead.
+     */
+    export const protocolVersion = GLSP_PROTOCOL_VERSION;
 }
