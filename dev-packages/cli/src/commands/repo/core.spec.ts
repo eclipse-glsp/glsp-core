@@ -100,8 +100,8 @@ describe('core', () => {
     describe('resolveExampleDir', () => {
         it('should resolve an example inside the glsp-core checkout', () => {
             fs.mkdirSync(path.join(tempDir, 'glsp-core'), { recursive: true });
-            const result = resolveExampleDir('examples/workflow-standalone', tempDir);
-            expect(result).toBe(path.join(tempDir, 'glsp-core', 'examples/workflow-standalone'));
+            const result = resolveExampleDir('examples/playground', tempDir);
+            expect(result).toBe(path.join(tempDir, 'glsp-core', 'examples/playground'));
         });
 
         it('should not duplicate the repo segment when --dir already points at glsp-core', () => {

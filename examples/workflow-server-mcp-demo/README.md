@@ -32,12 +32,12 @@ It runs an MCP SDK `Client` over real HTTP against the launcher.
 Build the workspace once so the web worker bundle exists, then serve the demo:
 
 ```bash
-pnpm build   # from the repository root; produces the bundled-web worker
+pnpm build   # from the repository root; produces the playground's worker bundle
 pnpm -C examples/workflow-server-mcp-demo start
 ```
 
-`start` copies the worker bundle from `@eclipse-glsp-examples/workflow-server-bundled-web`,
-builds the page-side bundle, and serves the directory on `http://localhost:8000/`.
+`start` copies the worker bundle and the `example1.wf` model it loads from the playground
+example, builds the page-side bundle, and serves the directory on `http://localhost:8000/`.
 
 Open `http://localhost:8000/` in any modern browser and step through the buttons from top to
 bottom. The workflow renders once MCP is initialized, and **Create task** mutates the live

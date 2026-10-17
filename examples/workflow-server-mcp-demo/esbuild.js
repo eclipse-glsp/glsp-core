@@ -44,7 +44,7 @@ const esbuildProblemMatcherPlugin = {
 
 // Bundle `vscode-jsonrpc/browser` plus the page-side script into a single file emitted into
 // `dist/`, alongside the verbatim assets copied from `public/` and the worker bundle synced
-// from `@eclipse-glsp-examples/workflow-server-bundled-web` by `scripts/prepare-dist.mjs`.
+// from `@eclipse-glsp-examples/playground` by `scripts/prepare-dist.mjs`.
 /** @type {import('esbuild').BuildOptions} */
 const config = {
     entryPoints: [resolve(__dirname, 'src/index.js')],

@@ -29,7 +29,7 @@ import { AbstractMcpServerLauncher, FullMcpServerConfiguration, TransportEndpoin
  * inside the launcher; multi-isolate / multi-region deployments that need shared session state
  * must subclass and override the session store.
  *
- * @see `examples/workflow-server-bundled-web/smoke.html` for a Web Worker-based example.
+ * @see `examples/workflow-server-mcp-demo` for a Web Worker-based example.
  */
 @injectable()
 export class WebMcpServerLauncher extends AbstractMcpServerLauncher {

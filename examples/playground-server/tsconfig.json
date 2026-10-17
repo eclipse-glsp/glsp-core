@@ -1,0 +1,26 @@
+{
+  "extends": "@eclipse-glsp/ts-config/",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "composite": true
+  },
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../../packages/server/server"
+    },
+    {
+      "path": "../../packages/server/server-mcp"
+    },
+    {
+      "path": "../../packages/server/layout-elk"
+    },
+    {
+      "path": "../gmodel-demo-server"
+    },
+    {
+      "path": "../workflow-server"
+    }
+  ]
+}

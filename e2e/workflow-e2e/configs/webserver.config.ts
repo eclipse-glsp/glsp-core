@@ -23,16 +23,16 @@ import type { ProjectName } from './project.config';
 export type WebServerConfig = Exclude<NonNullable<PlaywrightTestConfig['webServer']>, readonly unknown[]>;
 
 /**
- * Directory of the `workflow-standalone` example, which provides the diagram client and — unless
+ * Directory of the `playground` example, which provides the diagram client and — unless
  * an external server is used — the Workflow GLSP server.
  *
- * Resolved through the module resolution of the `workflow-standalone` dependency rather than by a
+ * Resolved through the module resolution of the `playground` dependency rather than by a
  * relative path, so that the build-order dependency on the example is a real edge in the workspace
  * graph instead of a string this file has to keep in sync with the directory layout. The example is
  * `private`, so the dependency can only be expressed as `workspace:*`.
  */
 function getStandaloneDir(): string {
-    return path.dirname(require.resolve('workflow-standalone/package.json'));
+    return path.dirname(require.resolve('@eclipse-glsp-examples/playground/package.json'));
 }
 
 /**
@@ -47,7 +47,7 @@ function usesExternalServer(): boolean {
 /**
  * The web server for one standalone project.
  *
- * Both projects are served by the `workflow-standalone` example from this workspace. Its `start`
+ * Both projects are served by the `playground` example from this workspace. Its `start`
  * script serves the pre-built client and, in Node mode, also launches the Workflow GLSP server, so
  * one entry per project covers everything the tests need. Run `pnpm build` beforehand — `start`
  * serves the built bundles and does not compile.

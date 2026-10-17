@@ -40,10 +40,12 @@ The server targets Node, but every component is isomorphic and also provides a b
 
 These dev-packages provide every build, test and lint tool this repository uses. glsp-core bootstraps itself.
 
-### `examples`: Workflow diagram example
+### `examples`: Example diagram languages
 
-- [`@eclipse-glsp-examples/workflow-glsp`](examples/workflow-glsp) and [`workflow-standalone`](examples/workflow-standalone): Workflow client customizations and the standalone example application (Node & Browser mode)
+- [`@eclipse-glsp-examples/workflow-glsp`](examples/workflow-glsp): Workflow client customizations
 - [`@eclipse-glsp-examples/workflow-server`](examples/workflow-server) and the bundled/MCP-demo variants: Workflow GLSP example server
+- [`gmodel-demo-glsp`](examples/gmodel-demo-glsp) and [`gmodel-demo-server`](examples/gmodel-demo-server): the GModel demo language, whose `.gm` files are serialized GModel for exercising single rendering and interaction features
+- [`playground`](examples/playground) and [`playground-server`](examples/playground-server): the standalone example application and its server, hosting all example languages (Node & Browser mode)
 
 ### `e2e`: Playwright-based end-to-end testing
 
@@ -71,7 +73,7 @@ The workspace publishes the following packages to npm, grouped as in [Structure]
 - `examples`: [`@eclipse-glsp-examples/workflow-glsp`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-glsp), [`@eclipse-glsp-examples/workflow-server`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server), [`@eclipse-glsp-examples/workflow-server-bundled`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server-bundled)
 - `e2e`: [`@eclipse-glsp/playwright`](https://www.npmjs.com/package/@eclipse-glsp/playwright), [`@eclipse-glsp-examples/workflow-e2e`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-e2e)
 
-The standalone example application, the bundled web server and the MCP demo are workspace-private and are not published.
+The playground application and its server, the GModel demo language and the MCP demo are workspace-private and are not published.
 Unreleased development builds of every published package are available under the `next` dist-tag.
 
 ## Developer documentation
@@ -125,14 +127,14 @@ After `pnpm build`, the standalone example can be run in two modes:
 
     ```bash
     pnpm dev              # watch client + start the example server + dev server
-    pnpm standalone start # serve a production build against the example server
+    pnpm playground start # serve a production build against the example server
     ```
 
 - **Browser mode.** The GLSP server runs as a Web Worker directly in the browser. No external server process is needed.
 
     ```bash
     pnpm dev:browser                 # watch sources + dev server
-    pnpm standalone start:browser    # serve a production build
+    pnpm playground start:browser    # serve a production build
     ```
 
 You can also start the example server on its own, over WebSocket (default) or socket:
@@ -150,10 +152,10 @@ To run the client against a GLSP server you start yourself, for example the [Jav
 
 ```bash
 pnpm dev --external-server              # watch client only, connect to your running server
-pnpm standalone start --external-server # serve the built client only, connect to your running server
+pnpm playground start --external-server # serve the built client only, connect to your running server
 ```
 
-See the [`workflow-standalone` README](examples/workflow-standalone/README.md) for all `start`/`dev` flags.
+See the [`playground` README](examples/playground/README.md) for all `start`/`dev` flags.
 
 ### MCP demo
 

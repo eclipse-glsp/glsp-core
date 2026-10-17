@@ -97,8 +97,8 @@ describe('repo commands — core (build)', function () {
 
     describe('server bundles', function () {
         it('should print the browser bundle path when bundle exists', function () {
-            const bundleDir = path.join(workDir, 'glsp-core', 'examples', 'workflow-server-bundled-web');
-            const bundleFile = path.join(bundleDir, 'wf-glsp-server-webworker.js');
+            const bundleDir = path.join(workDir, 'glsp-core', 'examples', 'playground', 'app');
+            const bundleFile = path.join(bundleDir, 'playground-server-webworker.js');
             if (!fs.existsSync(bundleFile)) {
                 fs.mkdirSync(bundleDir, { recursive: true });
                 fs.writeFileSync(bundleFile, 'fake-bundle');
@@ -106,7 +106,7 @@ describe('repo commands — core (build)', function () {
 
             const result = runCli(['repo', 'glsp-core', 'server', 'browser-bundle', '-d', workDir]);
             expect(result.exitCode, cliDiag(result)).toBe(0);
-            expect(result.stdout).toContain('wf-glsp-server-webworker.js');
+            expect(result.stdout).toContain('playground-server-webworker.js');
         });
 
         it('should print the node bundle path when bundle exists', function () {

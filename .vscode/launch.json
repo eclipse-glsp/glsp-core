@@ -133,8 +133,8 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server (WebSocket)",
-      // Pair with the '[Examples] Start Workflow Standalone (external server)' task to debug
-      // the server while the standalone client connects over WebSocket.
+      // Pair with the '[Examples] Start Playground (external server)' task to debug
+      // the server while the playground client connects over WebSocket.
       "program": "${workspaceFolder}/examples/workflow-server-bundled/wf-glsp-server-node.js",
       "args": ["-w", "--port", "8081"],
       "env": {

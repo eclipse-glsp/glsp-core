@@ -23,7 +23,7 @@ const restrictedBaseImports = ['..', '../index', '../..', '../../index', 'src'];
 // Example packages by framework layer. The `examples/` directory is flat (no client/server
 // subdirs), so the client/server lint distinction is expressed per example package rather than
 // by path prefix.
-const clientExampleGlobs = ['examples/workflow-glsp/**/*.{ts,tsx}', 'examples/workflow-standalone/**/*.{ts,tsx}'];
+const clientExampleGlobs = ['examples/workflow-glsp/**/*.{ts,tsx}', 'examples/playground/**/*.{ts,tsx}'];
 const serverExampleGlobs = ['examples/workflow-server/**/*.{ts,tsx}', 'examples/workflow-server-mcp-demo/**/*.{ts,tsx}'];
 
 /** `no-restricted-imports` entries that forbid a package and all of its subpaths with the same message. */

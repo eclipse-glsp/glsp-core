@@ -1,0 +1,91 @@
+{
+  "type": "graph",
+  "id": "basic",
+  "revision": 0,
+  "children": [
+    {
+      "type": "node",
+      "id": "node_a",
+      "position": { "x": 60, "y": 60 },
+      "size": { "width": 160, "height": 90 },
+      "layout": "vbox",
+      "layoutOptions": {
+        "hAlign": "center",
+        "paddingTop": 8,
+        "paddingBottom": 8,
+        "paddingLeft": 8,
+        "paddingRight": 8,
+        "vGap": 6,
+        "prefWidth": 160,
+        "prefHeight": 90
+      },
+      "children": [
+        {
+          "type": "label",
+          "id": "node_a_label",
+          "text": "Node A"
+        },
+        {
+          "type": "comp",
+          "id": "node_a_compartment",
+          "layout": "vbox",
+          "layoutOptions": { "hAlign": "left" },
+          "children": [
+            {
+              "type": "label",
+              "id": "node_a_compartment_label",
+              "text": "Compartment child"
+            }
+          ]
+        },
+        {
+          "type": "port",
+          "id": "node_a_port",
+          "position": { "x": 154, "y": 39 },
+          "size": { "width": 12, "height": 12 }
+        }
+      ]
+    },
+    {
+      "type": "node",
+      "id": "node_b",
+      "position": { "x": 400, "y": 75 },
+      "size": { "width": 120, "height": 60 },
+      "layout": "vbox",
+      "layoutOptions": {
+        "hAlign": "center",
+        "paddingTop": 8,
+        "prefWidth": 120,
+        "prefHeight": 60
+      },
+      "children": [
+        {
+          "type": "label",
+          "id": "node_b_label",
+          "text": "Node B"
+        },
+        {
+          "type": "port",
+          "id": "node_b_port",
+          "position": { "x": -6, "y": 24 },
+          "size": { "width": 12, "height": 12 }
+        }
+      ]
+    },
+    {
+      "type": "edge",
+      "id": "edge_a_b",
+      "sourceId": "node_a_port",
+      "targetId": "node_b_port",
+      "routingPoints": [],
+      "children": [
+        {
+          "type": "label",
+          "id": "edge_a_b_label",
+          "text": "Edge label",
+          "edgePlacement": { "position": 0.5, "side": "top", "rotate": false, "offset": 6 }
+        }
+      ]
+    }
+  ]
+}

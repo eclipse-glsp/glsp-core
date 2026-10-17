@@ -1,0 +1,46 @@
+/********************************************************************************
+ * Copyright (c) 2019-2026 EclipseSource and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GNU General Public License, version 2
+ * with the GNU Classpath Exception which is available at
+ * https://www.gnu.org/software/classpath/license.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+ ********************************************************************************/
+import 'reflect-metadata';
+
+import { BaseJsonrpcGLSPClient, DiagramLoader, GLSPClient, GLSPWebWorkerProvider } from '@eclipse-glsp/client';
+import { Container } from 'inversify';
+import { MessageConnection } from 'vscode-jsonrpc';
+import createContainer from '../common/di.config';
+import { getLanguage, getModelPath } from '../common/languages';
+
+const id = 'workflow';
+const clientId = 'sprotty';
+// The worker fetches the model relative to its own location, i.e. the app directory.
+const modelPath = getModelPath();
+const language = getLanguage(modelPath);
+
+let glspClient: GLSPClient;
+let container: Container;
+
+const workerProvider = new GLSPWebWorkerProvider('playground-server-webworker.js');
+workerProvider.listen({ onConnection: initialize, logger: console });
+
+async function initialize(connectionProvider: MessageConnection): Promise<void> {
+    glspClient = new BaseJsonrpcGLSPClient({ id, connectionProvider });
+    container = createContainer(language, {
+        clientId,
+        diagramType: language.diagramType,
+        glspClientProvider: async () => glspClient,
+        sourceUri: modelPath
+    });
+    const diagramLoader = container.get(DiagramLoader);
+    await diagramLoader.load();
+}

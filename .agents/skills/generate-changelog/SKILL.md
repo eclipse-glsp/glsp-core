@@ -72,13 +72,13 @@ Determine the component from the files the PR touched:
 gh pr view <N> --json files --jq '.files[].path'
 ```
 
-| Changed paths                                                                        | Component        |
-| ------------------------------------------------------------------------------------ | ---------------- |
-| `packages/common/**`                                                                 | **Protocol**     |
-| `packages/client/**`, `examples/workflow-glsp/**`, `examples/workflow-standalone/**` | **Client**       |
-| `packages/server/**`, `examples/workflow-server*/**`                                 | **Server**       |
-| `dev-packages/**`                                                                    | **Dev Packages** |
-| `e2e/**`                                                                             | **E2E**          |
+| Changed paths                                                               | Component        |
+| --------------------------------------------------------------------------- | ---------------- |
+| `packages/common/**`                                                        | **Protocol**     |
+| `packages/client/**`, `examples/workflow-glsp/**`, `examples/playground/**` | **Client**       |
+| `packages/server/**`, `examples/workflow-server*/**`                        | **Server**       |
+| `dev-packages/**`                                                           | **Dev Packages** |
+| `e2e/**`                                                                    | **E2E**          |
 
 - A PR that touches several components produces **one entry per affected component**, each describing that component's part of the change (same PR link in each).
 - A PR that only touches repository-wide infrastructure (root configs, `.github/**`, docs) has no natural component — flag it for user review in Phase 3 rather than guessing, unless it clearly belongs to one (e.g. a Node version bump that affects everything goes into every component, mirroring how `[node]` entries were recorded before).

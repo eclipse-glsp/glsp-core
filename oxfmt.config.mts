@@ -31,8 +31,6 @@ export default defineConfig({
         // Generated files
         '*.min.js',
         '*.min.css',
-        'examples/*/wf-glsp-server-webworker.js',
-        'examples/*/wf-glsp-server-webworker.js.map',
         'examples/*/index.bundle.js',
         'examples/*/index.bundle.js.map',
         // Lock files

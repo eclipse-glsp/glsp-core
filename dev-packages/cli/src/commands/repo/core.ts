@@ -25,11 +25,11 @@ import { collectPassthroughArgs, resolveCommand } from './start';
 
 // glsp-core is a single pnpm workspace, so the client and the node server are not separate repositories
 // but example packages within it. The component commands below address them by their workspace path.
-export const STANDALONE_EXAMPLE_DIR = 'examples/workflow-standalone';
+export const STANDALONE_EXAMPLE_DIR = 'examples/playground';
 export const WORKFLOW_SERVER_EXAMPLE_DIR = 'examples/workflow-server';
 
 export const NODE_BUNDLE_PATH = 'examples/workflow-server-bundled/wf-glsp-server-node.js';
-export const BROWSER_BUNDLE_PATH = 'examples/workflow-server-bundled-web/wf-glsp-server-webworker.js';
+export const BROWSER_BUNDLE_PATH = 'examples/playground/app/playground-server-webworker.js';
 
 export function resolveBundlePath(repoDir: string, relativePath: string, label: string): string {
     const bundlePath = path.resolve(repoDir, relativePath);

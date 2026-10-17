@@ -75,7 +75,7 @@ gh pr view <N> --json files --jq '.files[].path'
 | Changed paths                                                                        | Component        |
 | ------------------------------------------------------------------------------------ | ---------------- |
 | `packages/common/**`                                                                 | **Protocol**     |
-| `packages/client/**`, `examples/workflow-glsp/**`, `examples/workflow-standalone/**` | **Client**       |
+| `packages/client/**`, `examples/workflow-glsp/**`, `examples/playground/**` | **Client**       |
 | `packages/server/**`, `examples/workflow-server*/**`                                 | **Server**       |
 | `dev-packages/**`                                                                    | **Dev Packages** |
 | `e2e/**`                                                                             | **E2E**          |

@@ -45,8 +45,8 @@ The following libraries/frameworks need to be installed on your system:
 - [pnpm](https://pnpm.io/installation) `>=12`
 
 Everything under test comes from this workspace.
-[`examples/workflow-standalone`](../../examples/workflow-standalone) provides the diagram client
-and [`examples/workflow-server`](../../examples/workflow-server) the Workflow GLSP server.
+[`examples/playground`](../../examples/playground) provides the diagram client
+and [`examples/playground-server`](../../examples/playground-server) the GLSP server hosting the Workflow language.
 Playwright starts both. There is no repository to clone and nothing else to set up.
 
 The Theia and VS Code integrations are tested in
@@ -141,12 +141,12 @@ pnpm test:standalone-browser
 
 Both projects exercise the same suites against a different server setup:
 
-| Project              | Client                               | GLSP server                                   |
-| -------------------- | ------------------------------------ | --------------------------------------------- |
-| `standalone`         | `workflow-standalone` (Node mode)    | `workflow-server` over WebSocket, port 8081   |
-| `standalone-browser` | `workflow-standalone` (browser mode) | compiled to a web worker, no separate process |
+| Project              | Client                      | GLSP server                                   |
+| -------------------- | --------------------------- | --------------------------------------------- |
+| `standalone`         | `playground` (Node mode)    | `playground-server` over WebSocket, port 8081 |
+| `standalone-browser` | `playground` (browser mode) | compiled to a web worker, no separate process |
 
-Playwright starts the required web servers itself via the `workflow-standalone` `start` script.
+Playwright starts the required web servers itself via the `playground` `start` script.
 
 ## Configuration
 

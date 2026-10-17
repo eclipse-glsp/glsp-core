@@ -9,15 +9,14 @@ dist/
 dist-site/
 artifacts/
 
-examples/workflow-standalone/app/*
-!examples/workflow-standalone/app/diagram.html
-!examples/workflow-standalone/app/example1.wf
+examples/playground/app/*
+!examples/playground/app/diagram.html
+!examples/playground/app/example1.wf
+!examples/playground/app/*.gm
 
 # Generated server bundles
 examples/*/wf-glsp-server-node.js
 examples/*/wf-glsp-server-node.js.map
-examples/*/wf-glsp-server-webworker.js
-examples/*/wf-glsp-server-webworker.js.map
 examples/*/mcp-service-worker.js
 examples/*/index.bundle.js
 examples/*/index.bundle.js.map

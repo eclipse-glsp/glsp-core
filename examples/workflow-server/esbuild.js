@@ -27,7 +27,6 @@ const dashDash = argv.indexOf('--');
 const serverArgs = dashDash >= 0 ? argv.slice(dashDash + 1) : [];
 
 const bundledDir = resolve(__dirname, '..', 'workflow-server-bundled');
-const bundledWebDir = resolve(__dirname, '..', 'workflow-server-bundled-web');
 
 /**
  * Reports the build progress and surfaces errors/warnings in a format that
@@ -80,19 +79,6 @@ const nodeConfig = {
     external: ['bufferutil', 'utf-8-validate']
 };
 
-/** @type {import('esbuild').BuildOptions} */
-const webworkerConfig = {
-    ...common,
-    entryPoints: [resolve(__dirname, 'src/browser/app.ts')],
-    outfile: resolve(bundledWebDir, 'wf-glsp-server-webworker.js'),
-    platform: 'browser',
-    format: 'iife',
-    target: 'es2019',
-    // Honor the legacy `browser` package field + browser condition for transitive deps.
-    mainFields: ['browser', 'module', 'main'],
-    conditions: ['browser']
-};
-
 /** Restart the bundled node server after every successful build. */
 function runNodePlugin() {
     /** @type {import('node:child_process').ChildProcess | undefined} */
@@ -130,7 +116,7 @@ async function main() {
     if (runNode) {
         await run({ ...nodeConfig, plugins: [esbuildProblemMatcherPlugin, runNodePlugin()] });
     } else {
-        await Promise.all([run(nodeConfig), run(webworkerConfig)]);
+        await run(nodeConfig);
     }
 }
 

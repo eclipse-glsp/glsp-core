@@ -653,17 +653,17 @@ async function bootGlsp(worker) {
         }
     });
 
-    await glsp.initialize('workflow-server-bundled-web-smoke', { name: 'workflow-glsp', route: MCP_URL });
+    await glsp.initialize('workflow-server-mcp-demo', { name: 'workflow-glsp', route: MCP_URL });
 
     dom.glspSession.value = CLIENT_SESSION_ID;
     await glsp.initializeClientSession(CLIENT_SESSION_ID, DIAGRAM_TYPE, CLIENT_ACTION_KINDS);
 
-    // Trigger model load. `WorkflowMockModelStorage` ignores the URI and always serves
-    // its bundled example1.json, so any non-empty `sourceUri` works.
-    logEntry('request', '→ GLSP process(requestModel)', { sourceUri: 'example1.json' });
+    // Trigger model load. The worker fetches the `sourceUri` relative to its own location,
+    // i.e. the example1.wf that `prepare-dist` copied next to it.
+    logEntry('request', '→ GLSP process(requestModel)', { sourceUri: 'example1.wf' });
     glsp.dispatchAction(CLIENT_SESSION_ID, {
         kind: 'requestModel',
-        options: { sourceUri: 'example1.json', diagramType: DIAGRAM_TYPE }
+        options: { sourceUri: 'example1.wf', diagramType: DIAGRAM_TYPE }
     });
 }
 
@@ -691,7 +691,7 @@ async function boot() {
     // Cache-bust the worker bundle URL per page load. Browsers HTTP-cache `new Worker(url)`
     // fetches; without this, rebuilding the bundle takes effect only after a Service Worker
     // unregister or cache flush.
-    const worker = new Worker(`./wf-glsp-server-webworker.js?v=${Date.now()}`);
+    const worker = new Worker(`./playground-server-webworker.js?v=${Date.now()}`);
     worker.addEventListener('error', event => logEntry('error', 'Worker error', event.message ?? String(event)));
 
     try {

@@ -16,12 +16,13 @@
 
 // Populates `dist/` with everything `serve` needs that esbuild doesn't emit:
 //  - verbatim files from `public/` (index.html, mcp-service-worker.js)
-//  - the worker bundle from `@eclipse-glsp-examples/workflow-server-bundled-web`
+//  - the playground-server worker bundle and the example1.wf model it fetches, both from
+//    `@eclipse-glsp-examples/playground`
 // esbuild writes `index.bundle.js` into the same dir as a separate step.
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const here = new URL('..', import.meta.url).pathname;
@@ -40,16 +41,17 @@ if (existsSync(publicDir)) {
     }
 }
 
-// 2. Worker bundle from the bundled-web dependency
-const workerPackage = dirname(require.resolve('@eclipse-glsp-examples/workflow-server-bundled-web/package.json'));
-const workerFiles = ['wf-glsp-server-webworker.js', 'wf-glsp-server-webworker.js.map'];
-for (const file of workerFiles) {
-    const source = join(workerPackage, file);
+// 2. Worker bundle and the model it loads
+const playgroundApp = join(dirname(require.resolve('@eclipse-glsp-examples/playground/package.json')), 'app');
+const files = ['playground-server-webworker.js', 'playground-server-webworker.js.map', 'example1.wf'].map(file =>
+    join(playgroundApp, file)
+);
+for (const source of files) {
     if (!existsSync(source)) {
-        console.error(`[prepare-dist] Missing ${source} — build workflow-server first.`);
+        console.error(`[prepare-dist] Missing ${source} — build the playground first.`);
         process.exit(1);
     }
-    copyFileSync(source, join(dist, file));
+    copyFileSync(source, join(dist, basename(source)));
 }
 
-console.log('[prepare-dist] dist/ populated (public assets + worker bundle)');
+console.log('[prepare-dist] dist/ populated (public assets, worker bundle, example model)');

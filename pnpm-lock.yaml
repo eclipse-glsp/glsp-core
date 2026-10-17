@@ -334,15 +334,95 @@ importers:
         specifier: ^2.2.0
         version: 2.3.0
     devDependencies:
+      '@eclipse-glsp-examples/playground':
+        specifier: workspace:*
+        version: link:../../examples/playground
       '@estruyf/github-actions-reporter':
         specifier: ^1.7.0
         version: 1.12.0(@playwright/test@1.63.0)
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.63.0
-      workflow-standalone:
+
+  examples/gmodel-demo-glsp:
+    dependencies:
+      '@eclipse-glsp/client':
         specifier: workspace:*
-        version: link:../../examples/workflow-standalone
+        version: link:../../packages/client/client
+      inversify:
+        specifier: ^6.1.3
+        version: 6.2.2(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+
+  examples/gmodel-demo-server:
+    dependencies:
+      '@eclipse-glsp/server':
+        specifier: workspace:*
+        version: link:../../packages/server/server
+      inversify:
+        specifier: ^6.1.3
+        version: 6.2.2(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+
+  examples/playground:
+    dependencies:
+      '@eclipse-glsp-examples/gmodel-demo-glsp':
+        specifier: workspace:*
+        version: link:../gmodel-demo-glsp
+      '@eclipse-glsp-examples/workflow-glsp':
+        specifier: workspace:*
+        version: link:../workflow-glsp
+      '@eclipse-glsp/client':
+        specifier: workspace:*
+        version: link:../../packages/client/client
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      vscode-jsonrpc:
+        specifier: 8.2.0
+        version: 8.2.0
+    devDependencies:
+      '@eclipse-glsp-examples/playground-server':
+        specifier: workspace:*
+        version: link:../playground-server
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
+      inversify:
+        specifier: ^6.1.3
+        version: 6.2.2(reflect-metadata@0.2.2)
+
+  examples/playground-server:
+    dependencies:
+      '@eclipse-glsp-examples/gmodel-demo-server':
+        specifier: workspace:*
+        version: link:../gmodel-demo-server
+      '@eclipse-glsp-examples/workflow-server':
+        specifier: workspace:*
+        version: link:../workflow-server
+      '@eclipse-glsp/layout-elk':
+        specifier: workspace:*
+        version: link:../../packages/server/layout-elk
+      '@eclipse-glsp/server':
+        specifier: workspace:*
+        version: link:../../packages/server/server
+      '@eclipse-glsp/server-mcp':
+        specifier: workspace:*
+        version: link:../../packages/server/server-mcp
+      inversify:
+        specifier: ^6.1.3
+        version: 6.2.2(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+    devDependencies:
+      esbuild:
+        specifier: ~0.28.0
+        version: 0.28.1
 
   examples/workflow-glsp:
     dependencies:
@@ -390,13 +470,11 @@ importers:
         specifier: workspace:*
         version: link:../workflow-server
 
-  examples/workflow-server-bundled-web: {}
-
   examples/workflow-server-mcp-demo:
     dependencies:
-      '@eclipse-glsp-examples/workflow-server-bundled-web':
+      '@eclipse-glsp-examples/playground':
         specifier: workspace:*
-        version: link:../workflow-server-bundled-web
+        version: link:../playground
     devDependencies:
       esbuild:
         specifier: ~0.28.0
@@ -404,28 +482,6 @@ importers:
       vscode-jsonrpc:
         specifier: 8.2.0
         version: 8.2.0
-
-  examples/workflow-standalone:
-    dependencies:
-      '@eclipse-glsp-examples/workflow-glsp':
-        specifier: workspace:*
-        version: link:../workflow-glsp
-      '@eclipse-glsp/client':
-        specifier: workspace:*
-        version: link:../../packages/client/client
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-      vscode-jsonrpc:
-        specifier: 8.2.0
-        version: 8.2.0
-    devDependencies:
-      esbuild:
-        specifier: ^0.28.1
-        version: 0.28.1
-      inversify:
-        specifier: ^6.1.3
-        version: 6.2.2(reflect-metadata@0.2.2)
 
   packages/client/client:
     dependencies:

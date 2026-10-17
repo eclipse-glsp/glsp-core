@@ -82,8 +82,8 @@
       "problemMatcher": ["$tsc"]
     },
     {
-      "label": "[Examples] Start Workflow Standalone (dev)",
-      "detail": "Watch sources and serve the standalone example against the Node server (WebSocket)",
+      "label": "[Examples] Start Playground (dev)",
+      "detail": "Watch sources and serve the playground example against the Node server (WebSocket)",
       "type": "shell",
       "group": "none",
       "command": "pnpm dev",
@@ -94,8 +94,8 @@
       "problemMatcher": []
     },
     {
-      "label": "[Examples] Start Workflow Standalone in browser mode (dev)",
-      "detail": "Watch sources and serve the standalone example with the server running as a web worker",
+      "label": "[Examples] Start Playground in browser mode (dev)",
+      "detail": "Watch sources and serve the playground example with the server running as a web worker",
       "type": "shell",
       "group": "none",
       "command": "pnpm dev:browser",
@@ -106,11 +106,11 @@
       "problemMatcher": []
     },
     {
-      "label": "[Examples] Start Workflow Standalone (external server)",
-      "detail": "Serve the built standalone example only; connect to a separately started server, e.g. the 'Debug Workflow Example Server (WebSocket)' launch config",
+      "label": "[Examples] Start Playground (external server)",
+      "detail": "Serve the built playground example only; connect to a separately started server, e.g. the 'Debug Workflow Example Server (WebSocket)' launch config",
       "type": "shell",
       "group": "none",
-      "command": "pnpm standalone start --external-server",
+      "command": "pnpm playground start --external-server",
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"

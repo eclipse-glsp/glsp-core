@@ -34,10 +34,19 @@
       "path": "./examples/workflow-glsp"
     },
     {
-      "path": "./examples/workflow-standalone"
+      "path": "./examples/gmodel-demo-glsp"
+    },
+    {
+      "path": "./examples/playground"
     },
     {
       "path": "./examples/workflow-server"
+    },
+    {
+      "path": "./examples/gmodel-demo-server"
+    },
+    {
+      "path": "./examples/playground-server"
     },
     {
       "path": "./e2e/playwright"
