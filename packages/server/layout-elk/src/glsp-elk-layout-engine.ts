@@ -59,6 +59,8 @@ export class GlspElkLayoutEngine implements LayoutEngine {
 
     protected elkEdges: ElkExtendedEdge[];
     protected idToElkElement: Map<string, ElkGraphElement>;
+    /** The operation that triggered the current layout, passed to the {@link LayoutConfigurator}. */
+    protected operation?: LayoutOperation;
 
     constructor(
         elkFactory: ElkFactory,
@@ -87,6 +89,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
 
         this.elkEdges = [];
         this.idToElkElement = new Map();
+        this.operation = operation;
         const elkGraph = await this.elk.layout(this.transformToElk(root));
         this.collectLayout(elkGraph, result);
         return result;
@@ -225,7 +228,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     protected transformGraph(graph: GGraph): ElkGraphElement {
         const elkGraph: ElkNode = {
             id: graph.id,
-            layoutOptions: this.configurator.apply(graph)
+            layoutOptions: this.configurator.apply(graph, this.operation)
         };
         if (graph.children) {
             elkGraph.children = this.findChildren(graph, GNode).map(child => this.transformToElk(child));
@@ -240,7 +243,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     protected transformNode(node: GNode): ElkNode {
         const elkNode: ElkNode = {
             id: node.id,
-            layoutOptions: this.configurator.apply(node)
+            layoutOptions: this.configurator.apply(node, this.operation)
         };
 
         if (node.children) {
@@ -274,7 +277,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             id: edge.id,
             sources: [edge.sourceId],
             targets: [edge.targetId],
-            layoutOptions: this.configurator.apply(edge)
+            layoutOptions: this.configurator.apply(edge, this.operation)
         };
 
         if (edge.children) {
@@ -299,7 +302,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         const elkLabel: ElkLabel = {
             id: label.id,
             text: label.text,
-            layoutOptions: this.configurator.apply(label)
+            layoutOptions: this.configurator.apply(label, this.operation)
         };
         this.transformShape(elkLabel, label);
         this.idToElkElement.set(label.id, elkLabel);
@@ -309,7 +312,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     protected transformPort(port: GPort): ElkPort {
         const elkPort: ElkPort = {
             id: port.id,
-            layoutOptions: this.configurator.apply(port)
+            layoutOptions: this.configurator.apply(port, this.operation)
         };
         if (port.children) {
             elkPort.labels = this.findChildren(port, GLabel).map(child => this.transformToElk(child));

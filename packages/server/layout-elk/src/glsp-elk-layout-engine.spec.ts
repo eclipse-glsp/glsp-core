@@ -13,19 +13,38 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DefaultModelState, GEdge, GGraph, GLabel, GModelIndex, GNode, GPort, LayoutEngine, ModelState } from '@eclipse-glsp/server';
-import { Container, ContainerModule } from 'inversify';
+import {
+    DefaultModelState,
+    GEdge,
+    GGraph,
+    GLabel,
+    GModelElement,
+    GModelIndex,
+    GNode,
+    GPort,
+    LayoutEngine,
+    LayoutOperation,
+    LayoutResult,
+    ModelState,
+    Point
+} from '@eclipse-glsp/server';
+import { LayoutOptions } from 'elkjs';
+import { Container, ContainerModule, injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
-import { ElkLayoutModule } from './di.config';
+import { ElkLayoutModule, ElkModuleOptions } from './di.config';
+import { AbstractLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
 
-function createEngine(root: GGraph): { engine: LayoutEngine; modelState: ModelState } {
+function createEngine(
+    root: GGraph,
+    layoutConfigurator?: ElkModuleOptions['layoutConfigurator']
+): { engine: LayoutEngine; modelState: ModelState } {
     const modelState = new DefaultModelState();
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
     modelState.updateRoot(root);
     const container = new Container();
     container.load(
         new ContainerModule(bind => bind(ModelState).toConstantValue(modelState)),
-        new ElkLayoutModule({ algorithms: ['layered'] })
+        new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator })
     );
     return { engine: container.get<LayoutEngine>(LayoutEngine), modelState };
 }
@@ -61,6 +80,25 @@ function createLabeledGraph(): GGraph {
     const edgeLabel = GLabel.builder().id('edgeLabel').text('flows').position(0, 0).size(30, 10).build();
     const edge = GEdge.builder().id('edge').sourceId('out').targetId('target').add(edgeLabel).build();
     return GGraph.builder().id('graph').addChildren(source, target, edge).build();
+}
+
+/** Lays out the graph top-down while elements are selected, and left-to-right otherwise. */
+@injectable()
+class SelectionAwareLayoutConfigurator extends AbstractLayoutConfigurator {
+    protected override graphOptions(graph: GGraph, operation?: LayoutOperation): LayoutOptions {
+        return { 'elk.direction': operation?.elementIds?.length ? 'DOWN' : 'RIGHT' };
+    }
+}
+
+/** Records the layout operation that each element was configured with. */
+@injectable()
+class RecordingLayoutConfigurator implements LayoutConfigurator {
+    static readonly operations = new Map<string, LayoutOperation | undefined>();
+
+    apply(element: GModelElement, operation?: LayoutOperation): LayoutOptions | undefined {
+        RecordingLayoutConfigurator.operations.set(element.id, operation);
+        return undefined;
+    }
 }
 
 describe('GlspElkLayoutEngine', () => {
@@ -132,6 +170,40 @@ describe('GlspElkLayoutEngine', () => {
                 expect(labelBounds?.newSize, id).toEqual(size);
                 expect(labelBounds?.newPosition, id).toBeDefined();
                 expect(modelState.index.findByClass(id, GLabel)!.position, id).toEqual({ x: 0, y: 0 });
+            }
+        });
+    });
+
+    describe('computeLayout with a layout operation', () => {
+        it('lets the layout configurator use the selected elements of the layout operation', async () => {
+            const { engine } = createEngine(createTwoNodeGraph(), SelectionAwareLayoutConfigurator);
+
+            const unselected = await engine.computeLayout!();
+            const selected = await engine.computeLayout!(LayoutOperation.create(['target']));
+
+            const position = (result: LayoutResult, id: string): Point =>
+                result.bounds.find(bounds => bounds.elementId === id)!.newPosition!;
+            expect(position(unselected, 'target').x).toBeGreaterThanOrEqual(position(unselected, 'source').x + 50);
+            expect(position(selected, 'target').y).toBeGreaterThanOrEqual(position(selected, 'source').y + 30);
+        });
+
+        it('passes the layout operation to the layout configurator for every element', async () => {
+            const label = GLabel.builder().id('label').text('label').size(20, 10).build();
+            const port = GPort.builder().id('port').size(10, 10).build();
+            const node = GNode.builder().id('node').size(50, 30).add(label).add(port).build();
+            const other = GNode.builder().id('other').size(50, 30).build();
+            const edge = GEdge.builder().id('edge').source(node).target(other).build();
+            const { engine } = createEngine(
+                GGraph.builder().id('graph').addChildren(node, other, edge).build(),
+                RecordingLayoutConfigurator
+            );
+            const operation = LayoutOperation.create(['node']);
+
+            await engine.computeLayout!(operation);
+
+            expect([...RecordingLayoutConfigurator.operations.keys()].sort()).toEqual(['edge', 'graph', 'label', 'node', 'other', 'port']);
+            for (const recorded of RecordingLayoutConfigurator.operations.values()) {
+                expect(recorded?.elementIds).toEqual(['node']);
             }
         });
     });
