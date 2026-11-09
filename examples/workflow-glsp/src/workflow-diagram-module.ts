@@ -48,7 +48,7 @@ import {
     overrideModelElement
 } from '@eclipse-glsp/client';
 import 'balloon-css/balloon.min.css';
-import { Container } from 'inversify';
+import { Container, interfaces } from 'inversify';
 import '../css/diagram.css';
 import { taskEditorModule } from './direct-task-editing/task-editor-module';
 import { BranchingNode, CategoryNode, Icon, SynchronizationNode, TaskNode, WeightedEdge } from './model';
@@ -102,7 +102,10 @@ export function createWorkflowDiagramContainer(...containerConfiguration: Contai
     return initializeWorkflowDiagramContainer(new Container(), ...containerConfiguration);
 }
 
-export function initializeWorkflowDiagramContainer(container: Container, ...containerConfiguration: ContainerConfiguration): Container {
+export function initializeWorkflowDiagramContainer<C extends interfaces.Container>(
+    container: C,
+    ...containerConfiguration: ContainerConfiguration
+): C {
     return initializeDiagramContainer(
         container,
         taskEditorModule,

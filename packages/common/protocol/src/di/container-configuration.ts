@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Container, ContainerModule } from 'inversify';
+import { ContainerModule, interfaces } from 'inversify';
 import { MaybeArray, asArray, distinctAdd, remove } from '../utils/array-util';
 import { hasFunctionProp, hasNumberProp } from '../utils/type-util';
 import { FeatureModule } from './feature-module';
@@ -24,11 +24,13 @@ import { FeatureModule } from './feature-module';
  * consists of the set of {@link ContainerModule}s that should be loaded in the container.
  * In addition, for more fine-grained control {@link ModuleConfiguration}s can be passed as part fo the container configuration
  * Module loading is distinct,this means each module will only get loaded once even if it is configured multiple times.
+ * Accepts any structural `interfaces.Container`, so containers typed by a different inversify entry point
+ * (e.g. the ES module typings re-exported by Theia >= 1.77) can be initialized as well.
   @param containerConfigurations
  *          Custom modules to be loaded in addition to the default modules and/or default modules that should be excluded.
   @returns The initialized container.
  */
-export function initializeContainer(container: Container, ...containerConfigurations: ContainerConfiguration): Container {
+export function initializeContainer<C extends interfaces.Container>(container: C, ...containerConfigurations: ContainerConfiguration): C {
     const modules = resolveContainerConfiguration(...containerConfigurations);
     container.load(...modules);
     return container;
