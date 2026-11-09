@@ -29,7 +29,7 @@ import {
     modelSourceModule,
     resolveContainerConfiguration
 } from '@eclipse-glsp/sprotty';
-import { Container } from 'inversify';
+import { interfaces } from 'inversify';
 import { defaultModule } from './base/default.module';
 import { IDiagramOptions } from './base/model/diagram-loader';
 import { boundsModule } from './features/bounds/bounds-module';
@@ -146,6 +146,8 @@ export function configureDiagramOptions(
 /**
  *  Initializes a GLSP Diagram container with the GLSP default modules and the specified custom `modules`.
  *  Additional modules can be passed as direct arguments or as part of a {@link ModuleConfiguration}.
+ *  Accepts any structural `interfaces.Container`, so containers typed by a different inversify entry point
+ *  (e.g. the ES module typings re-exported by Theia >= 1.77) can be initialized as well.
  *  ```typescript
  *  const container= createDiagramContainer(myModule1, myModule2)
  *  // or
@@ -171,7 +173,10 @@ export function configureDiagramOptions(
  * @throws An error if the first module to load is not the `defaultModule` (or an equivalent custom replacement module)
  * @returns The initialized container.
  */
-export function initializeDiagramContainer(container: Container, ...containerConfigurations: ContainerConfiguration): Container {
+export function initializeDiagramContainer<C extends interfaces.Container>(
+    container: C,
+    ...containerConfigurations: ContainerConfiguration
+): C {
     const modules = resolveContainerConfiguration(...DEFAULT_MODULES, ...containerConfigurations);
     // The `defaultModule` (or a custom replacement module with the same `featureId`) should be the first module that is
     // loaded into the container
