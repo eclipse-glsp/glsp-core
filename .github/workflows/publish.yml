@@ -1,9 +1,11 @@
 name: 'Publish to NPM'
 # The publish baseline below recognizes `next` runs (scheduled and manual) by this name.
-run-name: Publish ${{ inputs.dist-tag || 'next' }}
+run-name: Publish ${{ github.event_name == 'push' && 'latest' || inputs.dist-tag || 'next' }}
 
-# `next` versions are published nightly and on demand, `latest` versions on demand (release flow).
+# `next` versions are published nightly and on demand, `latest` versions on push of the release tag v<version>.
 on:
+  push:
+    tags: ['v*']
   schedule:
     # Daily at 22:00 UTC. GitHub disables schedules after 60 days without repository activity;
     # re-enable the workflow in the Actions tab if `next` versions stop appearing.
@@ -49,7 +51,7 @@ jobs:
       # OIDC token for npm trusted publishing
       id-token: write
     env:
-      DIST_TAG: ${{ inputs.dist-tag || 'next' }}
+      DIST_TAG: ${{ github.event_name == 'push' && 'latest' || inputs.dist-tag || 'next' }}
     steps:
       - name: Determine publish baseline
         id: baseline
@@ -71,7 +73,7 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # `next` always publishes the head of main (see the baseline step), even for `ref: main`
-          ref: ${{ (inputs.dist-tag || 'next') == 'next' && github.sha || inputs.ref || github.sha }}
+          ref: ${{ env.DIST_TAG == 'next' && github.sha || inputs.ref || github.sha }}
           # Fetch all history to determine the canary version (commits since last release tag) and
           # the changes since the publish baseline
           fetch-depth: 0
@@ -81,6 +83,32 @@ jobs:
           node-version: 22.x
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
+      - name: Check release tag
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # a lightweight tag has no tag object and therefore no signature
+        run: |
+          [[ $GITHUB_REF_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::Tag $GITHUB_REF_NAME is not a final release tag (v<major>.<minor>.<patch>)"; exit 1; }
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the version $VERSION in package.json"
+            exit 1
+          fi
+          TAG_SHA=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$GITHUB_REF_NAME" --jq 'select(.object.type == "tag") | .object.sha')
+          if [[ -z "$TAG_SHA" || $(gh api "repos/$GITHUB_REPOSITORY/git/tags/$TAG_SHA" --jq .verification.verified) != "true" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME is not a signed tag verified by GitHub"
+            exit 1
+          fi
+      - name: Check that CI passed on the tagged commit
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CI=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" --event push --json conclusion --jq '.[0].conclusion')
+          [[ "$CI" == "success" ]] || { echo "::error::ci.yml has not passed on $GITHUB_SHA. Re-run this job once it has."; exit 1; }
+
       - name: Install
         run: pnpm install --frozen-lockfile
       - name: Build
