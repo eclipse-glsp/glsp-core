@@ -15,6 +15,7 @@
  ********************************************************************************/
 
 export * from './file-util';
+export * from './gh-util';
 export * from './git-util';
 export * from './glsp-repo-util';
 export * from './logger';

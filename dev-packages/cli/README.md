@@ -133,6 +133,10 @@ Commands:
   prepare [options] <versionType> [customVersion]     Prepare a new release for a GLSP component (version bump, changelog, PR
                                                       creation ...)
   publish [options] <distTag>                         Publish all workspace packages of a GLSP repository
+  release                                             Release a GLSP repository in steps: check, prepare, tag and next,
+                                                      with status to see what happens next, or all of them with run
+  changelog [options]                                 List the commits since the changelog was last generated (its marker,
+                                                      or the last release tag) that have no changelog entry yet
   help [command]                                      display help for command
 ```
 
@@ -240,6 +244,64 @@ Options:
   --registry <url>         Publish to a custom npm registry (e.g. a local verdaccio for testing)
   --since <ref>            Baseline for affected-only 'next' publishing (default: HEAD^, i.e. the changes of the last commit)
   --full                   Publish all packages, ignoring the affected-only baseline ('next' only) (default: false)
+  -h, --help               display help for command
+```
+
+### release
+
+Releases a GLSP repository from a maintainer machine in deterministic steps. All release state lives on GitHub and in
+the registries, so every step can run on any machine, at any time, and picks up where the last one stopped. Publishing
+stays in CI: pushing the signed release tag `v<version>` triggers the repository's publishing workflows (`publish.yml`
+for npm, `release.yml` for Maven Central and the p2 update sites), which reject tags that GitHub has not verified.
+The steps need push access, an authenticated `gh` and a git signing key that is added to your GitHub account as a
+signing key. They work on a clone in `~/.cache/glsp-releng/<owner>` (or `--workdir`), which they own and reset.
+
+| Step                           | Does                                                                                                                   |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `status [--json] [--wait]`     | Derives the phase of the release and who acts next: a release command, a reviewer, CI, or a fix                        |
+| `check <versionType> [--json]` | Checks the preconditions of a release without changing anything                                                        |
+| `prepare <versionType>`        | Runs `check`, then opens the release PR (version bump, dated changelog)                                                |
+| `tag`                          | After the release PR is merged and CI passed on its merge commit: pushes the signed tag and creates the GitHub release |
+| `next`                         | After publishing: opens the PR that switches the default branch to the next development version                        |
+| `run [versionType]`            | Runs all steps and waits in between; without a version type it continues the release in progress                       |
+
+The merge of the release PR is the release gate: no step merges it. `prepare`, `tag` and `next` take `--dry-run`, which
+does the local work (commit, signed tag, release notes) and pushes nothing. With `--owner <user>` all steps run against
+a fork; its publishing workflows skip, so a rehearsal ends in the `publishing` phase.
+
+`check` fails unless the default branch is on a development version without a release in progress, the version is not
+published yet, all GLSP dependencies are released, CI passed on the default branch, and `CHANGELOG.md` has an active
+section for the version and is up to date (see [changelog](#changelog)). Release `glsp-core` before the integrations,
+and `glsp-server` before `glsp-eclipse-integration`.
+
+```console
+$ glsp releng release status --repo glsp-server
+eclipse-glsp/glsp-server: phase 'idle'
+ → No release is in progress. Check the preconditions of a release and prepare it: glsp releng release prepare <major|minor|patch> --repo glsp-server
+```
+
+### changelog
+
+Lists the commits since the changelog was last generated that still need a changelog decision. The changelog skills of
+the GLSP repositories write a marker below the title of `CHANGELOG.md` when they update it:
+
+```markdown
+<!-- changelog-generated-up-to: <commit> -->
+```
+
+Without a marker, the command starts at the last release tag. A commit is `covered` when the changelog references its
+PR, `skipped` when it never needs an entry (dependabot, version switches, release commits, changelog updates), and
+`pending` otherwise. `glsp releng release check` requires that no commit is pending.
+
+```console
+$ glsp releng changelog -h
+Usage: glsp releng changelog [options]
+
+List the commits since the changelog was last generated (its marker, or the last release tag) that have no changelog entry yet
+
+Options:
+  -r, --repoDir <repoDir>  Path to the repository (default: ".")
+  --json                   Print the result as JSON (default: false)
   -h, --help               display help for command
 ```
 

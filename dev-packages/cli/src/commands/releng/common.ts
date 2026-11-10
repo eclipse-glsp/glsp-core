@@ -230,34 +230,39 @@ export async function checkIfNpmVersionIsNew(pckgName: string, newVersion: strin
  * Only tags that start with 'v' followed by a semantic version (e.g. v1.0.0) are considered.
  * @param path The path to the git repository. If not provided, the current working directory is used.
  */
-export function getLastReleaseTag(repoDir?: string): string | undefined {
-    const tags = exec('git tag --list --sort=-v:refname', { cwd: repoDir }).split('\n');
+export function getLastReleaseTag(repoDir?: string, excludeTag?: string): string | undefined {
+    const tags = exec('git tag --list --sort=-v:refname', { cwd: repoDir, silent: true }).split('\n');
 
     const lastTag = tags.find(tag => {
-        if (!tag.startsWith('v')) {
+        if (!tag.startsWith('v') || tag === excludeTag) {
             return false;
         }
         const version = tag.substring(1);
-        return semver.valid(version) !== undefined && !semver.prerelease(version);
+        // semver.valid returns null for invalid versions (e.g. 'v2.8.0.javax')
+        return semver.valid(version) !== null && !semver.prerelease(version);
     });
 
     return lastTag;
 }
 
-export function getChangeLogChanges(options: Pick<RelengOptions, 'repoDir' | 'version' | 'repo'>): string {
+/**
+ * Returns the changelog section of the given version as release notes.
+ * @param changelog The changelog content; read from `<repoDir>/CHANGELOG.md` if omitted
+ */
+export function getChangeLogChanges(options: Pick<RelengOptions, 'repoDir' | 'version' | 'repo'>, changelog?: string): string {
     const version = options.version;
-    const md = readFile('CHANGELOG.md');
+    const md = changelog ?? readFile(path.resolve(options.repoDir, 'CHANGELOG.md'));
     const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`^## \\[v${escapedVersion}[^\\n]*\\n(?:^(?!## ).*\\n?)*`, 'gm');
     const match = md.match(regex);
-    const previousTag = getLastReleaseTag(options.repoDir);
+    const previousTag = getLastReleaseTag(options.repoDir, `v${version}`);
     if (!match) {
         throw new Error(`No changelog section found for version ${version}`);
     }
     // Remove header section and return only the content lines
     let content = match[0].trim().split('\n').splice(2).join('\n').trim();
 
-    content = content.replace('###', '##'); // demote headings by one level
+    content = content.replace(/^###/gm, '##'); // demote all headings by one level
     if (previousTag) {
         content += `
 

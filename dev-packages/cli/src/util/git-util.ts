@@ -31,7 +31,7 @@ export function isGitRepository(path?: string): boolean {
 }
 
 export function getGitRoot(path?: string): string {
-    const fileString = exec('git rev-parse --show-toplevel', { cwd: path });
+    const fileString = exec('git rev-parse --show-toplevel', { cwd: path, silent: true });
     return resolve(fileString);
 }
 

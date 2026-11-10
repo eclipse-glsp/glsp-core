@@ -294,6 +294,16 @@ describe('common', () => {
             vi.spyOn(processUtil, 'exec').mockReturnValue('nightly\nsome-tag');
             expect(getLastReleaseTag('/repo')).toBeUndefined();
         });
+
+        it('should skip tags that are not valid semver versions', () => {
+            vi.spyOn(processUtil, 'exec').mockReturnValue('v2.8.0.javax\nv2.8.0');
+            expect(getLastReleaseTag('/repo')).toBe('v2.8.0');
+        });
+
+        it('should skip the excluded tag', () => {
+            vi.spyOn(processUtil, 'exec').mockReturnValue('v2.9.0\nv2.8.0');
+            expect(getLastReleaseTag('/repo', 'v2.9.0')).toBe('v2.8.0');
+        });
     });
 
     describe('getChangeLogChanges', () => {
@@ -343,6 +353,24 @@ describe('common', () => {
             const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' });
             expect(result).toContain('## Features');
             expect(result).not.toContain('### Features');
+        });
+
+        it('should demote every heading, including nested ones', () => {
+            const grouped = ['## [v2.0.0 - 2026-01-15]', '', '### Client', '', '#### Changes', '', '- A', '', '### Server', '', '- B'].join(
+                '\n'
+            );
+            vi.spyOn(processUtil, 'exec').mockReturnValue('');
+            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' }, grouped);
+            expect(result).toContain('## Client');
+            expect(result).toContain('### Changes');
+            expect(result).toContain('## Server');
+            expect(result).not.toMatch(/^####/m);
+        });
+
+        it('should not link the release tag to itself', () => {
+            vi.spyOn(processUtil, 'exec').mockReturnValue('v2.0.0\nv1.0.0');
+            const result = getChangeLogChanges({ repoDir: '/repo', version: '2.0.0', repo: 'glsp-core' }, changelogContent);
+            expect(result).toContain('v1.0.0...v2.0.0');
         });
     });
 });

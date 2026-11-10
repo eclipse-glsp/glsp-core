@@ -247,11 +247,21 @@ function createReleasePR(options: PrepareReleaseOptions): void {
         const header = isNextVersion(options.version)
             ? `Switch to nightly ${options.version} versions`
             : `Prepare release v${options.version}`;
+        const footer = isNextVersion(options.version)
+            ? 'Note: This pull request was created automatically by `glsp releng prepare`.'
+            : `## Review checklist
+
+Merging this pull request is the release gate: afterwards \`glsp releng release\` pushes the signed tag \`v${options.version}\`, which publishes the release. Please use a **squash merge**.
+
+- [ ] Version bumped in all packages
+- [ ] Changelog section complete and dated
+- [ ] Repository-specific changes are correct (e.g. the Theia compatibility table, the Eclipse target platform pointing at \`releases/${options.version}\`)
+- [ ] CI is green`;
         const body = `${header}
 
 ${changes}
 
-Note: This pull request was created automatically. After merging, the automated publishing process will be started.
+${footer}
 `;
         const bodyFile = 'pr_body.txt';
         const prTitle = isNextVersion(options.version) ? `Switch to nightly ${options.version} versions` : `Release v${options.version}`;

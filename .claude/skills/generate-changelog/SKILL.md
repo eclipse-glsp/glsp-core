@@ -1,19 +1,19 @@
 ---
 name: generate-changelog
-description: Generate changelog entries from merged PRs since the last release
+description: Generate changelog entries from the PRs merged since the changelog was last generated
 disable-model-invocation: true
 ---
 
 # Changelog Generator
 
-Generate changelog entries by analyzing merged PRs since the last release.
+Generate changelog entries for the PRs merged since the changelog was last generated.
 
 `CHANGELOG.md` is a combined changelog: every release section groups its entries by component (`### Protocol`, `### Client`, `### Server`, `### Dev Packages`, `### E2E`), and each component has its own `#### Changes` / `#### Potentially Breaking Changes` subsections. Entries below the "predate the consolidation" disclaimer belong to the former `glsp-client`, `glsp-server-node` and `glsp` repositories — **never edit them or their links** (the protocol was part of `glsp-client` back then, so those sections record protocol changes under Client).
 
 Execute these phases in order:
 
-1. **Data Gathering** — find last release, fetch PRs, assign components, classify, generate entries
-2. **Changelog Update** — write entries into CHANGELOG.md
+1. **Data Gathering** — list pending commits, fetch PRs, assign components, classify, generate entries
+2. **Changelog Update** — write entries into CHANGELOG.md and move the marker
 3. **Review & Approval** — present the actual diff to the user for review
 4. **PR Creation** (optional) — push and create PR, only if the user requests it
 
@@ -21,48 +21,43 @@ Execute these phases in order:
 
 ## Phase 1: Data Gathering
 
-### Step 1.1: Find the latest release tag
+### Step 1.1: List the commits since the last changelog update
 
-Run:
-
-```bash
-git tag --sort=-creatordate | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1
-```
-
-Record as `LAST_TAG`. Get the tag's date:
+On an up-to-date checkout of the default branch, run:
 
 ```bash
-git log -1 --format=%aI $LAST_TAG
+npx -y @eclipse-glsp/cli@next releng changelog --json
 ```
 
-Record as `TAG_DATE`. The tag history predates the monorepo consolidation, so the tag date is used only as a cutoff for the PR query — sanity-check that it is plausible (not in the future, not older than the previous changelog section) before relying on it.
+It lists the commits since the changelog marker (`<!-- changelog-generated-up-to: <sha> -->` below the title of `CHANGELOG.md`), or since the last release tag if there is no marker yet, and classifies each one:
+
+- `covered`: the changelog already references its PR
+- `skipped`: never needs an entry (dependabot, version switches, release commits, changelog updates)
+- `pending`: needs a decision; these are the PRs to work on
+
+Record `head` as `HEAD_SHA`: Phase 2 moves the marker to it.
 
 ### Step 1.2: Extract category tags from existing CHANGELOG.md
 
 Read `CHANGELOG.md` and extract all unique `[tag]` patterns from changelog entries (pattern: `- [tag] ...`). Build a deduplicated vocabulary list preserving original casing, and note which component subgroup each tag typically appears under — `[diagram]`, `[routing]` are client tags, `[gmodel]`, `[operation]`, `[layout]` are server tags, `[cli]`, `[eslint-config]`, `[ts-config]` are dev-package tags. The `[protocol]` tag marks protocol entries recorded under Client before the protocol became its own component; inside the `### Protocol` section prefer finer tags (e.g. `[action]`, `[di]`, `[uuid]`).
 
-### Step 1.3: Fetch merged PRs since the last release
+### Step 1.3: Fetch the pending PRs
+
+For every `pending` commit with a `pr` number:
 
 ```bash
-gh pr list --state merged --search "merged:>TAG_DATE" --json number,title,author,body,labels,mergedAt --limit 100
+gh pr view <N> --json number,title,author,body,labels
 ```
 
-Use the date portion only from `TAG_DATE` (e.g. `2026-06-01`).
+A pending commit without a PR number was pushed directly; judge it from `git show <sha>`.
 
-### Step 1.4: Filter PRs
+### Step 1.4: Decide which PRs get an entry
 
-**Skip rules** (in order):
+- PR body contains `[x] This PR should be mentioned in the changelog` → include it.
+- Title is purely CI/metadata (readme badges, workflow config) and the box is not checked → skip it.
+- Otherwise judge from title and body whether users of the repository notice the change; flag uncertain ones for review in Phase 3.
 
-1. PR has the `changelog` label → skip (already tracked in a previous changelog update)
-2. Author login is `dependabot` or `dependabot[bot]` → skip
-3. Title matches version bump patterns → skip:
-    - Starts with `Switch to` and contains `-next`
-    - Title is a bare version like `vX.Y.Z`
-    - Title starts with `Release v`
-4. Title contains `update changelog` (case insensitive) → skip
-5. Title is purely CI/metadata (readme badges, workflow config) AND body does NOT contain `[x] This PR should be mentioned in the changelog` → skip
-
-**Override**: If the PR body contains `[x] This PR should be mentioned in the changelog`, always include it regardless of rules 3-5. PRs with the `changelog` label (rule 1) and dependabot PRs (rule 2) are always skipped.
+Skipped PRs need nothing else: moving the marker past them records the decision.
 
 ### Step 1.5: Assign a component
 
@@ -178,7 +173,7 @@ Read `CHANGELOG.md` in the repository root.
 
 **Creating a new section:**
 
-- Bump the minor version of `LAST_TAG` (e.g. `v2.7.0` → `v2.8.0`)
+- Bump the minor version of the last release tag (e.g. `v2.7.0` → `v2.8.0`)
 - Use the full four-component skeleton and fill in what applies:
 
 ```markdown
@@ -219,6 +214,16 @@ Read `CHANGELOG.md` in the repository root.
 ### Step 2.2: Write the updated CHANGELOG.md
 
 Use the Edit tool to update `CHANGELOG.md` directly in the current working tree. Match existing formatting conventions and leave everything below the consolidation disclaimer untouched.
+
+### Step 2.3: Move the changelog marker
+
+Set the marker directly below the `# ` title line of `CHANGELOG.md` to `HEAD_SHA`, replacing an existing one:
+
+```markdown
+<!-- changelog-generated-up-to: HEAD_SHA -->
+```
+
+Move it even if no PR got an entry: it records that every commit up to `HEAD_SHA` was decided on. `glsp releng release check` only accepts a changelog without pending commits.
 
 ---
 
@@ -280,13 +285,3 @@ git push -u origin BRANCH_NAME
 If the repo has a `.github/PULL_REQUEST_TEMPLATE.md`, use its structure to fill in the PR body. Otherwise use a simple body describing the changelog update.
 
 Report the PR URL.
-
-### Step 4.4: Label referenced PRs
-
-Add the `changelog` label to every PR mentioned in the new entries:
-
-```bash
-gh pr edit PR_NUMBER --add-label "changelog"
-```
-
-Report which PRs were labeled.
