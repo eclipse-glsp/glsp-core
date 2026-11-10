@@ -19,14 +19,53 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Container } from 'inversify';
 import * as net from 'net';
 import { createAppModule } from '../di/app-module';
-import { waitForReachable } from '../test/port-util';
+import { delay, waitForReachable } from '../test/port-util';
 import { defaultSocketLaunchOptions } from './socket-cli-parser';
 import { SocketServerLauncher } from './socket-server-launcher';
 
 const serverPort = 5008;
 
+let serverStub: GLSPServer;
+
+function frame(payload: string): string {
+    return `Content-Length: ${Buffer.byteLength(payload)}\r\n\r\n${payload}`;
+}
+
+const initializeRequest = JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'initialize',
+    params: { applicationId: 'client-app', protocolVersion: '1.0.0' }
+});
+
+function closed(socket: net.Socket): Promise<void> {
+    return new Promise(resolve => (socket.destroyed ? resolve() : socket.once('close', () => resolve())));
+}
+
+/** Sends the payload on a new connection and resolves with the first response chunk. */
+async function sendAndReadResponse(payload: string): Promise<string> {
+    const client = await connect();
+    try {
+        const response = new Promise<string>(resolve => client.once('data', data => resolve(data.toString())));
+        client.write(payload);
+        return await response;
+    } finally {
+        client.destroy();
+    }
+}
+
+/** Opens a connection to the launcher and resolves once it is established. */
+async function connect(): Promise<net.Socket> {
+    const client = net.createConnection({ port: serverPort });
+    await new Promise<void>((resolve, reject) => {
+        client.on('connect', () => resolve());
+        client.on('error', reject);
+    });
+    return client;
+}
+
 function createLauncher(): SocketServerLauncher {
-    const serverStub = {
+    serverStub = {
         initialize: vi.fn().mockResolvedValue({}),
         initializeClientSession: vi.fn().mockResolvedValue(undefined),
         disposeClientSession: vi.fn().mockResolvedValue(undefined),
@@ -109,12 +148,8 @@ describe('test SocketServerLauncher', () => {
         launcher.start({ port: serverPort });
         await launcher.listening;
 
-        const client = net.createConnection({ port: serverPort });
+        const client = await connect();
         try {
-            await new Promise<void>((resolve, reject) => {
-                client.on('connect', () => resolve());
-                client.on('error', reject);
-            });
             await vi.waitFor(() => expect(accepted).toHaveLength(1));
         } finally {
             client.destroy();
@@ -164,15 +199,209 @@ describe('test SocketServerLauncher', () => {
         launcher.start({ port: serverPort });
         await launcher.listening;
 
-        const client = net.createConnection({ port: serverPort });
+        const client = await connect();
         try {
-            await new Promise<void>((resolve, reject) => {
-                client.on('connect', () => resolve());
-                client.on('error', reject);
-            });
             await vi.waitFor(() => expect(accepted).toHaveLength(1));
         } finally {
             client.destroy();
         }
+    });
+
+    it('processes a framed JSON-RPC request', async () => {
+        launcher = createLauncher();
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        await expect(sendAndReadResponse(frame(initializeRequest))).resolves.toContain('"id":1');
+        expect(serverStub.initialize).toHaveBeenCalledOnce();
+    });
+
+    it('rejects a connection that starts with an HTTP request', async () => {
+        launcher = createLauncher();
+        const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            // What a browser sends for a cross-origin `fetch(..., { method: 'POST', mode: 'no-cors', body })`.
+            client.write(
+                `POST / HTTP/1.1\r\nHost: localhost\r\nContent-Type: text/plain;charset=UTF-8\r\n` +
+                    `Content-Length: ${Buffer.byteLength(initializeRequest)}\r\n\r\n${initializeRequest}`
+            );
+
+            await closed(client);
+            expect(serverStub.initialize).not.toHaveBeenCalled();
+            expect(createServerInstance).not.toHaveBeenCalled();
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('processes a request whose first header is Content-Type', async () => {
+        launcher = createLauncher();
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const payload = `Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n${frame(initializeRequest)}`;
+        await expect(sendAndReadResponse(payload)).resolves.toContain('"id":1');
+    });
+
+    it('processes a request with lowercase header names, like the JSON-RPC reader', async () => {
+        launcher = createLauncher();
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const payload = `content-length: ${Buffer.byteLength(initializeRequest)}\r\n\r\n${initializeRequest}`;
+        await expect(sendAndReadResponse(payload)).resolves.toContain('"id":1');
+    });
+
+    it('rejects a message without base protocol framing', async () => {
+        launcher = createLauncher();
+        const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            client.write(initializeRequest);
+
+            await closed(client);
+            expect(createServerInstance).not.toHaveBeenCalled();
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('rejects an HTTP request line that arrives in pieces', async () => {
+        launcher = createLauncher();
+        const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            client.setNoDelay(true);
+            // `CON` could still become `Content-`, the header check ignores case.
+            client.write('CON');
+            await delay(20);
+            client.write('NECT localhost:5008 HTTP/1.1\r\nHost: localhost\r\n\r\n');
+
+            await closed(client);
+            expect(createServerInstance).not.toHaveBeenCalled();
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('processes a JSON-RPC request whose first chunk is ambiguous', async () => {
+        launcher = createLauncher();
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            client.setNoDelay(true);
+            const response = new Promise<string>(resolve => client.once('data', data => resolve(data.toString())));
+            const message = frame(initializeRequest);
+            // `C` alone is too short to tell, so the launcher has to wait for more.
+            client.write(message.slice(0, 1));
+            await delay(20);
+            client.write(message.slice(1));
+
+            await expect(response).resolves.toContain('"id":1');
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('does not create a server instance for a connection that sends nothing', async () => {
+        launcher = createLauncher();
+        const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
+        const accepted: net.Socket[] = [];
+        launcher.onConnection(socket => accepted.push(socket));
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        client.destroy();
+
+        await vi.waitFor(() => expect(accepted).toHaveLength(1));
+        await closed(accepted[0]);
+        expect(createServerInstance).not.toHaveBeenCalled();
+    });
+
+    it('survives a connection that is reset before it sends anything', async () => {
+        launcher = createLauncher();
+        const accepted: net.Socket[] = [];
+        launcher.onConnection(socket => accepted.push(socket));
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        await vi.waitFor(() => expect(accepted).toHaveLength(1));
+        client.resetAndDestroy();
+
+        await closed(accepted[0]);
+        const next = await connect();
+        try {
+            const response = new Promise<string>(resolve => next.once('data', data => resolve(data.toString())));
+            next.write(frame(initializeRequest));
+            await expect(response).resolves.toContain('"id":1');
+        } finally {
+            next.destroy();
+        }
+    });
+
+    it('closes a connection that sends nothing within the handshake timeout', async () => {
+        launcher = createLauncher();
+        (launcher as any).handshakeTimeout = 50;
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            await closed(client);
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('closes idle connections when it is shut down', async () => {
+        launcher = createLauncher();
+        const accepted: net.Socket[] = [];
+        launcher.onConnection(socket => accepted.push(socket));
+        const stopped = Promise.resolve(launcher.start({ port: serverPort }));
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            await vi.waitFor(() => expect(accepted).toHaveLength(1));
+            launcher.shutdown();
+
+            await expect(stopped).resolves.toBeUndefined();
+            await closed(client);
+        } finally {
+            client.destroy();
+        }
+    });
+});
+
+describe('SocketServerLauncher.classifyStreamPrefix', () => {
+    it.each([
+        ['Content-Length: 42', 'accept'],
+        ['Content-Type: application/vscode-jsonrpc', 'accept'],
+        ['content-length: 42', 'accept'],
+        ['Content-', 'accept'],
+        ['C', 'incomplete'],
+        ['cont', 'incomplete'],
+        ['Content', 'incomplete'],
+        ['POST / HTTP/1.1', 'reject'],
+        ['CONNECT localhost:5008 HTTP/1.1', 'reject'],
+        ['{"jsonrpc":"2.0"}', 'reject'],
+        ['Content:', 'reject'],
+        ['X', 'reject']
+    ])('%s -> %s', (prefix, expected) => {
+        expect((createLauncher() as any).classifyStreamPrefix(Buffer.from(prefix))).toBe(expected);
     });
 });
