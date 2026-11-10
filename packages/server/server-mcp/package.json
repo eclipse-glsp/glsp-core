@@ -59,7 +59,7 @@
   "dependencies": {
     "@eclipse-glsp/server": "workspace:*",
     "@hono/node-server": "^1.19.9",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "zod": "^4.0.0"
   },
   "peerDependencies": {
