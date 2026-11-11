@@ -23,6 +23,9 @@ import { Logger } from '../../common/utils/logger';
 /** Common prefix of `Content-Length` and `Content-Type`, the only headers of the base protocol, lowercased. */
 const BASE_PROTOCOL_HEADER_PREFIX = 'content-';
 
+/** Maximum number of bytes inspected before a pending stream must be classified. */
+const MAX_STREAM_PREFIX_LENGTH = 8192;
+
 @injectable()
 export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocketConnectOpts> {
     @inject(Logger) protected override logger: Logger;
@@ -35,13 +38,14 @@ export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocke
     protected pendingSockets = new Set<net.Socket>();
 
     /**
-     * How long, in milliseconds, an accepted socket may stay silent before it is closed. Until the peer sends its
-     * first bytes no server instance owns the socket, so this keeps an idle peer from holding it open indefinitely.
+     * How long, in milliseconds, an accepted socket may remain pending before it is closed, regardless of incoming
+     * data. No server instance owns the socket until the stream has been classified.
      */
     protected handshakeTimeout = 30_000;
 
     /**
-     * Fires for every socket the server accepts, before the JSON-RPC connection is built on it.
+     * Fires after the JSON-RPC connection and server instance have been created for an accepted GLSP client.
+     * Rejected peers and connections that close or time out before classification do not fire this event.
      *
      * A listener must not consume the socket. Subscribe before {@link start} to observe the first connection; the
      * subscription outlives an individual launch and is disposed by the caller.
@@ -79,24 +83,26 @@ export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocke
     }
 
     /**
-     * Takes up a socket the server accepted. Observers are notified before the socket is read from.
+     * Classifies a socket the server accepted before handing it to a server instance.
      *
      * @param socket The accepted socket.
      */
     protected acceptConnection(socket: net.Socket): void {
-        this.onConnectionEmitter.fire(socket);
         this.pendingSockets.add(socket);
-        const chunks: Buffer[] = [];
+        const buffer = Buffer.alloc(MAX_STREAM_PREFIX_LENGTH);
+        let length = 0;
         const onData = (chunk: Buffer): void => {
-            chunks.push(chunk);
-            const prefix = Buffer.concat(chunks);
+            const previousLength = length;
+            length += chunk.copy(buffer, length, 0, MAX_STREAM_PREFIX_LENGTH - length);
+            const prefix = buffer.subarray(0, length);
             const verdict = this.classifyStreamPrefix(prefix);
-            if (verdict === 'incomplete') {
+            if (verdict === 'incomplete' && length < MAX_STREAM_PREFIX_LENGTH) {
                 return;
             }
             release();
             if (verdict === 'accept') {
-                this.openConnection(socket, prefix);
+                // Replay the whole chunk, including bytes beyond the classification limit.
+                this.openConnection(socket, Buffer.concat([buffer.subarray(0, previousLength), chunk]));
             } else {
                 this.rejectConnection(socket);
             }
@@ -105,26 +111,29 @@ export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocke
         const onError = (error: Error): void =>
             this.logger.debug(`Client connection from ${socket.remoteAddress}:${socket.remotePort} failed: ${error.message}`);
         const onTimeout = (): void => {
-            this.logger.warn(`Closing client connection from ${socket.remoteAddress}:${socket.remotePort}: no data received.`);
+            this.logger.warn(
+                `Closing client connection from ${socket.remoteAddress}:${socket.remotePort}: stream classification timed out.`
+            );
             socket.destroy();
         };
         const release = (): void => {
-            socket.off('data', onData).off('error', onError).off('timeout', onTimeout).off('close', release);
-            socket.setTimeout(0);
+            socket.off('data', onData).off('error', onError).off('close', release);
+            clearTimeout(timeout);
             this.pendingSockets.delete(socket);
         };
-        // Wait for the first bytes, so a connection that is not a GLSP client never creates a server instance.
-        socket.on('data', onData).on('error', onError).on('timeout', onTimeout).on('close', release);
-        socket.setTimeout(this.handshakeTimeout);
+        // Bound the entire classification phase, not just inactivity between chunks.
+        const timeout = setTimeout(onTimeout, this.handshakeTimeout);
+        socket.on('data', onData).on('error', onError).on('close', release);
     }
 
     /**
      * Decides whether the peer is a GLSP client. The default accepts only a base protocol header (ignoring case), so an
      * HTTP request is never read as a JSON-RPC message.
      *
-     * An override must decide within a bounded prefix, since the launcher buffers without limit until it does.
+     * An override receives at most 8 KiB. If it still returns `incomplete` at that limit, the connection is rejected.
+     * Bytes following an accepted prefix are preserved for the JSON-RPC reader.
      *
-     * @param prefix All bytes the peer has sent so far.
+     * @param prefix The bytes received so far, capped at 8 KiB.
      * @returns `incomplete` while `prefix` is too short to tell.
      */
     protected classifyStreamPrefix(prefix: Buffer): 'accept' | 'reject' | 'incomplete' {
@@ -147,6 +156,7 @@ export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocke
         socket.pause();
         socket.unshift(prefix);
         this.createServerInstance(this.createConnection(socket));
+        this.onConnectionEmitter.fire(socket);
         socket.resume();
     }
 

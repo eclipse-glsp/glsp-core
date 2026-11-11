@@ -140,16 +140,21 @@ describe('test SocketServerLauncher', () => {
         expect(launcher.port).toBeUndefined();
     });
 
-    it('notifies observers of every accepted connection', async () => {
+    it('notifies observers after establishing an accepted GLSP connection', async () => {
         launcher = createLauncher();
+        const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
         const accepted: net.Socket[] = [];
-        launcher.onConnection(socket => accepted.push(socket));
+        launcher.onConnection(socket => {
+            expect(createServerInstance).toHaveBeenCalledOnce();
+            accepted.push(socket);
+        });
 
         launcher.start({ port: serverPort });
         await launcher.listening;
 
         const client = await connect();
         try {
+            client.write(frame(initializeRequest));
             await vi.waitFor(() => expect(accepted).toHaveLength(1));
         } finally {
             client.destroy();
@@ -201,6 +206,7 @@ describe('test SocketServerLauncher', () => {
 
         const client = await connect();
         try {
+            client.write(frame(initializeRequest));
             await vi.waitFor(() => expect(accepted).toHaveLength(1));
         } finally {
             client.destroy();
@@ -218,6 +224,8 @@ describe('test SocketServerLauncher', () => {
 
     it('rejects a connection that starts with an HTTP request', async () => {
         launcher = createLauncher();
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
         const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
         launcher.start({ port: serverPort });
         await launcher.listening;
@@ -231,6 +239,7 @@ describe('test SocketServerLauncher', () => {
             );
 
             await closed(client);
+            expect(onConnection).not.toHaveBeenCalled();
             expect(serverStub.initialize).not.toHaveBeenCalled();
             expect(createServerInstance).not.toHaveBeenCalled();
         } finally {
@@ -319,7 +328,13 @@ describe('test SocketServerLauncher', () => {
         launcher = createLauncher();
         const createServerInstance = vi.spyOn(launcher as any, 'createServerInstance');
         const accepted: net.Socket[] = [];
-        launcher.onConnection(socket => accepted.push(socket));
+        const acceptConnection = (launcher as any).acceptConnection.bind(launcher);
+        vi.spyOn(launcher as any, 'acceptConnection').mockImplementation((socket: unknown) => {
+            accepted.push(socket as net.Socket);
+            acceptConnection(socket);
+        });
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
         launcher.start({ port: serverPort });
         await launcher.listening;
 
@@ -329,12 +344,19 @@ describe('test SocketServerLauncher', () => {
         await vi.waitFor(() => expect(accepted).toHaveLength(1));
         await closed(accepted[0]);
         expect(createServerInstance).not.toHaveBeenCalled();
+        expect(onConnection).not.toHaveBeenCalled();
     });
 
     it('survives a connection that is reset before it sends anything', async () => {
         launcher = createLauncher();
         const accepted: net.Socket[] = [];
-        launcher.onConnection(socket => accepted.push(socket));
+        const acceptConnection = (launcher as any).acceptConnection.bind(launcher);
+        vi.spyOn(launcher as any, 'acceptConnection').mockImplementation((socket: unknown) => {
+            accepted.push(socket as net.Socket);
+            acceptConnection(socket);
+        });
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
         launcher.start({ port: serverPort });
         await launcher.listening;
 
@@ -343,6 +365,7 @@ describe('test SocketServerLauncher', () => {
         client.resetAndDestroy();
 
         await closed(accepted[0]);
+        expect(onConnection).not.toHaveBeenCalled();
         const next = await connect();
         try {
             const response = new Promise<string>(resolve => next.once('data', data => resolve(data.toString())));
@@ -355,6 +378,8 @@ describe('test SocketServerLauncher', () => {
 
     it('closes a connection that sends nothing within the handshake timeout', async () => {
         launcher = createLauncher();
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
         (launcher as any).handshakeTimeout = 50;
         launcher.start({ port: serverPort });
         await launcher.listening;
@@ -362,6 +387,79 @@ describe('test SocketServerLauncher', () => {
         const client = await connect();
         try {
             await closed(client);
+            expect(onConnection).not.toHaveBeenCalled();
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('bounds an undecided prefix even when the classifier always returns incomplete', async () => {
+        launcher = createLauncher();
+        const classify = vi.spyOn(launcher as any, 'classifyStreamPrefix').mockReturnValue('incomplete');
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            client.write(Buffer.alloc(8191, 'C'));
+            await vi.waitFor(() => expect(classify).toHaveBeenCalled());
+            expect(client.destroyed).toBe(false);
+            client.write(Buffer.alloc(1024, 'C'));
+            await closed(client);
+            expect(classify.mock.calls.at(-1)?.[0]).toHaveLength(8192);
+            expect(onConnection).not.toHaveBeenCalled();
+        } finally {
+            client.destroy();
+        }
+    });
+
+    it('preserves accepted message bytes beyond the classification limit', async () => {
+        launcher = createLauncher();
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const request = JSON.parse(initializeRequest);
+        request.params.applicationId = 'C'.repeat(16_384);
+        await expect(sendAndReadResponse(frame(JSON.stringify(request)))).resolves.toContain('"id":1');
+        expect(serverStub.initialize).toHaveBeenCalledWith(request.params);
+    });
+
+    it('times out an undecided stream even while it keeps sending data', async () => {
+        launcher = createLauncher();
+        (launcher as any).handshakeTimeout = 150;
+        const classify = vi.spyOn(launcher as any, 'classifyStreamPrefix').mockReturnValue('incomplete');
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        const interval = setInterval(() => client.write('C'), 10);
+        try {
+            await closed(client);
+            expect(classify.mock.calls.length).toBeGreaterThan(1);
+            expect(onConnection).not.toHaveBeenCalled();
+        } finally {
+            clearInterval(interval);
+            client.destroy();
+        }
+    });
+
+    it('clears the classification deadline after accepting a connection', async () => {
+        launcher = createLauncher();
+        (launcher as any).handshakeTimeout = 100;
+        launcher.start({ port: serverPort });
+        await launcher.listening;
+
+        const client = await connect();
+        try {
+            const response = new Promise<string>(resolve => client.once('data', data => resolve(data.toString())));
+            client.write(frame(initializeRequest));
+            await expect(response).resolves.toContain('"id":1');
+            await delay(150);
+            expect(client.destroyed).toBe(false);
         } finally {
             client.destroy();
         }
@@ -370,7 +468,13 @@ describe('test SocketServerLauncher', () => {
     it('closes idle connections when it is shut down', async () => {
         launcher = createLauncher();
         const accepted: net.Socket[] = [];
-        launcher.onConnection(socket => accepted.push(socket));
+        const acceptConnection = (launcher as any).acceptConnection.bind(launcher);
+        vi.spyOn(launcher as any, 'acceptConnection').mockImplementation((socket: unknown) => {
+            accepted.push(socket as net.Socket);
+            acceptConnection(socket);
+        });
+        const onConnection = vi.fn();
+        launcher.onConnection(onConnection);
         const stopped = Promise.resolve(launcher.start({ port: serverPort }));
         await launcher.listening;
 
@@ -384,6 +488,7 @@ describe('test SocketServerLauncher', () => {
         } finally {
             client.destroy();
         }
+        expect(onConnection).not.toHaveBeenCalled();
     });
 });
 
