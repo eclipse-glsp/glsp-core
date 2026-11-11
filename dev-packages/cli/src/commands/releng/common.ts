@@ -225,39 +225,43 @@ export async function checkIfNpmVersionIsNew(pckgName: string, newVersion: strin
     throw new Error(`Version '${newVersion} is already present on NPM!}`);
 }
 
-/**
- * Returns the most recent release tag (excluding pre-releases and custom qualifier tags).
- * Only tags that start with 'v' followed by a semantic version (e.g. v1.0.0) are considered.
- * @param path The path to the git repository. If not provided, the current working directory is used.
- */
-export function getLastReleaseTag(repoDir?: string): string | undefined {
-    const tags = exec('git tag --list --sort=-v:refname', { cwd: repoDir }).split('\n');
+/** Returns the highest final release tag `v<x.y.z>`, only below `beforeVersion` if given (e.g. v2.8.0 for a 2.8.1 patch after v2.9.0). */
+export function getLastReleaseTag(repoDir?: string, beforeVersion?: string): string | undefined {
+    const tags = exec('git tag --list --sort=-v:refname', { cwd: repoDir, silent: true }).split('\n');
 
     const lastTag = tags.find(tag => {
         if (!tag.startsWith('v')) {
             return false;
         }
         const version = tag.substring(1);
-        return semver.valid(version) !== undefined && !semver.prerelease(version);
+        // semver.valid returns null for invalid versions (e.g. 'v2.8.0.javax')
+        if (semver.valid(version) === null || semver.prerelease(version)) {
+            return false;
+        }
+        return !beforeVersion || semver.lt(version, beforeVersion);
     });
 
     return lastTag;
 }
 
-export function getChangeLogChanges(options: Pick<RelengOptions, 'repoDir' | 'version' | 'repo'>): string {
+/**
+ * Returns the changelog section of the given version as release notes.
+ * @param changelog The changelog content; read from `<repoDir>/CHANGELOG.md` if omitted
+ */
+export function getChangeLogChanges(options: Pick<RelengOptions, 'repoDir' | 'version' | 'repo'>, changelog?: string): string {
     const version = options.version;
-    const md = readFile('CHANGELOG.md');
+    const md = changelog ?? readFile(path.resolve(options.repoDir, 'CHANGELOG.md'));
     const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`^## \\[v${escapedVersion}[^\\n]*\\n(?:^(?!## ).*\\n?)*`, 'gm');
     const match = md.match(regex);
-    const previousTag = getLastReleaseTag(options.repoDir);
+    const previousTag = getLastReleaseTag(options.repoDir, version);
     if (!match) {
         throw new Error(`No changelog section found for version ${version}`);
     }
     // Remove header section and return only the content lines
     let content = match[0].trim().split('\n').splice(2).join('\n').trim();
 
-    content = content.replace('###', '##'); // demote headings by one level
+    content = content.replace(/^###/gm, '##'); // demote all headings by one level
     if (previousTag) {
         content += `
 

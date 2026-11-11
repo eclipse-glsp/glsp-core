@@ -133,6 +133,8 @@ Commands:
   prepare [options] <versionType> [customVersion]     Prepare a new release for a GLSP component (version bump, changelog, PR
                                                       creation ...)
   publish [options] <distTag>                         Publish all workspace packages of a GLSP repository
+  tag [options] <version>                             Push the signed release tag v<version> on the merge commit of the
+                                                      release PR, which starts publishing, and create the GitHub release
   help [command]                                      display help for command
 ```
 
@@ -187,6 +189,34 @@ Options:
   --no-push                Do not push changes to remote git repository
   -d, --draft              Create a draft pull request (only if push is enabled) (default: false)
   --no-check               Skip initial checks for existing dependency versions
+  -h, --help               display help for command
+```
+
+### tag
+
+Tags a release after its release PR (from `release-v<version>`, opened by `prepare`) is merged.
+It signs the tag `v<version>` on the merge commit and pushes it, which starts the publishing workflows, then creates
+the GitHub release with the version's changelog section as notes.
+
+The publishing workflows only accept a tag that GitHub shows as verified, so a pushed tag that is not verified is
+deleted again; add your signing key to your GitHub account as a signing key.
+An existing tag on the right commit and an existing GitHub release are skipped, so the command can be rerun.
+The repository is derived from the `origin` remote, so it works the same on a fork.
+
+```console
+$ glsp releng tag -h
+Usage: glsp releng tag [options] <version>
+
+Push the signed release tag v<version> on the merge commit of the release PR, which starts publishing, and create the GitHub release
+
+Arguments:
+  version                  The released version, e.g. 2.9.0
+
+Options:
+  -v, --verbose            Enable verbose (debug) log output (default: false)
+  -r, --repoDir <repoDir>  Path to the component repository (default: "<cwd>")
+  -d, --draft              Create the GitHub release as a draft (default: false)
+  --dry-run                Sign the tag locally and print the release notes; push and create nothing (default: false)
   -h, --help               display help for command
 ```
 

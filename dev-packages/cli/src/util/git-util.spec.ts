@@ -25,7 +25,8 @@ import {
     getLastModificationDate,
     getUncommittedChanges,
     hasChanges,
-    isAncestorCommit
+    isAncestorCommit,
+    parseGitHubSlug
 } from './git-util';
 
 describe('git-util', () => {
@@ -189,6 +190,18 @@ describe('git-util', () => {
             });
             const result = getLastModificationDate('file.ts', '/repo');
             expect(result).toBeUndefined();
+        });
+    });
+
+    describe('parseGitHubSlug', () => {
+        it('should parse https and ssh remotes', () => {
+            expect(parseGitHubSlug('https://github.com/eclipse-glsp/glsp-server.git')).toBe('eclipse-glsp/glsp-server');
+            expect(parseGitHubSlug('git@github.com:me/glsp-core.git\n')).toBe('me/glsp-core');
+            expect(parseGitHubSlug('https://github.com/me/glsp-core')).toBe('me/glsp-core');
+        });
+
+        it('should reject other remotes', () => {
+            expect(() => parseGitHubSlug('https://gitlab.com/me/glsp-core.git')).toThrow('Not a GitHub remote');
         });
     });
 });
