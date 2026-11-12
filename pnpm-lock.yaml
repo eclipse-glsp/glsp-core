@@ -577,8 +577,8 @@ importers:
         specifier: ^1.19.9
         version: 1.19.14(hono@4.12.27)
       '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
-        version: 1.29.0(supports-color@8.1.1)(zod@4.4.3)
+        specifier: ^1.32.0
+        version: 1.32.0(supports-color@8.1.1)(zod@4.4.3)
       inversify:
         specifier: ^6.1.3
         version: 6.2.2(reflect-metadata@0.2.2)
@@ -893,8 +893,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@modelcontextprotocol/sdk@1.29.0':
-    resolution: {integrity: sha512-zo37mZA9hJWpULgkRpowewez1y6ML5GsXJPY8FI0tBBCd77HEvza4jDqRKOXgHNn867PVGCyTdzqpz0izu5ZjQ==}
+  '@modelcontextprotocol/sdk@1.32.0':
+    resolution: {integrity: sha512-8BviX/hK4Gd2eL1KdTwm0gfl4d3wdoErW0Jd00h6nomUAtk6IJk5vwQJc6kfWtJTzN5OEV/lgIiJKI8fiDGAlA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -3146,7 +3146,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@modelcontextprotocol/sdk@1.29.0(supports-color@8.1.1)(zod@4.4.3)':
+  '@modelcontextprotocol/sdk@1.32.0(supports-color@8.1.1)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 1.19.14(hono@4.12.27)
       ajv: 8.20.0
