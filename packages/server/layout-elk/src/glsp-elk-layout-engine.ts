@@ -14,6 +14,7 @@
  ********************************************************************************/
 import {
     findParent,
+    findParentByClass,
     GCompartment,
     GEdge,
     GGraph,
@@ -26,10 +27,10 @@ import {
     GShapeElement,
     LayoutEngine,
     LayoutOperation,
+    LayoutResult,
     Logger,
-    MaybePromise,
     ModelState,
-    Point
+    applyLayoutResult
 } from '@eclipse-glsp/server';
 import { ELK, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkShape } from 'elkjs/lib/elk-api';
 import { inject, injectable } from 'inversify';
@@ -67,19 +68,72 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     ) {
         this.elk = elkFactory();
     }
-    layout(operation?: LayoutOperation): MaybePromise<GModelRoot> {
+    /**
+     * Computes the layout with {@link GlspElkLayoutEngine.computeLayout} and applies it transiently to the graphical
+     * model.
+     */
+    async layout(operation?: LayoutOperation): Promise<GModelRoot> {
+        const result = await this.computeLayout(operation);
+        applyLayoutResult(result, this.modelState.index);
+        return this.modelState.root;
+    }
+
+    async computeLayout(operation?: LayoutOperation): Promise<LayoutResult> {
+        const result: LayoutResult = { bounds: [], routingPoints: [] };
         const root = this.modelState.root;
         if (!(root instanceof GGraph)) {
-            return root;
+            return result;
         }
 
         this.elkEdges = [];
         this.idToElkElement = new Map();
-        const elkGraph = this.transformToElk(root);
-        return this.elk.layout(elkGraph).then(result => {
-            this.applyLayout(result);
-            return root;
-        });
+        const elkGraph = await this.elk.layout(this.transformToElk(root));
+        this.collectLayout(elkGraph, result);
+        return result;
+    }
+
+    protected collectLayout(elkNode: ElkNode, result: LayoutResult): void {
+        const element = this.modelState.index.get(elkNode.id);
+        if (element instanceof GNode) {
+            this.collectShape(elkNode, result);
+        }
+        elkNode.ports?.forEach(elkPort => this.collectShape(elkPort, result));
+        elkNode.children?.forEach(child => this.collectLayout(child, result));
+        elkNode.edges?.forEach(elkEdge => this.collectEdge(elkEdge, result));
+    }
+
+    /**
+     * Collects the bend points of the first section as routing points and the bounds of the edge's labels. The
+     * section's start and end point are left out, as they are the source and target point of the edge's route, which
+     * the client computes from the anchors.
+     */
+    protected collectEdge(elkEdge: ElkExtendedEdge, result: LayoutResult): void {
+        elkEdge.labels?.forEach(elkLabel => this.collectShape(elkLabel, result));
+        const section = elkEdge.sections?.[0];
+        if (!section) {
+            return;
+        }
+        result.routingPoints.push({ elementId: elkEdge.id, newRoutingPoints: section.bendPoints ?? [] });
+    }
+
+    /**
+     * Collects the bounds of the given shape and of its labels. Shapes that ELK did not place are left out.
+     */
+    protected collectShape(elkShape: ElkShape, result: LayoutResult): void {
+        if (
+            elkShape.id !== undefined &&
+            elkShape.x !== undefined &&
+            elkShape.y !== undefined &&
+            elkShape.width !== undefined &&
+            elkShape.height !== undefined
+        ) {
+            result.bounds.push({
+                elementId: elkShape.id,
+                newPosition: { x: elkShape.x, y: elkShape.y },
+                newSize: { width: elkShape.width, height: elkShape.height }
+            });
+        }
+        elkShape.labels?.forEach(elkLabel => this.collectShape(elkLabel, result));
     }
 
     protected transformToElk(model: GGraph): ElkNode;
@@ -135,8 +189,8 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             this.logger.warn('Edges with multiple sources or targets are not supported by the GLSPElkLayoutEngine', elkEdge);
             return undefined;
         }
-        const source = this.modelState.index.get(elkEdge.sources[0]);
-        const target = this.modelState.index.get(elkEdge.targets[0]);
+        const source = this.findEdgeEndpoint(elkEdge.sources[0]);
+        const target = this.findEdgeEndpoint(elkEdge.targets[0]);
         if (!source || !target) {
             return undefined;
         }
@@ -157,6 +211,15 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             ancestor = this.idToElkElement.get(target.id);
         }
         return ancestor as ElkNode | undefined;
+    }
+
+    /**
+     * Returns the shape that an edge end is attached to. For an edge end at a port this is the port's node, as the
+     * port itself does not contain any edges.
+     */
+    protected findEdgeEndpoint(id: string): GModelElement | undefined {
+        const element = this.modelState.index.get(id);
+        return element instanceof GPort ? findParentByClass(element, GNode) : element;
     }
 
     protected transformGraph(graph: GGraph): ElkGraphElement {
@@ -255,78 +318,5 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         this.transformShape(elkPort, port);
         this.idToElkElement.set(port.id, elkPort);
         return elkPort;
-    }
-
-    protected applyLayout(elkNode: ElkNode): void {
-        const element = this.modelState.index.get(elkNode.id);
-        if (element instanceof GNode) {
-            this.applyShape(element, elkNode);
-        }
-        if (elkNode.children) {
-            for (const child of elkNode.children) {
-                this.applyLayout(child);
-            }
-        }
-        if (elkNode.edges) {
-            for (const elkEdge of elkNode.edges) {
-                const edge = this.modelState.index.get(elkEdge.id);
-                if (edge instanceof GEdge) {
-                    this.applyEdge(edge, elkEdge);
-                }
-            }
-        }
-
-        if (elkNode.ports) {
-            for (const elkPort of elkNode.ports) {
-                const port = this.modelState.index.findByClass(elkPort.id, GPort);
-                if (port) {
-                    this.applyShape(port, elkPort);
-                }
-            }
-        }
-    }
-
-    protected applyShape(shape: GShapeElement, elkShape: ElkShape): void {
-        if (elkShape.x !== undefined && elkShape.y !== undefined) {
-            shape.position = { x: elkShape.x, y: elkShape.y };
-        }
-        if (elkShape.width !== undefined && elkShape.height !== undefined) {
-            shape.size = { width: elkShape.width, height: elkShape.height };
-        }
-
-        if (elkShape.labels) {
-            for (const elkLabel of elkShape.labels) {
-                const label = elkLabel.id ? this.modelState.index.findByClass(elkLabel.id, GLabel) : undefined;
-                if (label) {
-                    this.applyShape(label, elkLabel);
-                }
-            }
-        }
-    }
-
-    protected applyEdge(edge: GEdge, elkEdge: ElkExtendedEdge): void {
-        const points: Point[] = [];
-        if (elkEdge.sections && elkEdge.sections.length > 0) {
-            const section = elkEdge.sections[0];
-            if (section.startPoint) {
-                points.push(section.startPoint);
-            }
-            if (section.bendPoints) {
-                points.push(...section.bendPoints);
-            }
-            if (section.endPoint) {
-                points.push(section.endPoint);
-            }
-        }
-        edge.routingPoints = points;
-
-        if (elkEdge.labels) {
-            elkEdge.labels.forEach(elkLabel => {
-                const label = elkLabel.id ? this.modelState.index.findByClass(elkLabel.id, GLabel) : undefined;
-                if (label) {
-                    this.applyShape(label, elkLabel);
-                }
-            });
-        }
     }
 }

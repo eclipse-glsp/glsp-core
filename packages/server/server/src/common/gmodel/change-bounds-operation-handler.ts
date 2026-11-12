@@ -13,14 +13,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, GNode, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GLabel, GModelRoot, GNode, GPort, isGBoundsAware } from '@eclipse-glsp/graph';
 import { ChangeBoundsOperation, Dimension, ElementAndBounds, MaybePromise, Point } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { Command } from '../command/command';
+import { applyElementAndBounds } from '../utils/layout-util';
 import { GModelOperationHandler } from './gmodel-operation-handler';
 
 /**
- * Applies {@link ChangeBoundsOperation} directly to the GModel.
+ * Applies {@link ChangeBoundsOperation} directly to the GModel. Handles the bounds of nodes, ports and labels.
+ *
+ * Node positions inside of another element are clamped to non-negative coordinates. Port and label bounds are applied
+ * as given, as ports are commonly placed on or outside of their node's border and labels next to their parent.
  */
 @injectable()
 export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
@@ -54,6 +58,10 @@ export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
 
     protected changeElementBounds(elementId: string, newSize: Dimension, newPosition: Point | undefined): void {
         const index = this.modelState.index;
+        if (index.findByClass(elementId, GPort) || index.findByClass(elementId, GLabel)) {
+            applyElementAndBounds({ elementId, newSize, newPosition }, index);
+            return;
+        }
         const nodeToUpdate = index.findByClass(elementId, GNode);
         if (!nodeToUpdate) {
             return;

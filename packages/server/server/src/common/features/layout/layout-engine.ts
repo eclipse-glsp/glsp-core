@@ -15,7 +15,23 @@
  ********************************************************************************/
 
 import { GModelRoot } from '@eclipse-glsp/graph';
-import { LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
+import { ElementAndBounds, ElementAndRoutingPoints, LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
+
+/**
+ * The positions, sizes, and routing points computed by a {@link LayoutEngine}, before they are applied to any model.
+ *
+ * The entries use the payload types of `ChangeBoundsOperation` and `ChangeRoutingPointsOperation`, so a layout result
+ * can be persisted through the same operation handlers that persist a manual move.
+ */
+export interface LayoutResult {
+    /** The new bounds of every shape the engine placed. */
+    bounds: ElementAndBounds[];
+    /**
+     * The new routing points of every edge the engine routed. Routing points are the bend points of an edge only; a
+     * straight edge has an empty list.
+     */
+    routingPoints: ElementAndRoutingPoints[];
+}
 
 /**
  * A layout engine is able to compute layout information for a model.
@@ -27,6 +43,18 @@ export interface LayoutEngine {
      * @returns the layouted {@link GModelRoot}.
      */
     layout(operation?: LayoutOperation): MaybePromise<GModelRoot>;
+
+    /**
+     * Computes a layout for the model state without modifying any model.
+     *
+     * Engines that implement this method let the `LayoutOperationHandler` persist the layout through the diagram
+     * language's operation handlers, which is required for diagram languages with a custom source model. Engines that
+     * only implement {@link LayoutEngine.layout} keep the transient behavior, where the layout is lost as soon as the
+     * graphical model is derived again from the source model.
+     * @param operation the operation that triggered this layout
+     * @returns the computed {@link LayoutResult}.
+     */
+    computeLayout?(operation?: LayoutOperation): MaybePromise<LayoutResult>;
 }
 
 export const LayoutEngine = Symbol('LayoutEngine');
