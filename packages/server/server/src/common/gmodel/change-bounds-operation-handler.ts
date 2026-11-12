@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, GNode, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GModelRoot, GNode, GPort, isGBoundsAware } from '@eclipse-glsp/graph';
 import { ChangeBoundsOperation, Dimension, ElementAndBounds, MaybePromise, Point } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { Command } from '../command/command';
 import { GModelOperationHandler } from './gmodel-operation-handler';
 
 /**
- * Applies {@link ChangeBoundsOperation} directly to the GModel.
+ * Applies {@link ChangeBoundsOperation} directly to the GModel. Handles the bounds of nodes and ports.
  */
 @injectable()
 export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
@@ -54,6 +54,11 @@ export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
 
     protected changeElementBounds(elementId: string, newSize: Dimension, newPosition: Point | undefined): void {
         const index = this.modelState.index;
+        const portToUpdate = index.findByClass(elementId, GPort);
+        if (portToUpdate) {
+            this.changePortBounds(portToUpdate, newSize, newPosition);
+            return;
+        }
         const nodeToUpdate = index.findByClass(elementId, GNode);
         if (!nodeToUpdate) {
             return;
@@ -74,5 +79,16 @@ export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
 
         nodeToUpdate.size = newSize;
         nodeToUpdate.position = positionToSet;
+    }
+
+    /**
+     * Applies the bounds of a port as given. Unlike node positions, port positions are not clamped to the parent's
+     * bounds, as ports are commonly placed on or outside of their node's border.
+     */
+    protected changePortBounds(port: GPort, newSize: Dimension, newPosition: Point | undefined): void {
+        port.size = newSize;
+        if (newPosition) {
+            port.position = newPosition;
+        }
     }
 }

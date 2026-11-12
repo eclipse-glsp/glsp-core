@@ -16,6 +16,7 @@
 
 import { GAlignable, GBoundsAware, GEdge, GGraph, GModelElement, GModelRoot, isGAlignable, isGBoundsAware } from '@eclipse-glsp/graph';
 import { ElementAndAlignment, ElementAndBounds, ElementAndRoutingPoints, Point } from '@eclipse-glsp/protocol';
+import type { LayoutResult } from '../features/layout/layout-engine';
 import { GModelIndex } from '../features/model/gmodel-index';
 import { ArgsUtil } from './args-util';
 import { GLSPServerError, getOrThrow } from './glsp-server-error';
@@ -113,6 +114,20 @@ export function applyRoutingPoints(routingPoints: ElementAndRoutingPoints, index
     edge.routingPoints = routingPoints.newRoutingPoints ?? [];
     return edge;
 }
+/**
+ * Applies a {@link LayoutResult} to the graphical model.
+ *
+ * This is the transient way of applying a layout, it does not persist the layout in a custom source model. Layout
+ * engines use it to implement `LayoutEngine.layout` on top of `LayoutEngine.computeLayout`.
+ *
+ * @param result The computed layout result.
+ * @param index  The model index.
+ */
+export function applyLayoutResult(result: LayoutResult, index: GModelIndex): void {
+    result.bounds.forEach(bounds => applyElementAndBounds(bounds, index));
+    result.routingPoints.forEach(routingPoints => applyRoutingPoints(routingPoints, index));
+}
+
 /**
  * Returns the relative location of the given absolute location within the container.
  *
