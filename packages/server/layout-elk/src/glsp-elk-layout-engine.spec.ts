@@ -37,7 +37,7 @@ import { AbstractLayoutConfigurator, LayoutConfigurator } from './layout-configu
 function createEngine(
     root: GGraph,
     layoutConfigurator?: ElkModuleOptions['layoutConfigurator']
-): { engine: LayoutEngine; modelState: ModelState } {
+): { engine: LayoutEngine; modelState: ModelState; layoutConfigurator: LayoutConfigurator } {
     const modelState = new DefaultModelState();
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
     modelState.updateRoot(root);
@@ -46,7 +46,11 @@ function createEngine(
         new ContainerModule(bind => bind(ModelState).toConstantValue(modelState)),
         new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator })
     );
-    return { engine: container.get<LayoutEngine>(LayoutEngine), modelState };
+    return {
+        engine: container.get<LayoutEngine>(LayoutEngine),
+        modelState,
+        layoutConfigurator: container.get<LayoutConfigurator>(LayoutConfigurator)
+    };
 }
 
 /** Two stacked nodes connected by an edge; the layered algorithm places the target to the right of the source. */
@@ -81,10 +85,10 @@ class SelectionAwareLayoutConfigurator extends AbstractLayoutConfigurator {
 /** Records the layout operation that each element was configured with. */
 @injectable()
 class RecordingLayoutConfigurator implements LayoutConfigurator {
-    static readonly operations = new Map<string, LayoutOperation | undefined>();
+    readonly operations = new Map<string, LayoutOperation | undefined>();
 
     apply(element: GModelElement, operation?: LayoutOperation): LayoutOptions | undefined {
-        RecordingLayoutConfigurator.operations.set(element.id, operation);
+        this.operations.set(element.id, operation);
         return undefined;
     }
 }
@@ -162,7 +166,7 @@ describe('GlspElkLayoutEngine', () => {
             const node = GNode.builder().id('node').size(50, 30).add(label).add(port).build();
             const other = GNode.builder().id('other').size(50, 30).build();
             const edge = GEdge.builder().id('edge').source(node).target(other).build();
-            const { engine } = createEngine(
+            const { engine, layoutConfigurator } = createEngine(
                 GGraph.builder().id('graph').addChildren(node, other, edge).build(),
                 RecordingLayoutConfigurator
             );
@@ -170,8 +174,9 @@ describe('GlspElkLayoutEngine', () => {
 
             await engine.computeLayout!(operation);
 
-            expect([...RecordingLayoutConfigurator.operations.keys()].sort()).toEqual(['edge', 'graph', 'label', 'node', 'other', 'port']);
-            for (const recorded of RecordingLayoutConfigurator.operations.values()) {
+            const { operations } = layoutConfigurator as RecordingLayoutConfigurator;
+            expect([...operations.keys()].sort()).toEqual(['edge', 'graph', 'label', 'node', 'other', 'port']);
+            for (const recorded of operations.values()) {
                 expect(recorded?.elementIds).toEqual(['node']);
             }
         });
