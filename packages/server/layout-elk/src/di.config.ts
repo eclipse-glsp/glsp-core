@@ -143,7 +143,9 @@ export class ElkLayoutModule extends GLSPModule {
                 const filter = ctx.container.get<ElementFilter>(ElementFilter);
                 const configurator = ctx.container.get<LayoutConfigurator>(LayoutConfigurator);
                 const modelState = ctx.container.get<ModelState>(ModelState);
-                return new GlspElkLayoutEngine(factory, filter, configurator, modelState);
+                const engine = new GlspElkLayoutEngine(factory, filter, configurator, modelState);
+                // The engine is created by hand, so inversify doesn't inject its properties.
+                return Object.assign(engine, { logger: ctx.container.get<Logger>(Logger) });
             }
         };
     }

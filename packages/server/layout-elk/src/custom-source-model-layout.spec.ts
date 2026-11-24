@@ -27,6 +27,7 @@ import {
 } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
+import { DefaultElementFilter } from './element-filter';
 import { FlowIds, FlowSourceModel } from './test/flow-diagram';
 import { createFlowDiagramSession } from './test/diagram-session';
 
@@ -44,6 +45,29 @@ function createOverlappingFlow(): FlowSourceModel {
         ],
         flows: [{ from: 'Draft', to: 'Review', via: [{ x: 500, y: 500 }] }]
     };
+}
+
+/** Three overlapping steps, where the third one is an archive that the layout should leave in place. */
+function createFlowWithArchive(): FlowSourceModel {
+    return {
+        steps: [
+            { name: 'Draft', shape: { x: 0, y: 0, width: 50, height: 30 }, ports: [] },
+            { name: 'Review', shape: { x: 0, y: 0, width: 50, height: 30 }, ports: [] },
+            { name: 'Archive', shape: { x: 0, y: 0, width: 50, height: 30 }, ports: [] }
+        ],
+        flows: [
+            { from: 'Draft', to: 'Review', via: [] },
+            { from: 'Review', to: 'Archive', via: [{ x: 500, y: 500 }] }
+        ]
+    };
+}
+
+/** Leaves the archive step out of the layout. */
+@injectable()
+class ArchiveElementFilter extends DefaultElementFilter {
+    protected override filterNode(node: GNode): boolean {
+        return node.id !== FlowIds.step('Archive');
+    }
 }
 
 /** A layout engine that predates `computeLayout` and moves every node directly in the graphical model. */
@@ -147,5 +171,20 @@ describe('Layout of a diagram language with a custom source model', () => {
 
         expect(session.modelState.sourceModel).toEqual(createOverlappingFlow());
         expect(session.infos).toEqual([expect.stringContaining('computeLayout')]);
+    });
+
+    it('keeps the elements that the element filter leaves out of the layout, and undoes the layout of the others', async () => {
+        const session = await createFlowDiagramSession(createFlowWithArchive(), { elementFilter: ArchiveElementFilter });
+
+        await session.dispatch(LayoutOperation.create());
+
+        const [draft, review, archive] = session.modelState.sourceModel.steps;
+        expect(review.shape.x).toBeGreaterThanOrEqual(draft.shape.x + 50);
+        expect(archive).toEqual(createFlowWithArchive().steps[2]);
+        expect(session.modelState.sourceModel.flows[1]).toEqual(createFlowWithArchive().flows[1]);
+
+        await session.dispatch(UndoAction.create());
+
+        expect(session.modelState.sourceModel).toEqual(createFlowWithArchive());
     });
 });

@@ -39,7 +39,7 @@ import {
 } from '@eclipse-glsp/server';
 import { createAppModule, defaultLaunchOptions } from '@eclipse-glsp/server/node';
 import { Container, ContainerModule, interfaces } from 'inversify';
-import { ElkLayoutModule } from '../di.config';
+import { ElkLayoutModule, ElkModuleOptions } from '../di.config';
 import { FlowDiagramModule, FlowDiagramOptions, FlowModelState, FlowSeed, FlowSourceModel } from './flow-diagram';
 import { GModelSeed, TestGModelDiagramModule } from './gmodel-diagram';
 
@@ -99,6 +99,8 @@ export interface DiagramSession<M extends ModelState = ModelState> {
 export interface DiagramSessionOptions {
     /** Replaces the ELK layout engine of the session. */
     layoutEngine?: interfaces.Newable<LayoutEngine>;
+    /** The element filter of the ELK layout engine. */
+    elementFilter?: ElkModuleOptions['elementFilter'];
 }
 
 /**
@@ -112,7 +114,7 @@ async function createDiagramSession<M extends ModelState>(
 ): Promise<DiagramSession<M>> {
     const serverModule = new ServerModule().configureDiagramModule(
         diagramModule,
-        new ElkLayoutModule({ algorithms: ['layered'] }),
+        new ElkLayoutModule({ algorithms: ['layered'], elementFilter: options.elementFilter }),
         seedModule,
         new ContainerModule((_bind, _unbind, _isBound, rebind) => {
             if (options.layoutEngine) {

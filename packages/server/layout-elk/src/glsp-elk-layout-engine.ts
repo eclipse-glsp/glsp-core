@@ -148,7 +148,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         if (model instanceof GGraph) {
             const graph = this.transformGraph(model);
             this.elkEdges.forEach(elkEdge => {
-                const parent = this.findCommonAncestor(elkEdge);
+                const parent = this.hasEndpointsInLayout(elkEdge) ? this.findCommonAncestor(elkEdge) : undefined;
                 if (parent) {
                     parent.edges!.push(elkEdge);
                 }
@@ -170,6 +170,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     /**
      * Searches for all children of the given element that are an instance of the given {@link GModelElementConstructor}
      * and are included by the {@link ElementFilter}. Also considers children that are nested inside of {@link GCompartment}s.
+     * The filter is applied to each child itself, but not to the compartments, as they have no counterpart in ELK.
      * @param element The element whose children should be queried.
      * @param constructor The class instance that should be matched
      * @returns A list of all matching children.
@@ -177,7 +178,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     protected findChildren<G extends GModelElement>(element: GModelElement, constructor: GModelElementConstructor<G>): G[] {
         const result: G[] = [];
         element.children.forEach(child => {
-            if (child instanceof constructor && this.filter.apply(element)) {
+            if (child instanceof constructor && this.filter.apply(child)) {
                 result.push(child);
             } else if (child instanceof GCompartment) {
                 result.push(...this.findChildren(child, constructor));
@@ -185,6 +186,26 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         });
 
         return result;
+    }
+
+    /**
+     * Checks whether the source and target of the given edge are part of the ELK graph. ELK rejects the whole graph if an
+     * edge references a shape that it doesn't contain, so an edge whose end was left out, e.g. by an {@link ElementFilter}
+     * that doesn't reject the edges connected to a rejected element, is left out of the layout instead and keeps its
+     * routing points. Such an edge is logged as a debug message, or as a warning if its end doesn't exist in the model.
+     * @param elkEdge The ELK edge whose source and target should be checked.
+     * @returns `true` if both ends of the edge are part of the ELK graph, `false` otherwise.
+     */
+    protected hasEndpointsInLayout(elkEdge: ElkExtendedEdge): boolean {
+        const missing = [...elkEdge.sources, ...elkEdge.targets].filter(id => !this.idToElkElement.has(id));
+        for (const id of missing) {
+            if (this.modelState.index.find(id)) {
+                this.logger.debug(`Edge '${elkEdge.id}' is not laid out, because its end '${id}' is excluded from the layout`);
+            } else {
+                this.logger.warn(`Edge '${elkEdge.id}' is not laid out, because its end '${id}' does not exist in the model`);
+            }
+        }
+        return missing.length === 0;
     }
 
     protected findCommonAncestor(elkEdge: ElkExtendedEdge): ElkNode | undefined {
