@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GGraph, GLabel, GModelElement, GNode, GPort, ModelState } from '@eclipse-glsp/server';
+import { GEdge, GGraph, GLabel, GModelElement, GNode, GPort, LayoutOperation, ModelState } from '@eclipse-glsp/server';
 import { LayoutOptions } from 'elkjs';
 import { inject, injectable } from 'inversify';
 export const LayoutConfigurator = Symbol('LayoutConfigurator');
@@ -25,54 +25,70 @@ export const LayoutConfigurator = Symbol('LayoutConfigurator');
 export interface LayoutConfigurator {
     /**
      * Computes the {@link LayoutOptions} for the given {@link GModelElement}.
+     *
+     * The configurator is called for every element of each layout, so the options can depend on information that is only
+     * known at layout time, e.g. the elements that were selected when the user triggered the layout. With an
+     * {@link AbstractLayoutConfigurator}, the operation is passed on to the hook of each element type:
+     *
+     * ```ts
+     * protected override nodeOptions(node: GNode, operation?: LayoutOperation): LayoutOptions | undefined {
+     *     return operation?.elementIds?.includes(node.id) ? { 'elk.priority': '10' } : undefined;
+     * }
+     * ```
+     *
      * @param element The element for which the layout options should be computed.
+     * @param operation The {@link LayoutOperation} that triggered the layout. Don't rely on it being present or on it
+     * having selected elements: automatic layouts that are applied whenever the model is updated pass no operation or
+     * one with empty `elementIds`.
      * @returns The set of layout options for the given element or `undefined`.
      */
-    apply(element: GModelElement): LayoutOptions | undefined;
+    apply(element: GModelElement, operation?: LayoutOperation): LayoutOptions | undefined;
 }
 
 /**
  * Abstract default implementation of {@link LayoutConfigurator}.
  * A minimal configuration should at least specify the `elk.algorithm` option as
- * return value of {@link DefaultLayoutConfigurator.graphOptions}.
+ * return value of {@link AbstractLayoutConfigurator.graphOptions}.
+ *
+ * Each hook receives the {@link LayoutOperation} that triggered the layout, see {@link LayoutConfigurator.apply}.
  */
 @injectable()
 export abstract class AbstractLayoutConfigurator implements LayoutConfigurator {
     @inject(ModelState)
     protected modelState: ModelState;
 
-    apply(element: GModelElement): LayoutOptions | undefined {
+    apply(element: GModelElement, operation?: LayoutOperation): LayoutOptions | undefined {
         if (element instanceof GGraph) {
-            return this.graphOptions(element);
+            return this.graphOptions(element, operation);
         } else if (element instanceof GNode) {
-            return this.nodeOptions(element);
+            return this.nodeOptions(element, operation);
         } else if (element instanceof GEdge) {
-            return this.edgeOptions(element);
+            return this.edgeOptions(element, operation);
         } else if (element instanceof GLabel) {
-            this.labelOptions(element);
+            return this.labelOptions(element, operation);
         } else if (element instanceof GPort) {
-            this.portOptions(element);
+            return this.portOptions(element, operation);
         }
         return undefined;
     }
 
-    protected graphOptions(graph: GGraph): LayoutOptions | undefined {
+    protected graphOptions(graph: GGraph, operation?: LayoutOperation): LayoutOptions | undefined {
         return undefined;
     }
 
-    protected nodeOptions(node: GNode): LayoutOptions | undefined {
+    protected nodeOptions(node: GNode, operation?: LayoutOperation): LayoutOptions | undefined {
         return undefined;
     }
 
-    protected edgeOptions(edge: GEdge): LayoutOptions | undefined {
+    protected edgeOptions(edge: GEdge, operation?: LayoutOperation): LayoutOptions | undefined {
         return undefined;
     }
 
-    protected labelOptions(label: GLabel): LayoutOptions | undefined {
+    protected labelOptions(label: GLabel, operation?: LayoutOperation): LayoutOptions | undefined {
         return undefined;
     }
 
-    protected portOptions(sport: GPort): LayoutOptions | undefined {
+    protected portOptions(port: GPort, operation?: LayoutOperation): LayoutOptions | undefined {
         return undefined;
     }
 }
