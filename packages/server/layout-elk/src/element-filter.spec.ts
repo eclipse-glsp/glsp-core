@@ -180,7 +180,7 @@ describe('DefaultElementFilter overrides', () => {
 
     it('keeps other elements, e.g. compartments', () => {
         const root = createCompartmentGraph();
-        const filter = createRejectingFilter(root, 'graph', 'compartment');
+        const filter = createRejectingFilter(root, 'compartment');
 
         expect(filter.apply(elementById(root, 'compartment')!)).toBe(true);
     });
