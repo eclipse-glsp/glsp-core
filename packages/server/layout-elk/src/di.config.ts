@@ -144,8 +144,10 @@ export class ElkLayoutModule extends GLSPModule {
                 const configurator = ctx.container.get<LayoutConfigurator>(LayoutConfigurator);
                 const modelState = ctx.container.get<ModelState>(ModelState);
                 const engine = new GlspElkLayoutEngine(factory, filter, configurator, modelState);
-                // The engine is created by hand, so inversify doesn't inject its properties.
-                return Object.assign(engine, { logger: ctx.container.get<Logger>(Logger) });
+                // The engine is created by hand, so inversify doesn't inject its properties. A plain `Logger` request
+                // would have no parent request to derive the caller name from, so the factory sets it explicitly.
+                const logger = ctx.container.get<LoggerFactory>(LoggerFactory)(GlspElkLayoutEngine.name);
+                return Object.assign(engine, { logger });
             }
         };
     }
