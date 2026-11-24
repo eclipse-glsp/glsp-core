@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GGraph, GLabel, GModelElement, GNode, GPort, LayoutOperation } from '@eclipse-glsp/server';
+import { GCompartment, GEdge, GGraph, GLabel, GModelElement, GNode, GPort, LayoutOperation } from '@eclipse-glsp/server';
 import { LayoutOptions } from 'elkjs';
 import { describe, expect, it } from 'vitest';
-import { AbstractLayoutConfigurator } from './layout-configurator';
+import { AbstractLayoutConfigurator, FallbackLayoutConfigurator } from './layout-configurator';
 
 /** Options that tell which hook computed them and which elements were selected, if any. */
 function optionsFor(kind: string, operation?: LayoutOperation): LayoutOptions {
@@ -63,5 +63,36 @@ describe('AbstractLayoutConfigurator', () => {
         const operation = LayoutOperation.create(['node1', 'node2']);
 
         expect(configurator.apply(element, operation)).toEqual({ kind, selected: 'node1,node2' });
+    });
+});
+
+class DefaultHooksLayoutConfigurator extends AbstractLayoutConfigurator {}
+
+describe('AbstractLayoutConfigurator for other elements and default hooks', () => {
+    it('returns no options for other elements, e.g. compartments', () => {
+        expect(new TestLayoutConfigurator().apply(new GCompartment())).toBeUndefined();
+    });
+
+    it('returns no options from the default hooks', () => {
+        const configurator = new DefaultHooksLayoutConfigurator();
+
+        const options = [new GGraph(), new GNode(), new GEdge(), new GLabel(), new GPort()].map(element => configurator.apply(element));
+
+        expect(options).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    });
+});
+
+describe('FallbackLayoutConfigurator', () => {
+    it('configures only the graph, with the first algorithm and the default layout options', () => {
+        const configurator = new FallbackLayoutConfigurator(['mrtree', 'layered'], { 'elk.direction': 'DOWN' });
+
+        expect(configurator.apply(new GGraph())).toEqual({ 'elk.algorithm': 'mrtree', 'elk.direction': 'DOWN' });
+        expect(configurator.apply(new GNode())).toBeUndefined();
+    });
+
+    it('lets the default layout options override the algorithm', () => {
+        const configurator = new FallbackLayoutConfigurator(['layered'], { 'elk.algorithm': 'stress' });
+
+        expect(configurator.apply(new GGraph())).toEqual({ 'elk.algorithm': 'stress' });
     });
 });

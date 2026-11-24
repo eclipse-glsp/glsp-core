@@ -13,7 +13,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DefaultModelState, GEdge, GGraph, GModelIndex, GNode, GPort, Logger, ModelState, NullLogger } from '@eclipse-glsp/server';
+import {
+    DefaultModelState,
+    GCompartment,
+    GEdge,
+    GGraph,
+    GLabel,
+    GModelElement,
+    GModelIndex,
+    GNode,
+    GPort,
+    Logger,
+    ModelState,
+    NullLogger
+} from '@eclipse-glsp/server';
 import { Container, injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
@@ -106,5 +119,84 @@ describe('DefaultElementFilter', () => {
 
             expect(logger.warnings).toEqual(["Edge 'dangling' is not laid out, because its end 'missing' does not exist in the model"]);
         });
+    });
+});
+
+/** Rejects the nodes, edges, labels and ports with the given IDs through each of the filter methods. */
+function createRejectingFilter(root: GGraph, ...rejectedIds: string[]): ElementFilter {
+    @injectable()
+    class RejectingElementFilter extends DefaultElementFilter {
+        protected override filterNode(node: GNode): boolean {
+            return !rejectedIds.includes(node.id);
+        }
+
+        protected override filterEdge(edge: GEdge): boolean {
+            return !rejectedIds.includes(edge.id) && super.filterEdge(edge);
+        }
+
+        protected override filterLabel(label: GLabel): boolean {
+            return !rejectedIds.includes(label.id);
+        }
+
+        protected override filterPort(port: GPort): boolean {
+            return !rejectedIds.includes(port.id);
+        }
+    }
+    const modelState = new DefaultModelState();
+    Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
+    modelState.updateRoot(root);
+    const container = new Container();
+    container.bind(ModelState).toConstantValue(modelState);
+    container.bind(Logger).to(NullLogger);
+    return container.resolve(RejectingElementFilter);
+}
+
+/** A node with a label and a port in a compartment, and an edge from a second node to the port. */
+function createCompartmentGraph(): GGraph {
+    const label = GLabel.builder().id('label').text('label').build();
+    const port = GPort.builder().id('port').build();
+    const compartment = GCompartment.builder().type('comp').id('compartment').addChildren(label, port).build();
+    const node = GNode.builder().id('node').add(compartment).build();
+    const source = GNode.builder().id('source').build();
+    const edge = GEdge.builder().id('edge').sourceId('source').targetId('port').build();
+    return GGraph.builder().id('graph').addChildren(node, source, edge).build();
+}
+
+function elementById(element: GModelElement, id: string): GModelElement | undefined {
+    return element.id === id ? element : element.children.map(child => elementById(child, id)).find(found => found);
+}
+
+describe('DefaultElementFilter overrides', () => {
+    it('passes nodes, edges, labels and ports to their filter methods', () => {
+        const root = createCompartmentGraph();
+        const ids = ['node', 'edge', 'label', 'port'];
+        const elements = ids.map(id => elementById(root, id)!);
+
+        const kept = elements.map(element => createRejectingFilter(root).apply(element));
+        const rejected = elements.map(element => createRejectingFilter(root, element.id).apply(element));
+
+        expect(kept).toEqual([true, true, true, true]);
+        expect(rejected).toEqual([false, false, false, false]);
+    });
+
+    it('keeps other elements, e.g. compartments', () => {
+        const root = createCompartmentGraph();
+        const filter = createRejectingFilter(root, 'graph', 'compartment');
+
+        expect(filter.apply(elementById(root, 'compartment')!)).toBe(true);
+    });
+
+    it('rejects an edge to a rejected port', () => {
+        const root = createCompartmentGraph();
+        const filter = createRejectingFilter(root, 'port');
+
+        expect(filter.apply(elementById(root, 'edge')!)).toBe(false);
+    });
+
+    it('keeps an edge whose end lies in a compartment', () => {
+        const root = createCompartmentGraph();
+        const filter = createRejectingFilter(root);
+
+        expect(filter.apply(elementById(root, 'edge')!)).toBe(true);
     });
 });
