@@ -25,6 +25,7 @@ import {
     ModelState,
     NullLogger
 } from '@eclipse-glsp/server';
+import { ELK, ElkNode, LayoutOptions } from 'elkjs/lib/elk-api';
 import { Container, ContainerModule } from 'inversify';
 import { ElkLayoutModule, ElkModuleOptions } from '../di.config';
 import { LayoutConfigurator } from '../layout-configurator';
@@ -47,11 +48,28 @@ export class RecordingLogger extends NullLogger {
     }
 }
 
+/** An {@link ElkLayoutModule} whose ELK instance records a copy of every graph that it is asked to lay out. */
+class RecordingElkLayoutModule extends ElkLayoutModule {
+    readonly elkInputs: ElkNode[] = [];
+
+    protected override createElk(options: { algorithms: string[]; defaultLayoutOptions?: LayoutOptions }, isWebWorker?: boolean): ELK {
+        const elk = super.createElk(options, isWebWorker);
+        const layout = elk.layout.bind(elk);
+        elk.layout = (graph, args) => {
+            this.elkInputs.push(structuredClone(graph));
+            return layout(graph, args);
+        };
+        return elk;
+    }
+}
+
 export interface TestLayoutEngine {
     engine: LayoutEngine;
     modelState: ModelState;
     layoutConfigurator: LayoutConfigurator;
     logger: RecordingLogger;
+    /** Copies of the graphs that the engine passed to ELK, one per layout run. */
+    elkInputs: ElkNode[];
 }
 
 /**
@@ -64,19 +82,21 @@ export function createEngine(root: GModelRoot, options: Partial<ElkModuleOptions
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
     modelState.updateRoot(root);
     const logger = new RecordingLogger();
+    const elkModule = new RecordingElkLayoutModule({ algorithms: ['layered'], ...options });
     const container = new Container();
     container.load(
         new ContainerModule(bind => {
             bind(ModelState).toConstantValue(modelState);
             bind(Logger).toConstantValue(logger);
         }),
-        new ElkLayoutModule({ algorithms: ['layered'], ...options })
+        elkModule
     );
     return {
         engine: container.get<LayoutEngine>(LayoutEngine),
         modelState,
         layoutConfigurator: container.get<LayoutConfigurator>(LayoutConfigurator),
-        logger
+        logger,
+        elkInputs: elkModule.elkInputs
     };
 }
 
