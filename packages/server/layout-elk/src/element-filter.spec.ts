@@ -30,6 +30,7 @@ import {
 import { Container, injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
+import { createModelState } from './test/layout-engine';
 
 /** Records the messages of the warnings logged by the filter. */
 class RecordingLogger extends NullLogger {
@@ -142,11 +143,8 @@ function createRejectingFilter(root: GGraph, ...rejectedIds: string[]): ElementF
             return !rejectedIds.includes(port.id);
         }
     }
-    const modelState = new DefaultModelState();
-    Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
-    modelState.updateRoot(root);
     const container = new Container();
-    container.bind(ModelState).toConstantValue(modelState);
+    container.bind(ModelState).toConstantValue(createModelState(root));
     container.bind(Logger).to(NullLogger);
     return container.resolve(RejectingElementFilter);
 }
@@ -162,6 +160,7 @@ function createCompartmentGraph(): GGraph {
     return GGraph.builder().id('graph').addChildren(node, source, edge).build();
 }
 
+/** Searches the given element and its descendants for the element with the given ID. */
 function elementById(element: GModelElement, id: string): GModelElement | undefined {
     return element.id === id ? element : element.children.map(child => elementById(child, id)).find(found => found);
 }

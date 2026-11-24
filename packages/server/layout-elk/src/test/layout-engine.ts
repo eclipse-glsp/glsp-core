@@ -77,10 +77,7 @@ export interface TestLayoutEngine {
  * algorithm unless the options say otherwise.
  */
 export function createEngine(root: GModelRoot, options: Partial<ElkModuleOptions> = {}): TestLayoutEngine {
-    const modelState = new DefaultModelState();
-    // The index is normally injected; the model state needs it to index the root.
-    Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
-    modelState.updateRoot(root);
+    const modelState = createModelState(root);
     const logger = new RecordingLogger();
     const elkModule = new RecordingElkLayoutModule({ algorithms: ['layered'], ...options });
     const container = new Container();
@@ -98,6 +95,17 @@ export function createEngine(root: GModelRoot, options: Partial<ElkModuleOptions
         logger,
         elkInputs: elkModule.elkInputs
     };
+}
+
+/** Creates a model state with its own index, and with the given root if there is one. */
+export function createModelState(root?: GModelRoot): ModelState {
+    const modelState = new DefaultModelState();
+    // The index is normally injected; the model state needs it to index the root.
+    Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
+    if (root) {
+        modelState.updateRoot(root);
+    }
+    return modelState;
 }
 
 /** Returns the bounds that the layout result contains for the element with the given ID. */

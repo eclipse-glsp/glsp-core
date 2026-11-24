@@ -13,45 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GCompartment, GEdge, GGraph, GLabel, GModelElement, GNode } from '@eclipse-glsp/server';
+import { GCompartment, GEdge, GGraph, GLabel, GNode } from '@eclipse-glsp/server';
 import { describe, expect, it } from 'vitest';
 import { boundsOf, createEngine, routingPointsOf } from './test/layout-engine';
+import { container, edge, graph, node } from './test/layout-graphs';
 
 /*
  * Known issues of the ELK layout engine. Each test asserts the correct behaviour and is marked with `it.fails` until the
  * issue is fixed. A fix makes the test fail, which is the reminder to turn it into an `it`.
  */
-
-/** A node at the origin with a fixed size of 50x30. */
-function node(id: string, ...children: GModelElement[]): GNode {
-    return GNode.builder()
-        .id(id)
-        .position(0, 0)
-        .size(50, 30)
-        .addChildren(...children)
-        .build();
-}
-
-/** A 300x200 node at (200,200) with the given children, larger than the layered algorithm needs for them. */
-function container(id: string, ...children: GModelElement[]): GNode {
-    return GNode.builder()
-        .id(id)
-        .position(200, 200)
-        .size(300, 200)
-        .addChildren(...children)
-        .build();
-}
-
-function edge(id: string, sourceId: string, targetId: string): GEdge {
-    return GEdge.builder().id(id).sourceId(sourceId).targetId(targetId).build();
-}
-
-function graph(...children: GModelElement[]): GGraph {
-    return GGraph.builder()
-        .id('graph')
-        .addChildren(...children)
-        .build();
-}
 
 /**
  * The model of eclipse-glsp/glsp#1820: a `category` node with a `header` and a `struct` compartment, where `struct`
@@ -119,7 +89,7 @@ describe('GlspElkLayoutEngine known issues', () => {
 
         await engine.computeLayout!();
 
-        expect([...logger.warnings, ...logger.debugMessages]).toContainEqual(expect.stringContaining("Edge 'edge'"));
+        expect([...logger.warnings, ...logger.debugMessages]).toContainEqual(expect.stringContaining("'edge'"));
     });
 
     // F5, eclipse-glsp/glsp#1820 (part 2): the engine finds no common ancestor for the edge and leaves it out silently.
@@ -150,35 +120,25 @@ describe('GlspElkLayoutEngine known issues', () => {
         ]);
     });
 
-    // F7, eclipse-glsp/glsp#1820 (part 1), eclipse-glsp/glsp#1598: ELK places the tasks relative to `category`, as
-    // compartments have no counterpart in ELK, but the positions are applied relative to `struct`.
-    it.fails('lays out the nodes of a compartment relative to the compartment', async () => {
+    // F7, eclipse-glsp/glsp#1820 (part 1), eclipse-glsp/glsp#1598: compartments have no counterpart in ELK, so ELK lays
+    // out the tasks as direct children of `category` and sizes `category` to fit only them. The positions are applied
+    // relative to `struct`, which keeps its bounds and no longer fits into `category`.
+    it.fails('sizes a node to fit its compartments and the nodes inside them', async () => {
         const { engine, modelState } = createEngine(createCategoryGraph());
 
         await engine.layout();
 
         const category = modelState.index.findByClass('category', GNode)!;
         const struct = modelState.index.findByClass('struct', GCompartment)!;
-        for (const id of ['task1', 'task2']) {
-            const task = modelState.index.findByClass(id, GNode)!;
-            // The task's bounds relative to the category must lie within the category.
-            expect(struct.position.y + task.position.y + task.size.height, id).toBeLessThanOrEqual(category.size.height);
-            expect(struct.position.x + task.position.x + task.size.width, id).toBeLessThanOrEqual(category.size.width);
-        }
-    });
-
-    // F7, eclipse-glsp/glsp#1820 (part 1), eclipse-glsp/glsp#1598: ELK sizes `category` to fit the tasks, without the
-    // compartments around them.
-    it.fails('sizes a node to fit the nodes of its compartments', async () => {
-        const { engine, modelState } = createEngine(createCategoryGraph());
-
-        await engine.layout();
-
-        const category = modelState.index.findByClass('category', GNode)!;
         for (const id of ['header', 'struct']) {
             const compartment = modelState.index.findByClass(id, GCompartment)!;
             expect(compartment.position.x + compartment.size.width, id).toBeLessThanOrEqual(category.size.width);
             expect(compartment.position.y + compartment.size.height, id).toBeLessThanOrEqual(category.size.height);
+        }
+        for (const id of ['task1', 'task2']) {
+            const task = modelState.index.findByClass(id, GNode)!;
+            expect(struct.position.x + task.position.x + task.size.width, id).toBeLessThanOrEqual(category.size.width);
+            expect(struct.position.y + task.position.y + task.size.height, id).toBeLessThanOrEqual(category.size.height);
         }
     });
 

@@ -13,49 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GGraph, GLabel, GModelElement, GNode, GPort } from '@eclipse-glsp/server';
+import { GEdge, GLabel } from '@eclipse-glsp/server';
 import { LayoutOptions } from 'elkjs';
 import { injectable } from 'inversify';
 import { describe, expect, it } from 'vitest';
 import { AbstractLayoutConfigurator } from './layout-configurator';
 import { boundsOf, createEngine, routingPointsOf } from './test/layout-engine';
-
-/** A node at the origin with a fixed size of 50x30. */
-function node(id: string, ...children: GModelElement[]): GNode {
-    return GNode.builder()
-        .id(id)
-        .position(0, 0)
-        .size(50, 30)
-        .addChildren(...children)
-        .build();
-}
-
-/** A 300x200 node at (200,200) with the given children, larger than the layered algorithm needs for them. */
-function container(id: string, ...children: GModelElement[]): GNode {
-    return GNode.builder()
-        .id(id)
-        .position(200, 200)
-        .size(300, 200)
-        .addChildren(...children)
-        .build();
-}
-
-/** A 10x10 port at the origin. */
-function port(id: string, ...children: GModelElement[]): GPort {
-    return GPort.builder()
-        .id(id)
-        .position(0, 0)
-        .size(10, 10)
-        .addChildren(...children)
-        .build();
-}
-
-function graph(...children: GModelElement[]): GGraph {
-    return GGraph.builder()
-        .id('graph')
-        .addChildren(...children)
-        .build();
-}
+import { container, graph, node, port } from './test/layout-graphs';
 
 /** Places the labels of every node centered at the top inside the node. */
 @injectable()
@@ -120,10 +84,10 @@ describe('GlspElkLayoutEngine graph structure', () => {
 
     describe('ports', () => {
         it('routes an edge between ports of two sibling nodes', async () => {
-            const out = port('out');
-            const in_ = port('in');
-            const edge = GEdge.builder().id('edge').source(out).target(in_).build();
-            const { engine } = createEngine(graph(node('source', out), node('target', in_), edge));
+            const outPort = port('out');
+            const inPort = port('in');
+            const edge = GEdge.builder().id('edge').source(outPort).target(inPort).build();
+            const { engine } = createEngine(graph(node('source', outPort), node('target', inPort), edge));
 
             const result = await engine.computeLayout!();
 
@@ -134,10 +98,10 @@ describe('GlspElkLayoutEngine graph structure', () => {
         });
 
         it('routes an edge from a node to a port', async () => {
-            const in_ = port('in');
+            const inPort = port('in');
             const source = node('source');
-            const edge = GEdge.builder().id('edge').source(source).target(in_).build();
-            const { engine } = createEngine(graph(source, node('target', in_), edge));
+            const edge = GEdge.builder().id('edge').source(source).target(inPort).build();
+            const { engine } = createEngine(graph(source, node('target', inPort), edge));
 
             const result = await engine.computeLayout!();
 
@@ -148,8 +112,8 @@ describe('GlspElkLayoutEngine graph structure', () => {
 
         it('routes an edge that a port contains', async () => {
             const target = node('target');
-            const out = port('out', GEdge.builder().id('edge').sourceId('out').target(target).build());
-            const { engine } = createEngine(graph(node('source', out), target));
+            const outPort = port('out', GEdge.builder().id('edge').sourceId('out').target(target).build());
+            const { engine } = createEngine(graph(node('source', outPort), target));
 
             const result = await engine.computeLayout!();
 

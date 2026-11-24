@@ -13,19 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    BindingTarget,
-    DefaultModelState,
-    GEdge,
-    GGraph,
-    GModelIndex,
-    GNode,
-    LayoutEngine,
-    Logger,
-    LoggerFactory,
-    ModelState,
-    NullLogger
-} from '@eclipse-glsp/server';
+import { BindingTarget, GEdge, GGraph, GNode, LayoutEngine, Logger, LoggerFactory, ModelState, NullLogger } from '@eclipse-glsp/server';
 import { ELK, ElkNode } from 'elkjs/lib/elk-api';
 import { Container, ContainerModule, injectable, interfaces } from 'inversify';
 import { describe, expect, it } from 'vitest';
@@ -33,12 +21,11 @@ import { ElkLayoutModule, ElkModuleOptions } from './di.config';
 import { ElementFilter } from './element-filter';
 import { AbstractLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
 import { ElkFactory, GlspElkLayoutEngine } from './glsp-elk-layout-engine';
-import { RecordingLogger } from './test/layout-engine';
+import { createModelState, RecordingLogger } from './test/layout-engine';
 
 /** Loads the given ELK layout module and bindings into a new container with an empty model state. */
 function createContainer(elkModule: ContainerModule, bindings?: interfaces.ContainerModuleCallBack): Container {
-    const modelState = new DefaultModelState();
-    Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
+    const modelState = createModelState();
     const container = new Container();
     container.load(
         new ContainerModule((bind, unbind, isBound, rebind, ...rest) => {
@@ -50,6 +37,7 @@ function createContainer(elkModule: ContainerModule, bindings?: interfaces.Conta
     return container;
 }
 
+/** An {@link ElkLayoutModule} for the `layered` algorithm with the given options. */
 function elkModule(options: Partial<ElkModuleOptions> = {}): ElkLayoutModule {
     return new ElkLayoutModule({ algorithms: ['layered'], ...options });
 }
@@ -73,6 +61,7 @@ async function layoutDanglingEdge(container: Container): Promise<void> {
     await container.get<LayoutEngine>(LayoutEngine).computeLayout!();
 }
 
+/** A configurator type of its own, to tell whether the module bound it. */
 @injectable()
 class CustomLayoutConfigurator extends AbstractLayoutConfigurator {}
 
